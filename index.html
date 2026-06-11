@@ -193,12 +193,13 @@ canvas { max-height: 100%; }
 #panel-noticias .filter-chip.chip-soja.active     { background: #93c5fd; color: #1a1a2e; border-color: #93c5fd; }
 #panel-noticias .news-filter-count { margin-left: auto; font-size: 0.72rem; color: rgba(255,255,255,0.3); }
 #panel-noticias .news-content {
-  padding: 20px 24px; max-width: 780px; margin: 0 auto;
+  padding: 20px 24px; max-width: 1200px; margin: 0 auto;
 }
 @media (max-width: 600px) { #panel-noticias .news-content { padding: 14px 12px; } }
 #panel-noticias .news-empty { text-align: center; padding: 60px 20px; color: #aaa; }
 #panel-noticias .news-empty .icon { font-size: 2.8rem; margin-bottom: 12px; }
-#panel-noticias .news-list { display: flex; flex-direction: column; gap: 14px; }
+#panel-noticias .news-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+@media (max-width: 700px) { #panel-noticias .news-list { grid-template-columns: 1fr; } }
 #panel-noticias .news-card {
   background: white; border-radius: 12px; padding: 18px 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex;
@@ -240,6 +241,7 @@ canvas { max-height: 100%; }
   display: flex; align-items: center; gap: 10px; margin: 6px 0 2px;
   color: #9ca3af; font-size: 0.72rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.6px;
+  grid-column: 1 / -1;
 }
 #panel-noticias .date-divider::after {
   content: ''; flex: 1; height: 1px; background: #e5e7eb;
@@ -2226,7 +2228,8 @@ function newsRender(){
     const cards=porFecha[fecha].map(n=>{
       const cc=newsCultivoClass(n.cultivo);
       const emoji=(NEWS_FUENTE_EMOJI[n.fuente]||'📄')+' '+n.fuente;
-      return `<div class="news-card c-${cc}"><div class="card-meta"><span class="card-fuente">${emoji}</span><span class="card-cultivo ${newsTagClass(cc)}">${newsCultivoEmoji(n.cultivo)}${n.cultivo}</span><span class="age-badge ${newsIsFresh(n.fecha)?'fresh':''}">${newsDiasAtras(n.fecha)}</span></div><div class="card-titulo">${n.titulo}</div><div class="card-resumen">${n.resumen}</div><div class="card-footer"><a class="btn-ver-nota" href="${n.link}" target="_blank">🔗 Ver nota completa</a></div></div>`;
+      const resumen = n.resumen.length > 220 ? n.resumen.slice(0, 220).replace(/\s\S+$/, '') + '…' : n.resumen;
+      return `<div class="news-card c-${cc}"><div class="card-meta"><span class="card-fuente">${emoji}</span><span class="card-cultivo ${newsTagClass(cc)}">${newsCultivoEmoji(n.cultivo)}${n.cultivo}</span><span class="age-badge ${newsIsFresh(n.fecha)?'fresh':''}">${newsDiasAtras(n.fecha)}</span></div><div class="card-titulo">${n.titulo}</div><div class="card-resumen">${resumen}</div><div class="card-footer"><a class="btn-ver-nota" href="${n.link}" target="_blank">🔗 Ver nota completa</a></div></div>`;
     }).join('');
     return `<div class="date-divider">${etiqueta}</div>${cards}`;
   }).join('');
