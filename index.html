@@ -1,0 +1,2090 @@
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "A3 Mercados Dashboard",
+  "schemaVersion": 1,
+  "description": "Dashboard A3 Mercados: futuros soja, maíz, trigo, dólar + opciones + estrategia + LECAPs. Datos en vivo desde Google Sheet A3 y Google Drive MCP.",
+  "mcpTools": [
+    "mcp__b5211e5b-bb8a-4302-ab9c-1a9da1d9d6a6__read_file_content",
+    "mcp__workspace__web_fetch"
+  ],
+  "mcpServerNames": [
+    "Google Drive",
+    "workspace"
+  ]
+}
+</script>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Miazzo Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+.header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: white; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; }
+.header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.5px; }
+.header .fecha { font-size: 0.8rem; opacity: 0.7; margin-top: 3px; }
+.tabs { display: flex; background: #16213e; padding: 0 20px; overflow-x: auto; }
+.tab { padding: 12px 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+  color: rgba(255,255,255,0.55); border-bottom: 3px solid transparent; white-space: nowrap; transition: all 0.2s; }
+.tab:hover { color: rgba(255,255,255,0.85); }
+.tab.active { color: #4ecdc4; border-bottom-color: #4ecdc4; }
+.tab.estrategia-tab { color: rgba(255,200,80,0.7); }
+.tab.estrategia-tab.active { color: #ffc850; border-bottom-color: #ffc850; }
+.tab.lecap-tab { color: rgba(100,220,180,0.7); }
+.tab.lecap-tab.active { color: #4ecdc4; border-bottom-color: #4ecdc4; }
+.content { padding: 20px; max-width: 1200px; margin: 0 auto; }
+.panel { display: none; }
+.panel.active { display: block; }
+.kpi-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.kpi { background: white; border-radius: 10px; padding: 14px 18px; flex: 1; min-width: 140px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.kpi .label { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.kpi .value { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
+.kpi .sub { font-size: 0.75rem; color: #aaa; margin-top: 2px; }
+.kpi.green .value { color: #1e7e34; }
+.kpi.red .value { color: #9b1c1c; }
+.kpi.yellow .value { color: #b45309; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+.card { background: white; border-radius: 10px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.card h3 { font-size: 0.9rem; font-weight: 700; color: #444; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+.fut-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.fut-table th { background: #f7f8fa; color: #666; font-weight: 600; padding: 8px 10px; text-align: right; border-bottom: 2px solid #e8eaed; font-size: 0.75rem; text-transform: uppercase; }
+.fut-table th:first-child { text-align: left; }
+.fut-table td { padding: 8px 10px; border-bottom: 1px solid #f0f2f5; text-align: right; }
+.fut-table td:first-child { text-align: left; font-weight: 600; }
+.fut-table tr:hover td { background: #f7fbff; }
+.fut-table tr.ref-row td { background: #fffbe6; font-weight: 700; }
+.fut-table tr.ref-row td:first-child::after { content: ' ★'; color: #f5a623; font-size: 0.7rem; }
+.fut-table tr.disp-row td { background: #f1f5f9; border-bottom: 2px solid #cbd5e1; }
+.chain-hide-xtra .xtra-col { display: none; }
+.pos { color: #22863a; font-weight: 600; }
+.neg { color: #cb2431; font-weight: 600; }
+.neutral { color: #888; }
+.tna-badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.78rem; font-weight: 700; }
+.tna-pos { background: #e6f4ea; color: #1e7e34; }
+.tna-neg { background: #fce8e8; color: #9b1c1c; }
+.tna-ref { background: #f0f0f0; color: #888; }
+.chain-controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+.chain-controls span { font-size: 0.78rem; color: #888; margin-right: 4px; }
+.venc-btn { padding: 5px 12px; border: 1px solid #dde; border-radius: 20px; font-size: 0.78rem; cursor: pointer; background: white; color: #555; transition: all 0.15s; }
+.venc-btn:hover { background: #f0f2f5; }
+.venc-btn.active { background: #1a1a2e; color: white; border-color: #1a1a2e; }
+.chain-wrap { overflow-x: auto; }
+.chain-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.chain-table th { padding: 7px 10px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid #e0e4ea; }
+.chain-table td { padding: 6px 10px; border-bottom: 1px solid #f0f2f5; }
+.chain-table tr:hover td { filter: brightness(0.97); }
+.call-hdr { background: #0d3358; color: white; text-align: center; }
+.strike-hdr { background: #1a1a2e; color: white; text-align: center; }
+.put-hdr { background: #6b0f1a; color: white; text-align: center; }
+.call-td { background: #f0f7ff; text-align: right; color: #1a4a7a; }
+.strike-td { background: #eef1f7; text-align: center; font-weight: 700; color: #1a1a2e; }
+.put-td { background: #fff5f5; text-align: right; color: #8b1a1a; }
+.canvas-wrap { position: relative; height: 220px; }
+.canvas-wrap-lg { position: relative; height: 320px; }
+canvas { max-height: 100%; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; }
+.badge-usd { background: #e6f4ea; color: #1e7e34; }
+.full-card { background: white; border-radius: 10px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 20px; }
+.full-card h3 { font-size: 0.9rem; font-weight: 700; color: #444; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+.strat-field { display: flex; flex-direction: column; gap: 5px; }
+.strat-field label { font-size: 0.72rem; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.4px; }
+.strat-select { padding: 8px 12px; border: 1.5px solid #dde; border-radius: 8px; font-size: 0.85rem; background: white; color: #1a1a2e; cursor: pointer; min-width: 130px; }
+.strat-select:focus { outline: none; border-color: #4ecdc4; }
+.add-leg-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; background: white; padding: 14px 18px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 16px; }
+.add-leg-row .strat-field { flex: 1; min-width: 110px; }
+.btn-add { padding: 8px 20px; background: #1a1a2e; color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap; align-self: flex-end; }
+.btn-add:hover { background: #2d2d4e; }
+.btn-clear { padding: 8px 14px; background: #f0f2f5; color: #666; border: 1px solid #dde; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; align-self: flex-end; }
+.btn-clear:hover { background: #e8eaed; }
+.legs-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.legs-table th { background: #f7f8fa; color: #666; font-weight: 600; padding: 8px 10px; border-bottom: 2px solid #e8eaed; font-size: 0.75rem; text-transform: uppercase; }
+.legs-table th:first-child, .legs-table td:first-child { text-align: left; }
+.legs-table td { padding: 8px 10px; border-bottom: 1px solid #f0f2f5; text-align: center; }
+.legs-table .btn-del { background: none; border: none; color: #cb2431; font-size: 1rem; cursor: pointer; padding: 0 4px; }
+.legs-table .btn-del:hover { color: #9b1c1c; }
+.compra-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background: #e6f4ea; color: #1e7e34; }
+.venta-badge  { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background: #fce8e8; color: #9b1c1c; }
+.call-badge   { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background: #dbeafe; color: #1e40af; }
+.put-badge    { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background: #fef3c7; color: #92400e; }
+.futuro-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background: #f0f9ff; color: #0369a1; }
+.empty-legs { text-align: center; padding: 24px; color: #aaa; font-size: 0.85rem; font-style: italic; }
+.preset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+@media (max-width: 800px) { .preset-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .preset-grid { grid-template-columns: 1fr; } }
+.preset-card { background: white; border: 2px solid #e8eaed; border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: all 0.18s; position: relative; }
+.preset-card:hover { border-color: #4ecdc4; box-shadow: 0 4px 14px rgba(78,205,196,0.18); transform: translateY(-1px); }
+.preset-card.selected { border-color: #1a1a2e; box-shadow: 0 4px 16px rgba(26,26,46,0.18); background: #f7f8fa; }
+.preset-card .pc-name { font-size: 0.9rem; font-weight: 700; color: #1a1a2e; margin-bottom: 5px; }
+.preset-card .pc-market { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; margin-bottom: 7px; }
+.preset-card .pc-desc { font-size: 0.75rem; color: #666; line-height: 1.45; margin-bottom: 6px; }
+.preset-card .pc-risk { font-size: 0.68rem; color: #aaa; font-style: italic; }
+.preset-card .pc-check { position: absolute; top: 10px; right: 12px; font-size: 1rem; display: none; color: #1a1a2e; }
+.preset-card.selected .pc-check { display: block; }
+.preset-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: white; padding: 14px 18px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 16px; }
+.btn-apply-preset { padding: 9px 24px; background: #ffc850; color: #1a1a2e; border: none; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+.btn-apply-preset:hover { background: #f5b800; }
+.btn-apply-preset:disabled { background: #e8eaed; color: #bbb; cursor: not-allowed; }
+.strat-mode-tabs { display: flex; gap: 6px; margin-bottom: 18px; }
+.strat-mode-btn { padding: 7px 18px; border: 2px solid #dde; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; background: white; color: #888; transition: all 0.15s; }
+.strat-mode-btn.active { background: #1a1a2e; color: white; border-color: #1a1a2e; }
+.preset-section-label { font-size: 0.68rem; font-weight: 700; color: #bbb; text-transform: uppercase; letter-spacing: 0.7px; margin: 14px 0 8px 2px; }
+/* ── Spot card ── */
+.spot-card { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 12px; padding: 16px 22px; margin-bottom: 18px; color: white; display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+.spot-card-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.5); margin-bottom: 3px; }
+.spot-card-fecha { font-size: 0.7rem; color: rgba(255,255,255,0.38); }
+.spot-metrics { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; align-items: center; }
+.spot-metric { display: flex; flex-direction: column; padding: 0 14px; }
+.spot-metric-label { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.42); margin-bottom: 3px; }
+.spot-metric-value { font-size: 1.1rem; font-weight: 700; color: white; }
+.spot-divider { width: 1px; background: rgba(255,255,255,0.13); align-self: stretch; min-height: 36px; }
+.basis-pos { color: #4ecdc4; }
+.basis-neg { color: #ff6b6b; }
+/* ── Splash de selección de dispositivo ── */
+#splash-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.splash-inner{text-align:center;padding:24px 16px;max-width:480px;width:100%;}
+.splash-logo{font-size:2.2rem;margin-bottom:8px;}
+.splash-title{font-size:1.5rem;font-weight:800;color:white;margin-bottom:4px;}
+.splash-sub{font-size:0.85rem;color:rgba(255,255,255,0.5);margin-bottom:36px;}
+.splash-options{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;}
+.splash-btn{background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:16px;padding:28px 32px;cursor:pointer;transition:all 0.2s;text-align:center;min-width:150px;color:white;}
+.splash-btn:hover{background:rgba(255,255,255,0.13);border-color:#4ecdc4;transform:translateY(-2px);}
+.splash-btn .sb-icon{font-size:2.4rem;margin-bottom:10px;}
+.splash-btn .sb-label{font-size:1rem;font-weight:700;margin-bottom:4px;}
+.splash-btn .sb-desc{font-size:0.72rem;color:rgba(255,255,255,0.45);line-height:1.4;}
+.splash-note{margin-top:22px;font-size:0.68rem;color:rgba(255,255,255,0.25);}
+
+/* ── Financiamiento ── */
+.fin-tab { color: rgba(100,220,200,0.65); }
+.fin-tab.active { color: #4ecdc4; border-bottom-color: #4ecdc4; }
+.fin-card { background: white; border-radius: 10px; padding: 18px 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.fin-venc-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 18px; }
+@media (max-width: 750px) { .fin-venc-grid { grid-template-columns: 1fr; } }
+.fin-venc-card { border-radius: 12px; padding: 18px; border: 2px solid #e8eaed; background: white; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.fin-venc-card.conviene { border-color: #22c55e; background: linear-gradient(160deg,#f0fdf4 0%,white 60%); }
+.fin-venc-card.no-conviene { border-color: #ef4444; background: linear-gradient(160deg,#fef2f2 0%,white 60%); }
+.fin-badge-conv { display:inline-block;padding:5px 14px;border-radius:20px;font-size:0.8rem;font-weight:800;background:#dcfce7;color:#166534; }
+.fin-badge-noconv { display:inline-block;padding:5px 14px;border-radius:20px;font-size:0.8rem;font-weight:800;background:#fee2e2;color:#991b1b; }
+.fin-row { display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;padding:2px 0; }
+.fin-label { color:#777; }
+.fin-val { font-weight:700;color:#1a1a2e; }
+.fin-section-title { font-size:0.68rem;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px; }
+.fin-total-row { display:flex;justify-content:space-between;align-items:center;background:#f7f8fa;border-radius:7px;padding:7px 10px;margin-top:2px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>🌾 Data Miazzo · Dashboard</h1>
+    <div class="fecha">Datos al 23-4-2026 &nbsp;·&nbsp; Fuente: A3 Info / MatbaRofex</div>
+  </div>
+  <div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      <button onclick="DOLLAR_RATES=null;a3DataLoaded=false;lecapData=null;lecapLoading=false;SPOT=null;loadAndInitA3();loadLecapPanel();" style="padding:8px 18px;border:1.5px solid rgba(255,255,255,0.25);border-radius:8px;background:transparent;color:white;font-size:0.82rem;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">🔄 Actualizar datos</button>
+      <span id="chicago-status" style="font-size:0.68rem;opacity:0.6;color:white"></span>
+      <button onclick="localStorage.removeItem('a3_device_mode');window.a3DeviceMode=null;showSplash();" style="padding:4px 10px;border:1px solid rgba(255,255,255,0.15);border-radius:6px;background:transparent;color:rgba(255,255,255,0.35);font-size:0.65rem;cursor:pointer;" title="Cambiar tipo de dispositivo">📱/💻 cambiar vista</button>
+    </div>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('soj-fut')">Futuros Soja</div>
+  <div class="tab" onclick="showTab('mai-fut')">Futuros Maíz</div>
+  <div class="tab" onclick="showTab('tri-fut')">Futuros Trigo</div>
+  <div class="tab" onclick="showTab('soj-opts')">Opciones Soja</div>
+  <div class="tab" onclick="showTab('mai-opts')">Opciones Maíz</div>
+  <div class="tab" onclick="showTab('tri-opts')">Opciones Trigo</div>
+  <div class="tab estrategia-tab" onclick="showTab('estrategia')">⚙ Estrategia</div>
+  <div class="tab" onclick="showTab('dlr-fut')">Futuros Dólar</div>
+  <div class="tab lecap-tab" onclick="showTab('lecaps')">📈 LECAPs</div>
+  <div class="tab fin-tab" onclick="showTab('financiamiento')">💰 Financiamiento</div>
+  <div class="tab" onclick="showTab('cultivos')" style="color:rgba(255,255,255,0.55)">🌾 Cultivos</div>
+  </div>
+<div class="content">
+  <div class="panel active" id="panel-soj-fut"></div>
+  <div class="panel" id="panel-mai-fut"></div>
+  <div class="panel" id="panel-tri-fut"></div>
+  <div class="panel" id="panel-soj-opts"></div>
+  <div class="panel" id="panel-mai-opts"></div>
+  <div class="panel" id="panel-tri-opts"></div>
+  <div class="panel" id="panel-estrategia"></div>
+  <div class="panel" id="panel-dlr-fut"></div>
+  <div class="panel" id="panel-lecaps"></div>
+  <div class="panel" id="panel-financiamiento"></div>
+  <div class="panel" id="panel-cultivos"></div>
+</div>
+<script>
+// ── A3 – Futuros y Opciones (datos dinámicos desde Google Sheet) ─────────
+const A3_FILE_ID='1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI';
+const A3_AGRO_URL='https://docs.google.com/spreadsheets/d/'+A3_FILE_ID+'/export?format=csv&gid=527444289';
+const A3_FIN_URL='https://docs.google.com/spreadsheets/d/'+A3_FILE_ID+'/export?format=csv&gid=2027743157';
+const DATA_FILE_ID='11VQysuTx_JT8gw4bf0q89ulbSE12kLZpNfDuPwktBoQ';
+const DATA_CSV_URL='https://docs.google.com/spreadsheets/d/'+DATA_FILE_ID+'/export?format=csv&gid=0';
+let SOJ_FUT=[],MAI_FUT=[],TRI_FUT=[],DLR_FUT=[],SOJ_OPTS=[],MAI_OPTS=[],TRI_OPTS=[];
+const DOLLAR_RATES_FILE_ID='1jFDJKRQ-V-hjQ92n_t6izWF49c8xBoiLLu9HLCq39J4';
+const DOLLAR_RATES_CSV_URL='https://docs.google.com/spreadsheets/d/'+DOLLAR_RATES_FILE_ID+'/export?format=csv&gid=0';
+let DOLLAR_RATES=null;
+let a3DataLoaded=false;
+let SPOT=null;
+let FOB_FAS=null;
+// Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
+const PIZARRA_SOJ_2025={
+  "05/05":256.6,"09/05":261,"12/05":273.8,"13/05":270,"14/05":269.4,"15/05":270.6,
+  "16/05":282.77,"19/05":273.88,"20/05":275.7,"21/05":274.8,"22/05":276.6,"23/05":271.3,
+  "26/05":272,"27/05":271.6,"28/05":267.3,"29/05":267.9,"30/05":269.3,
+  "02/06":271,"03/06":272,"06/06":271,"09/06":270.04,"10/06":270.04,"11/06":275.8,
+  "13/06":276.65,"17/06":281.81,"18/06":278.51,"19/06":274.87,"23/06":272.84,
+  "24/06":275.01,"26/06":269.9,"27/06":269.97,"30/06":266.4,
+  "02/07":255.9,"07/07":250.5,"08/07":251,"10/07":254.98,"11/07":256.04,
+  "14/07":257.81,"15/07":261.9,"16/07":261.7,"17/07":262.95,"18/07":264.39,
+  "21/07":265.49,"22/07":267.41,"23/07":270.16,"24/07":268.47,"25/07":269.53,
+  "28/07":277.99,"29/07":282.73,"30/07":285,
+  "01/08":285.19,"04/08":290.44,"05/08":292.87,"06/08":292.79,"07/08":294.23,
+  "08/08":293,"11/08":293.2,"12/08":295.3,"13/08":297.03,"14/08":295.38,
+  "18/08":293.89,"19/08":294.39,"20/08":295.93,"21/08":296.58,"22/08":296.74,
+  "25/08":293.7,"26/08":294.8,"27/08":291.96,
+  "01/09":287.9,"02/09":293.9,"03/09":290.12,"04/09":293.58,"05/09":295.2,
+  "08/09":290.99,"09/09":292.98,"10/09":293.71,"12/09":293.71,"15/09":299.93,
+  "16/09":299.52,"17/09":298.41,"19/09":298.17,"23/09":360.12,"25/09":335.85,"26/09":337.84,
+  "02/10":350.86,"07/10":346,"10/10":351.76,"13/10":344.55,"14/10":341.18,
+  "15/10":340.58,"17/10":331.03,"20/10":322.03,"21/10":322.04,"22/10":322.36,
+  "24/10":321.72,"27/10":334.49,"28/10":333.33,"30/10":335,"31/10":332.18,
+  "03/11":330.63,"06/11":330.58,"07/11":336.75,"10/11":337.91,"11/11":339.7,
+  "12/11":342.37,"14/11":340.7,"17/11":348.95,"18/11":346.64,"19/11":341.3,"25/11":339.8,"26/11":345.3,
+  "01/12":344.47,"02/12":343.64,"03/12":340.67,"04/12":342.11,"08/12":341.46,
+  "09/12":339.81,"10/12":347.2,"12/12":344.11,"15/12":344.11,"16/12":341.14,
+  "17/12":337.7,"18/12":340.45,"19/12":339.31,"22/12":340.56,"23/12":341.14,
+  "26/12":344.23,"29/12":341.8,"30/12":343.64
+};
+function lookupPizarra2025(fecha){
+  // fecha viene como "DD/MM/YYYY" o "DD/MM/YY"
+  if(!fecha)return null;
+  const parts=fecha.split('/');
+  if(parts.length<2)return null;
+  const key=parts[0].padStart(2,'0')+'/'+parts[1].padStart(2,'0');
+  if(PIZARRA_SOJ_2025[key]!=null)return PIZARRA_SOJ_2025[key];
+  // Si no hay dato exacto, buscar el más cercano (hasta 3 días hábiles antes)
+  const [d,m]=parts;
+  const base=new Date(2025,parseInt(m)-1,parseInt(d));
+  for(let i=1;i<=7;i++){
+    const next=new Date(base);next.setDate(next.getDate()+i);
+    const k=(next.getDate()+'').padStart(2,'0')+'/'+(next.getMonth()+1+'').padStart(2,'0');
+    if(PIZARRA_SOJ_2025[k]!=null)return PIZARRA_SOJ_2025[k];
+  }
+  return null;
+}
+// Futuros Soja 2025 — clave "DD/MM" → {jul, sept, nov} (null = contrato vencido/sin dato)
+const FUTUROS_SOJ_2025={
+  "05/05":{jul:281,sept:287,nov:288.7},
+  "09/05":{jul:289.8,sept:296,nov:298.9},
+  "12/05":{jul:290.6,sept:297.5,nov:300.1},
+  "13/05":{jul:281,sept:295,nov:299.5},
+  "14/05":{jul:289.8,sept:296.5,nov:300},
+  "15/05":{jul:290.6,sept:291.2,nov:295.2},
+  "16/05":{jul:290,sept:291.2,nov:295.2},
+  "19/05":{jul:290,sept:291.2,nov:295.2},
+  "20/05":{jul:284.5,sept:291.2,nov:295.2},
+  "21/05":{jul:284.1,sept:288.5,nov:294.5},
+  "22/05":{jul:284.5,sept:288.5,nov:293.5},
+  "23/05":{jul:281.9,sept:286.5,nov:291.5},
+  "26/05":{jul:281.3,sept:285.7,nov:290.6},
+  "27/05":{jul:281,sept:285.2,nov:290},
+  "28/05":{jul:278.5,sept:283,nov:287.5},
+  "29/05":{jul:279.5,sept:283.7,nov:289.4},
+  "30/05":{jul:281,sept:286,nov:290.9},
+  "02/06":{jul:280,sept:285,nov:290.9},
+  "03/06":{jul:281.2,sept:287,nov:291},
+  "06/06":{jul:283.8,sept:290.5,nov:293},
+  "09/06":{jul:281.5,sept:287.5,nov:290.5},
+  "10/06":{jul:282.5,sept:288.5,nov:291.5},
+  "11/06":{jul:284.5,sept:290,nov:293},
+  "13/06":{jul:286,sept:291,nov:294.4},
+  "17/06":{jul:286.5,sept:291,nov:295.5},
+  "18/06":{jul:284.5,sept:290,nov:295},
+  "19/06":{jul:282.5,sept:287.6,nov:293},
+  "23/06":{jul:281.5,sept:286,nov:293.2},
+  "24/06":{jul:281.5,sept:287,nov:293},
+  "26/06":{jul:278,sept:283,nov:288.4},
+  "27/06":{jul:276,sept:281,nov:287},
+  "30/06":{jul:274.5,sept:281.4,nov:286.3},
+  "02/07":{jul:271,sept:280.1,nov:286},
+  "07/07":{jul:264,sept:276.5,nov:284.5},
+  "08/07":{jul:264,sept:275,nov:284.1},
+  "10/07":{jul:263.5,sept:273.5,nov:284.2},
+  "11/07":{jul:264.5,sept:274,nov:283.6},
+  "14/07":{jul:264.5,sept:273.5,nov:282.5},
+  "15/07":{jul:267,sept:274,nov:282.9},
+  "16/07":{jul:269,sept:275,nov:283.7},
+  "17/07":{jul:271,sept:276.5,nov:282.6},
+  "18/07":{jul:272.5,sept:278.4,nov:284.5},
+  "21/07":{jul:270,sept:277,nov:282.6},
+  "22/07":{jul:271,sept:278,nov:282.8},
+  "23/07":{jul:276,sept:286,nov:291},
+  "24/07":{jul:274,sept:284.7,nov:289.5},
+  "25/07":{jul:null,sept:286,nov:291},
+  "28/07":{jul:null,sept:289,nov:294.3},
+  "29/07":{jul:null,sept:291.5,nov:295.5},
+  "30/07":{jul:null,sept:294.5,nov:298},
+  "01/08":{jul:null,sept:294.5,nov:299.8},
+  "04/08":{jul:null,sept:295.7,nov:300},
+  "05/08":{jul:null,sept:296,nov:300.6},
+  "06/08":{jul:null,sept:296.1,nov:300},
+  "07/08":{jul:null,sept:299,nov:303},
+  "08/08":{jul:null,sept:298,nov:302.5},
+  "11/08":{jul:null,sept:296.5,nov:301.5},
+  "12/08":{jul:null,sept:300.5,nov:304.7},
+  "13/08":{jul:null,sept:300.8,nov:305.7},
+  "14/08":{jul:null,sept:298.7,nov:303.5},
+  "18/08":{jul:null,sept:299,nov:304.6},
+  "19/08":{jul:null,sept:299.4,nov:304},
+  "20/08":{jul:null,sept:299.5,nov:305.5},
+  "21/08":{jul:null,sept:301,nov:306.5},
+  "22/08":{jul:null,sept:301,nov:306},
+  "25/08":{jul:null,sept:300.6,nov:306},
+  "26/08":{jul:null,sept:299,nov:305.1},
+  "27/08":{jul:null,sept:296.5,nov:303.7},
+  "01/09":{jul:null,sept:293,nov:302.6},
+  "02/09":{jul:null,sept:298.5,nov:303.8},
+  "03/09":{jul:null,sept:297,nov:302.5},
+  "04/09":{jul:null,sept:297,nov:302.5},
+  "05/09":{jul:null,sept:298,nov:301.5},
+  "08/09":{jul:null,sept:299,nov:302.5},
+  "09/09":{jul:null,sept:298,nov:303.5},
+  "10/09":{jul:null,sept:298.5,nov:303.5},
+  "12/09":{jul:null,sept:302.2,nov:306},
+  "15/09":{jul:null,sept:303,nov:306.9},
+  "16/09":{jul:null,sept:303.5,nov:306.9},
+  "17/09":{jul:null,sept:302,nov:305.5},
+  "19/09":{jul:null,sept:300,nov:305},
+  "23/09":{jul:null,sept:364,nov:360.5},
+  "25/09":{jul:null,sept:null,nov:332.5},
+  "26/09":{jul:null,sept:null,nov:349.1},
+  "02/10":{jul:null,sept:null,nov:343.5},
+  "07/10":{jul:null,sept:null,nov:333},
+  "10/10":{jul:null,sept:null,nov:336},
+  "13/10":{jul:null,sept:null,nov:336},
+  "14/10":{jul:null,sept:null,nov:336},
+  "15/10":{jul:null,sept:null,nov:332},
+  "17/10":{jul:null,sept:null,nov:329},
+  "20/10":{jul:null,sept:null,nov:326.5},
+  "21/10":{jul:null,sept:null,nov:324.5},
+  "22/10":{jul:null,sept:null,nov:324.5},
+  "24/10":{jul:null,sept:null,nov:329},
+  "27/10":{jul:null,sept:null,nov:338.5},
+  "28/10":{jul:null,sept:null,nov:335},
+  "30/10":{jul:null,sept:null,nov:337},
+  "31/10":{jul:null,sept:null,nov:336.5},
+  "03/11":{jul:null,sept:null,nov:334.1},
+  "06/11":{jul:null,sept:null,nov:336},
+  "07/11":{jul:null,sept:null,nov:339},
+  "10/11":{jul:null,sept:null,nov:343},
+  "11/11":{jul:null,sept:null,nov:346.5},
+  "12/11":{jul:null,sept:null,nov:347.5},
+  "14/11":{jul:null,sept:null,nov:346},
+  "17/11":{jul:null,sept:null,nov:353.5},
+  "18/11":{jul:null,sept:null,nov:350},
+  "19/11":{jul:null,sept:null,nov:348}
+};
+function lookupFuturos2025(fecha){
+  if(!fecha)return null;
+  const parts=fecha.split('/');
+  if(parts.length<2)return null;
+  const key=parts[0].padStart(2,'0')+'/'+parts[1].padStart(2,'0');
+  if(FUTUROS_SOJ_2025[key])return FUTUROS_SOJ_2025[key];
+  const [d,m]=parts;
+  const base=new Date(2025,parseInt(m)-1,parseInt(d));
+  for(let i=1;i<=7;i++){
+    const next=new Date(base);next.setDate(next.getDate()+i);
+    const k=(next.getDate()+'').padStart(2,'0')+'/'+(next.getMonth()+1+'').padStart(2,'0');
+    if(FUTUROS_SOJ_2025[k])return FUTUROS_SOJ_2025[k];
+  }
+  return null;
+}
+// ── Maíz 2025: pizarra y futuros (jul-25, sept-25, dic-25) ──────────────
+const PIZARRA_MAI_2025={
+  "09/05":185,"12/05":182.8,"13/05":183,"14/05":183.75,"15/05":185.4,
+  "16/05":186.5,"19/05":184,"20/05":185.5,"21/05":185.8,"22/05":184.9,
+  "23/05":181.7,"26/05":181.1,"27/05":182.3,"28/05":181,"29/05":177.2,
+  "30/05":175.9,"01/06":166.1,"02/06":173.6,"03/06":173.3,"06/06":171.8,
+  "09/06":171.22,"10/06":172.49,"11/06":173.43,"12/06":173,"13/06":173.86,
+  "17/06":173.28,"18/06":173.3,"19/06":172.12,"23/06":172.5,"24/06":170.29,
+  "25/06":168.69,"27/06":169.5,"30/06":167.7,"01/07":166.1,"02/07":165,
+  "10/07":168.78,"11/07":168.85,"14/07":168.67,"15/07":173.02,"16/07":174.39,
+  "17/07":173.47,"18/07":172.63,"21/07":170.98,"22/07":171.91,"23/07":180,
+  "24/07":177.75,"25/07":177.75,"28/07":175.75,"29/07":179.6,"30/07":180,
+  "31/07":180,"01/08":180,"04/08":177.28,"05/08":177.44,"06/08":174.77,
+  "07/08":174.75,"08/08":175.79,"11/08":173.75,"12/08":172.3,"13/08":172,
+  "14/08":172.77,"18/08":175.56,"19/08":174.31,"20/08":174.1,"21/08":174.3,
+  "22/08":174.5,"25/08":174.3,"26/08":173.8,"27/08":172,"29/08":175,
+  "01/09":174.93,"02/09":174.14,"03/09":174.07,"04/09":174.68,"05/09":178.82,
+  "09/09":175.08,"10/09":174.92,"15/09":175.53,"16/09":179.03,"17/09":178.91,
+  "19/09":178.92,"22/09":183.81,"23/09":188.75,"25/09":180.38,"26/09":181.68,
+  "02/10":175.88,"03/10":175.5,"06/10":175.52,"07/10":175.94,"10/10":175.85,
+  "13/10":175.82,"14/10":175.74,"15/10":175.87,"17/10":178.9,"20/10":177.76,
+  "21/10":177.93,"22/10":178.64,"24/10":178.91,"27/10":178.89,"28/10":180.41,
+  "30/10":182,"31/10":180.62,"03/11":180.9,"06/11":179.89,"07/11":181.84,
+  "10/11":181.13,"11/11":179.87,"12/11":182.83,"14/11":183.89,"17/11":180.8,
+  "18/11":183.8,"19/11":183.8,"25/11":188,"01/12":188.63,"02/12":187.63,
+  "03/12":187.82,"04/12":188.82,"08/12":188.81,"09/12":190.71,"15/12":190.48,
+  "16/12":188.84,"17/12":188.82,"18/12":189.8,"19/12":188.97,"22/12":188.82,
+  "23/12":190.81,"26/12":193.79,"29/12":193.8,"30/12":193.79
+};
+const FUTUROS_MAI_2025={
+  jul:{
+    "05/05":178,"06/05":176.6,"07/05":177,"08/05":175.7,"09/05":176.8,
+    "12/05":176.5,"13/05":176.2,"14/05":176,"20/05":178,"21/05":179.3,
+    "22/05":179.2,"23/05":177,"26/05":176,"27/05":176.5,"28/05":175.1,
+    "29/05":173.5,"30/05":174,"02/06":170,"03/06":171.5,"04/06":172.5,
+    "05/06":172.1,"06/06":173,"09/06":170.8,"10/06":171,"11/06":172.2,
+    "12/06":172.5,"13/06":174,"17/06":172.1,"18/06":172.9,"19/06":172,
+    "23/06":170,"24/06":170.9,"25/06":170.5,"26/06":171.5,"27/06":170,
+    "30/06":171.4,"01/07":170.1,"02/07":170.2,"03/07":172,"04/07":171,
+    "07/07":170.6,"08/07":171.5,"10/07":172.2,"11/07":172.5,"14/07":174,
+    "15/07":174,"16/07":176,"17/07":174,"18/07":176,"21/07":175.6,
+    "22/07":177,"23/07":181,"24/07":182.5
+  },
+  sept:{
+    "05/05":182.5,"06/05":180.7,"07/05":180.5,"08/05":180,"09/05":180.8,
+    "12/05":181,"13/05":180.1,"14/05":179.5,"20/05":182,"21/05":182.5,
+    "22/05":182,"23/05":181,"26/05":180,"27/05":180.5,"28/05":180,
+    "29/05":178.5,"30/05":178.5,"02/06":175.5,"03/06":177,"04/06":178.1,
+    "05/06":178,"06/06":179,"09/06":176.9,"10/06":177,"11/06":178.6,
+    "12/06":178.5,"13/06":179.6,"17/06":178.9,"18/06":177,"19/06":177.5,
+    "23/06":177,"24/06":176.4,"25/06":175.5,"26/06":176,"27/06":175,
+    "30/06":175,"01/07":173,"02/07":175,"03/07":176,"04/07":176.5,
+    "07/07":176.4,"08/07":175.3,"10/07":176.4,"11/07":175.1,"14/07":175,
+    "15/07":175,"16/07":176.1,"17/07":176,"18/07":177,"21/07":175.6,
+    "22/07":176.5,"23/07":179.5,"24/07":178.5,"25/07":179.2,"28/07":179.5,
+    "29/07":179.6,"30/07":180.7,"31/07":181.5,"01/08":179.9,"04/08":178.5,
+    "05/08":177,"06/08":177.5,"07/08":178.5,"08/08":178.1,"11/08":177.2,
+    "12/08":175.5,"13/08":177,"14/08":177,"18/08":179.2,"19/08":177.5,
+    "20/08":177.8,"21/08":178.3,"22/08":178,"25/08":178.1,"26/08":176.5,
+    "27/08":175.5,"28/08":175.1,"29/08":177,"01/09":178,"02/09":179,
+    "03/09":177.6,"04/09":178,"05/09":180.5,"08/09":179,"09/09":179,
+    "10/09":178,"11/09":179,"12/09":179,"15/09":179.5,"16/09":182,
+    "17/09":183,"18/09":183,"19/09":182.8,"22/09":186,"23/09":193
+  },
+  dic:{
+    "05/05":187,"06/05":187,"07/05":186.5,"08/05":184.5,"09/05":185,
+    "12/05":186,"13/05":184.7,"14/05":185,"20/05":187.3,"21/05":188,
+    "22/05":186.7,"23/05":185.1,"26/05":184.5,"27/05":185,"28/05":184.1,
+    "29/05":183,"30/05":183.5,"02/06":180,"03/06":181,"04/06":182.1,
+    "05/06":181.7,"06/06":183,"09/06":181.4,"10/06":181.8,"11/06":183,
+    "12/06":183.7,"13/06":184.5,"17/06":183.1,"18/06":182.5,"19/06":181.8,
+    "23/06":180.5,"24/06":182,"25/06":180,"26/06":181,"27/06":179,
+    "30/06":179,"01/07":177,"02/07":179.2,"03/07":179.5,"04/07":180.5,
+    "07/07":179.7,"08/07":178.7,"10/07":179.5,"11/07":178,"14/07":178.1,
+    "15/07":177.5,"16/07":179.1,"17/07":178.6,"18/07":179.1,"21/07":178.2,
+    "22/07":178.4,"23/07":181.5,"24/07":181,"25/07":181.2,"28/07":181.5,
+    "29/07":181.7,"30/07":182.5,"31/07":183,"01/08":182,"04/08":181,
+    "05/08":179.1,"06/08":179.5,"07/08":180.6,"08/08":180.5,"11/08":179.1,
+    "12/08":178.3,"13/08":179.2,"14/08":179.5,"18/08":181.7,"19/08":179.9,
+    "20/08":180.5,"21/08":181,"22/08":181,"25/08":180.5,"26/08":178.6,
+    "27/08":178.4,"28/08":178.5,"29/08":180.8,"01/09":180.8,"02/09":181,
+    "03/09":180,"04/09":180.5,"05/09":181.5,"08/09":181.5,"09/09":182,
+    "10/09":181.3,"11/09":182.2,"12/09":182.3,"15/09":181.7,"16/09":183,
+    "17/09":184.1,"18/09":184.3,"19/09":183.5,"22/09":187.5,"23/09":190,
+    "24/09":184.5,"25/09":182.1,"26/09":183,"29/09":184,"30/09":182,
+    "01/10":181.5,"02/10":181,"03/10":181.5,"06/10":181,"07/10":182.5,
+    "08/10":182,"09/10":181.5,"13/10":180,"14/10":180.5,"15/10":180.7,
+    "16/10":182.5,"17/10":181.5,"20/10":182.5,"21/10":181,"22/10":182,
+    "23/10":183,"24/10":182.5,"27/10":182.5,"28/10":183.8,"29/10":184.5,
+    "30/10":185,"31/10":184.5,"03/11":185.5,"04/11":185,"05/11":185.6,
+    "06/11":185.5,"07/11":185,"10/11":185,"11/11":186,"12/11":187,
+    "13/11":189.1,"14/11":188.7,"17/11":188.1,"18/11":188,"19/11":187.5,
+    "20/11":187.5,"25/11":187.5,"26/11":189.2,"27/11":190,"28/11":190.8,
+    "01/12":190,"02/12":191.5,"03/12":189.7,"04/12":191,"05/12":192,
+    "09/12":195,"10/12":198.5,"11/12":197,"12/12":195,"15/12":194.5,
+    "16/12":195,"17/12":195,"18/12":194.5,"19/12":195
+  }
+};
+function _lookupByDate(map,fecha){
+  if(!fecha||!map)return null;
+  const parts=fecha.split('/');if(parts.length<2)return null;
+  const key=parts[0].padStart(2,'0')+'/'+parts[1].padStart(2,'0');
+  if(map[key]!=null)return map[key];
+  const base=new Date(2025,parseInt(parts[1])-1,parseInt(parts[0]));
+  for(let i=1;i<=7;i++){
+    const n=new Date(base);n.setDate(n.getDate()+i);
+    const k=(n.getDate()+'').padStart(2,'0')+'/'+(n.getMonth()+1+'').padStart(2,'0');
+    if(map[k]!=null)return map[k];
+  }
+  return null;
+}
+function lookupPizarraMai2025(fecha){return _lookupByDate(PIZARRA_MAI_2025,fecha);}
+function lookupFuturosMai2025(fecha){
+  const r={jul:_lookupByDate(FUTUROS_MAI_2025.jul,fecha),sept:_lookupByDate(FUTUROS_MAI_2025.sept,fecha),dic:_lookupByDate(FUTUROS_MAI_2025.dic,fecha)};
+  return(r.jul||r.sept||r.dic)?r:null;
+}
+// — TRIGO 2025 —
+const PIZARRA_TRI_2025={
+"02/01":193.22,"03/01":188.31,"06/01":188.31,"07/01":188.22,"08/01":189.58,"10/01":189.51,"13/01":189.42,"14/01":188.28,"15/01":188.10,"16/01":190.98,"17/01":189.66,"20/01":189.20,"21/01":190.07,"22/01":190.84,"23/01":192.66,"28/01":199.33,"29/01":202.57,"30/01":202.47,"31/01":202.18,
+"03/02":199.19,"04/02":199.19,"05/02":202.94,"06/02":208.58,"07/02":208.38,"10/02":208.23,"11/02":208.23,"12/02":208.19,"13/02":207.04,"14/02":207.89,"17/02":207.69,"18/02":209.16,"19/02":210.53,"20/02":210.43,"21/02":213.06,"24/02":213.01,"25/02":211.96,"26/02":211.44,"27/02":208.24,
+"04/03":206.15,"05/03":200.14,"06/03":199.15,"07/03":200.66,"10/03":201.69,"12/03":208.58,"14/03":215.26,"17/03":215.26,"18/03":217.96,"19/03":220.61,"20/03":219.73,"21/03":219.79,"25/03":219.27,"26/03":219.27,"27/03":219.17,"28/03":218.91,"31/03":218.81,
+"01/04":218.66,"03/04":218.60,"04/04":218.40,"07/04":218.40,"08/04":218.35,"09/04":222.70,"10/04":221.91,"11/04":221.71,"14/04":200.33,"15/04":206.67,"16/04":218.50,"21/04":208.27,"22/04":206.97,"24/04":204.43,"25/04":207.78,"28/04":199.49,"29/04":200.00,
+"05/05":192.50,"06/05":195.98,"07/05":196.44,"08/05":198.38,"09/05":198.42,"12/05":196.47,"13/05":195.47,"14/05":197.88,"15/05":197.28,"16/05":196.15,"19/05":197.20,"20/05":198.42,"21/05":199.39,"22/05":199.91,"23/05":198.50,"26/05":198.43,"27/05":197.66,"28/05":198.28,"29/05":198.48,"30/05":198.48,
+"02/06":198.48,"03/06":198.40,"06/06":198.48,"09/06":197.47,"10/06":167.44,"11/06":196.49,"12/06":196.50,"13/06":196.70,"17/06":198.45,"18/06":198.42,"19/06":198.45,"23/06":198.46,"24/06":198.47,"25/06":198.49,"26/06":198.49,"27/06":198.49,"30/06":198.01,
+"01/07":196.40,"02/07":196.50,"03/07":196.55,"04/07":196.53,"07/07":193.59,"08/07":193.63,"10/07":193.63,"11/07":194.21,"14/07":195.31,"15/07":195.56,"16/07":198.02,"17/07":197.41,"18/07":198.44,"21/07":198.59,"22/07":201.75,"23/07":200.64,"24/07":201.26,"25/07":200.00,"28/07":200.77,"29/07":200.62,"30/07":200.61,
+"01/08":200.73,"04/08":200.00,"05/08":200.82,"06/08":201.20,"07/08":201.13,"08/08":203.61,"11/08":201.62,"12/08":201.14,"13/08":201.60,"14/08":201.54,"18/08":201.59,"19/08":201.59,"20/08":201.59,"21/08":201.61,"22/08":201.51,"25/08":201.17,"26/08":200.66,"27/08":200.07,"28/08":199.17,"29/08":198.66,
+"01/09":198.98,"02/09":199.12,"03/09":198.68,"04/09":198.90,"05/09":199.26,"08/09":199.43,"09/09":199.44,"10/09":198.74,"11/09":198.74,"12/09":193.81,"15/09":193.59,"16/09":191.83,"17/09":190.78,"19/09":188.84,"22/09":198.15,"23/09":198.69,"24/09":198.65,"25/09":197.46,"26/09":198.34,"29/09":192.65,"30/09":192.75,
+"01/10":193.77,"02/10":193.77,"03/10":197.75,"07/10":187.48,"10/10":184.86,"13/10":186.81,"14/10":181.62,"15/10":181.52,"16/10":181.81,"17/10":182.83,"20/10":183.05,"21/10":182.82,"22/10":182.87,"24/10":178.91,"27/10":179.37,"28/10":183.87,"29/10":183.36,"30/10":183.84,"31/10":183.81,
+"03/11":181.51,"06/11":179.75,"07/11":180.35,"10/11":179.37,"11/11":180.00,"14/11":181.00,"17/11":180.30,"18/11":178.80,"19/11":173.80,"25/11":165.00,
+"01/12":163.83,"02/12":169.90,"03/12":166.96,"04/12":166.90,"08/12":163.76,"09/12":169.90,"12/12":167.00,"15/12":171.43,"16/12":169.95,"17/12":171.95,"18/12":173.91,"19/12":175.86,"22/12":178.88,"23/12":178.88,"26/12":178.88,"29/12":178.89,"30/12":178.89
+};
+const FUTUROS_TRI_2025={
+jul:{
+"02/01":206,"17/01":211.5,"20/01":211,"21/01":214,"22/01":215,"23/01":216.6,"24/01":221.5,"27/01":218.8,"28/01":220.1,"29/01":223,"30/01":223,"31/01":220.5,
+"03/02":220,"04/02":221.1,"05/02":222.5,"06/02":226.5,"07/02":225.2,"10/02":226,"11/02":225,"12/02":225,"13/02":225,"14/02":227.5,"17/02":229,"18/02":229.5,"19/02":227,"20/02":227,"21/02":228,"24/02":227,"25/02":227,"26/02":226,"27/02":223,"28/02":222,
+"05/03":220.5,"06/03":220,"07/03":220,"10/03":223,"11/03":222,"12/03":221.5,"13/03":222.9,"14/03":224.4,"17/03":225.7,"18/03":227,"19/03":227.5,"20/03":229,"21/03":229,"25/03":225,"26/03":225.5,"27/03":226.2,"28/03":227,"31/03":227.5,
+"01/04":226,"03/04":224,"04/04":222.5,"07/04":223.5,"08/04":227,"09/04":226,"10/04":224,"11/04":222.5,"14/04":218,"15/04":220,"16/04":219,"21/04":217.5,"22/04":219,"23/04":215.5,"24/04":218,"25/04":218.5,"28/04":217,"29/04":214.5,"30/04":213.5,
+"05/05":208.5,"06/05":206,"07/05":208,"08/05":206,"09/05":205.5,"12/05":204,"13/05":205.5,"14/05":208,"20/05":206,"21/05":207.8,"22/05":207,"23/05":206,"26/05":205.5,"27/05":205.5,"28/05":204.5,"29/05":204.1,"30/05":204,
+"02/06":204.5,"03/06":205.6,"04/06":207.5,"05/06":206.5,"06/06":205.5,"09/06":203.5,"10/06":202.5,"11/06":204,"12/06":203,"13/06":203,"17/06":203,"18/06":204,"19/06":203.5,"23/06":201.6,"24/06":200,"25/06":200,"26/06":202,"27/06":200,"30/06":198.5,
+"01/07":198,"02/07":201,"03/07":203,"04/07":202,"07/07":199.5,"08/07":200,"10/07":202,"11/07":198,"14/07":198,"15/07":199,"16/07":201,"17/07":201,"18/07":201,"21/07":201,"22/07":204,"23/07":205,"24/07":205
+},
+dic:{
+"02/01":195,"17/01":200,"21/01":202.5,"22/01":204,"23/01":205,"31/01":209,
+"03/02":210,"04/02":210.5,"06/02":216.9,"07/02":214.5,"10/02":215,"11/02":214,"12/02":215.5,"13/02":215,"14/02":217.5,"17/02":219,"18/02":220,"19/02":219,"20/02":219,"21/02":220.5,"24/02":217.5,"25/02":217,"26/02":216.5,"27/02":213.1,"28/02":214,
+"05/03":213.5,"06/03":214,"07/03":213,"10/03":216,"11/03":215,"12/03":214,"13/03":214.2,"14/03":216.5,"17/03":217.7,"18/03":217,"19/03":217.5,"20/03":217.5,"21/03":217,"25/03":213,"26/03":212,"27/03":213,"28/03":212.5,"31/03":214,
+"01/04":212.8,"03/04":210.5,"04/04":210,"07/04":211,"08/04":213.5,"09/04":213,"10/04":211,"11/04":209.5,"14/04":208.5,"15/04":208.5,"16/04":207,"21/04":205,"22/04":206,"23/04":204,"24/04":204.5,"25/04":206.5,"28/04":204.9,"29/04":204.1,"30/04":204.2,
+"05/05":201.5,"06/05":200,"07/05":201.5,"08/05":199,"09/05":198,"12/05":195.7,"13/05":197,"14/05":200,"20/05":199.7,"21/05":200,"22/05":200.1,"23/05":200.1,"26/05":199,"27/05":198.4,"28/05":197.5,"29/05":198.1,"30/05":198.5,
+"02/06":198.5,"03/06":199.1,"04/06":201.9,"05/06":201.9,"06/06":202,"09/06":200,"10/06":198,"11/06":198.5,"12/06":198.5,"13/06":200,"17/06":200.6,"18/06":205.5,"19/06":206,"23/06":204,"24/06":201.5,"25/06":202,"26/06":203,"27/06":202,"30/06":203.7,
+"01/07":204.4,"02/07":204,"03/07":203,"04/07":201.5,"07/07":202.4,"08/07":200.5,"10/07":202.5,"11/07":201.4,"14/07":201,"15/07":200,"16/07":200.5,"17/07":200.5,"18/07":202,"21/07":201,"22/07":202.3,"23/07":203,"24/07":204,"25/07":204.5,"28/07":203,"29/07":200.8,"30/07":200,"31/07":199.6,
+"01/08":198.5,"04/08":196.5,"05/08":195.7,"06/08":195.5,"07/08":196.5,"08/08":195.5,"11/08":196,"12/08":194.5,"13/08":191.5,"14/08":193,"18/08":191.2,"19/08":190.5,"20/08":191,"21/08":193,"22/08":193,"25/08":192.5,"26/08":190.7,"27/08":190.1,"28/08":188.5,"29/08":189,
+"01/09":189,"02/09":187.5,"03/09":188.5,"04/09":187.5,"05/09":186.5,"08/09":188,"09/09":187.6,"10/09":188.3,"11/09":188.2,"12/09":187,"15/09":186.9,"16/09":187.8,"17/09":188,"18/09":188.5,"19/09":187.8,"22/09":195,"23/09":196,"24/09":189,"25/09":188,"26/09":188,"29/09":188.5,"30/09":188,
+"01/10":186,"02/10":186,"03/10":185.5,"06/10":185,"07/10":185,"08/10":187.5,"09/10":187.6,"13/10":184.6,"14/10":184,"15/10":185,"16/10":183,"17/10":184,"20/10":184,"21/10":183.5,"22/10":183.5,"23/10":183.5,"24/10":182.5,"27/10":184.5,"28/10":185,"29/10":185.4,"30/10":183.5,"31/10":183,
+"03/11":184,"04/11":184.5,"05/11":186,"06/11":184,"07/11":184.4,"10/11":183.5,"11/11":183.5,"12/11":183,"13/11":182.5,"14/11":182.7,"17/11":181.7,"18/11":181,"19/11":179,"20/11":176,"25/11":174,"26/11":173.9,"27/11":175.5,"28/11":173.4,
+"01/12":174,"02/12":176,"03/12":177,"04/12":175,"05/12":175,"09/12":179,"10/12":179,"11/12":180,"12/12":180.5,"15/12":179.3,"16/12":179.5,"17/12":181,"18/12":182,"19/12":183
+}
+};
+function lookupPizarraTri2025(fecha){return _lookupByDate(PIZARRA_TRI_2025,fecha);}
+function lookupFuturosTri2025(fecha){
+  const r={jul:_lookupByDate(FUTUROS_TRI_2025.jul,fecha),dic:_lookupByDate(FUTUROS_TRI_2025.dic,fecha)};
+  return(r.jul||r.dic)?r:null;
+}
+// Precios Chicago/Kansas (BCR) — cargado dinámicamente desde Google Sheet
+let CHICAGO=null;
+let CHICAGO_ERROR=false;
+let CHICAGO_STATUS='';
+const BCR_CHICAGO_URL='https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1';
+const CHICAGO_SHEET_ID='1ZJhaQADjDzbQhtVemivVMv9dvIn9RkE1nmCpK8g1ZhY';
+const CHICAGO_SHEET_URL='https://docs.google.com/spreadsheets/d/'+CHICAGO_SHEET_ID+'/export?format=csv&gid=1438718704'; // Hoja 1: precios Chicago
+const CHICAGO_FOB_URL='https://docs.google.com/spreadsheets/d/'+CHICAGO_SHEET_ID+'/export?format=csv&gid=107418392'; // Hoja 2: FAS Teórico
+function normalizeNum(s){if(!s||s==='N/A')return'N/A';return String(s).replace(/\./g,'').replace(',','.');}
+function vencDisplay(c){const a=c.match(/\/([A-Z]{3}\d{2})/);if(a)return a[1];const d=c.match(/^DLR(\d{2})(\d{4})$/);if(d)return d[1]+'/'+d[2];return'';}
+function parseA3CSV(text){
+  const pRow=row=>{const c=[];let cur='',q=false;for(const ch of row+','){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur.trim());cur='';}else cur+=ch;}return c;};
+  const rows=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  let hIdx=rows.findIndex(l=>/contrato/i.test(l)&&(/ajuste/i.test(l)||/volumen/i.test(l)));
+  if(hIdx<0)return null;
+  // Detectar columnas por nombre del encabezado
+  const hdrs=pRow(rows[hIdx]).map(h=>h.toLowerCase().replace(/['"]/g,'').trim());
+  const iAj=hdrs.findIndex(h=>h.includes('ajuste')||h.includes('valor'));
+  const iVol=hdrs.findIndex(h=>h.includes('volumen'));
+  const iIA=hdrs.findIndex(h=>h.includes('inter')||h.includes('abierto'));
+  const iFD=hdrs.findIndex(h=>h.includes('fecha')&&h.includes('dato'));
+  const iFAlt=hdrs.reduce((best,h,i)=>h.includes('fecha')?i:best,-1);
+  const ajIdx=iAj>=0?iAj:3;
+  const volIdx=iVol>=0?iVol:1;
+  const iaIdx=iIA>=0?iIA:2;
+  const fechaIdx=iFD>=0?iFD:(iFAlt>=0?iFAlt:4);
+  const sF=[],mF=[],tF=[],dF=[],sO=[],mO=[],tO=[];
+  const VALID_MES=/^(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC)\d{2}$/;
+  for(let i=hIdx+1;i<rows.length;i++){
+    const c=pRow(rows[i]);if(c.length<4)continue;
+    const ct=(c[0]||'').trim();if(!ct||ct==='Contrato')continue;
+    const vol=c[volIdx]||'N/A',ia=c[iaIdx]||'N/A',aj=normalizeNum(c[ajIdx]);
+    const fecha=(c[fechaIdx]||'').replace(/"/g,'').split('|')[0].trim();
+    const vd=vencDisplay(ct);
+    const b={contrato:ct,volumen:vol,interes_abierto:ia,ajuste:aj,fecha,venc_display:vd};
+    const om=ct.match(/^(SOJ\.ROS|MAI\.ROS|TRI\.ROS)\/([A-Z]{3}\d{2})\s+(\d+)\s+([CP])$/);
+    if(om){const vs=om[2],sk=parseFloat(om[3]),tp=om[4],pc=tp==='C'?'CALL':'PUT';const r={...b,venc_serie:vs,strike:sk,tipo_op:tp,put_call:pc,venc_display:vs};if(om[1]==='SOJ.ROS')sO.push(r);else if(om[1]==='MAI.ROS')mO.push(r);else tO.push(r);continue;}
+    const futM2=ct.match(/^(SOJ\.ROS|MAI\.ROS|TRI\.ROS)\/([A-Z]{3}\d{2})$/);
+    if(futM2&&VALID_MES.test(futM2[2])){if(futM2[1]==='SOJ.ROS')sF.push(b);else if(futM2[1]==='MAI.ROS')mF.push(b);else tF.push(b);continue;}
+    if(/^DLR\d{6}$/.test(ct)){dF.push(b);continue;}
+  }
+  if(!sF.length&&!dF.length)return null;
+  return{sojFut:sF,maiFut:mF,triFut:tF,dlrFut:dF,sojOpts:sO,maiOpts:mO,triOpts:tO};
+}
+function parseMdA3(text){
+  const rows=text.split('\n');
+  const VALID_MES=/^(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC)\d{2}$/;
+  let hIdx=rows.findIndex(l=>/contrato/i.test(l)&&/precio\s+de\s+ajuste/i.test(l)&&/volumen\s+operado/i.test(l));
+  if(hIdx<0)return null;
+  const sF=[],mF=[],tF=[],dF=[],sO=[],mO=[],tO=[];
+  for(let i=hIdx+1;i<rows.length;i++){
+    const line=rows[i].trim();
+    if(!line.startsWith('|'))continue;
+    if(/^[|:\s\-]+$/.test(line))continue;
+    if(/precio\s+de\s+ajuste/i.test(line)&&/contrato/i.test(line))break;
+    const parts=line.replace(/^\||\|$/g,'').split(/(?<!\\)\|/).map(s=>s.trim().replace(/\\\|/g,'|'));
+    if(parts.length<4)continue;
+    const ct=parts[0];if(!ct||ct==='Contrato')continue;
+    const vol=parts[1]||'N/A',ia=parts[2]||'N/A',aj=normalizeNum(parts[3]);
+    const fecha=(parts[4]||'').split('|')[0].trim();
+    const vd=vencDisplay(ct);
+    const b={contrato:ct,volumen:vol,interes_abierto:ia,ajuste:aj,fecha,venc_display:vd};
+    const om=ct.match(/^(SOJ\.ROS|MAI\.ROS|TRI\.ROS)\/([A-Z]{3}\d{2})\s+(\d+)\s+([CP])$/);
+    if(om){const vs=om[2],sk=parseFloat(om[3]),tp=om[4],pc=tp==='C'?'CALL':'PUT';const r={...b,venc_serie:vs,strike:sk,tipo_op:tp,put_call:pc,venc_display:vs};if(om[1]==='SOJ.ROS')sO.push(r);else if(om[1]==='MAI.ROS')mO.push(r);else tO.push(r);continue;}
+    const futM=ct.match(/^(SOJ\.ROS|MAI\.ROS|TRI\.ROS)\/([A-Z]{3}\d{2})$/);
+    if(futM&&VALID_MES.test(futM[2])){if(futM[1]==='SOJ.ROS')sF.push(b);else if(futM[1]==='MAI.ROS')mF.push(b);else tF.push(b);continue;}
+    if(/^DLR\d{6}$/.test(ct)){dF.push(b);continue;}
+  }
+  if(!sF.length&&!dF.length)return null;
+  return{sojFut:sF,maiFut:mF,triFut:tF,dlrFut:dF,sojOpts:sO,maiOpts:mO,triOpts:tO};
+}
+function parseSpotData(mdText){
+  const lines=mdText.split('\n');
+  const hIdx=lines.findIndex(l=>/fecha/i.test(l)&&/soja/i.test(l)&&/maiz/i.test(l)&&/trigo/i.test(l)&&/mayorista/i.test(l));
+  if(hIdx<0)return null;
+  const hParts=lines[hIdx].replace(/^\||\|$/g,'').split('|').map(s=>s.trim().toLowerCase());
+  const iF=hParts.findIndex(h=>h.includes('fecha'));
+  const iS=hParts.findIndex(h=>h.includes('soja')&&!h.includes('usd'));
+  const iM=hParts.findIndex(h=>h.includes('maiz')&&!h.includes('usd'));
+  const iT=hParts.findIndex(h=>h.includes('trigo')&&!h.includes('usd'));
+  const iUSD=hParts.findIndex(h=>h.includes('mayorista'));
+  const iSU=hParts.findIndex(h=>h.includes('soja')&&h.includes('usd'));
+  const iMU=hParts.findIndex(h=>h.includes('maiz')&&h.includes('usd'));
+  const iTU=hParts.findIndex(h=>h.includes('trigo')&&h.includes('usd'));
+  if(iF<0||iS<0)return null;
+  const pN=s=>{if(!s)return null;s=s.replace(/[$\s"]/g,'').trim();if(!s||s==='N/A'||s.includes('#'))return null;const ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');const norm=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');const n=parseFloat(norm);return isNaN(n)?null:n;};
+  const acc={fecha:'',soja_ars:null,maiz_ars:null,trigo_ars:null,tc:null,soja_usd:null,maiz_usd:null,trigo_usd:null};
+  for(let i=hIdx+1;i<lines.length;i++){
+    const l=lines[i].trim();
+    if(!l.startsWith('|'))break;
+    if(/^[|:\s\-]+$/.test(l))continue;
+    const p=l.replace(/^\||\|$/g,'').split('|').map(s=>s.trim());
+    if(p.length<4)continue;
+    const fecha=(p[iF]||'').replace(/"/g,'');
+    const sa=pN(p[iS]),ma=pN(p[iM]),ta=pN(p[iT]),tc=pN(p[iUSD]);
+    const su=iSU>=0?pN(p[iSU]):null,mu=iMU>=0?pN(p[iMU]):null,tu=iTU>=0?pN(p[iTU]):null;
+    if(fecha)acc.fecha=fecha;
+    if(sa!=null)acc.soja_ars=sa;if(ma!=null)acc.maiz_ars=ma;if(ta!=null)acc.trigo_ars=ta;
+    if(tc!=null)acc.tc=tc;if(su!=null)acc.soja_usd=su;if(mu!=null)acc.maiz_usd=mu;if(tu!=null)acc.trigo_usd=tu;
+  }
+  return acc.soja_ars?acc:null;
+}
+function parseSpotDataCSV(text){
+  const pRow=row=>{const c=[];let cur='',q=false;for(const ch of row+','){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur.trim());cur='';}else cur+=ch;}return c;};
+  const rows=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(rows.length<2)return null;
+  const headers=pRow(rows[0]).map(h=>h.toLowerCase().replace(/['"]/g,'').trim());
+  const iF=headers.findIndex(h=>h.includes('fecha'));
+  const iS=headers.findIndex(h=>h.includes('soja')&&!h.includes('usd'));
+  const iM=headers.findIndex(h=>h.includes('maiz')&&!h.includes('usd'));
+  const iT=headers.findIndex(h=>h.includes('trigo')&&!h.includes('usd'));
+  const iUSD=headers.findIndex(h=>h.includes('mayorista')||h.includes('tc'));
+  const iSU=headers.findIndex(h=>h.includes('soja')&&h.includes('usd'));
+  const iMU=headers.findIndex(h=>h.includes('maiz')&&h.includes('usd'));
+  const pN=s=>{if(!s)return null;s=s.replace(/[$\s"]/g,'').trim();if(!s||s==='N/A')return null;const ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');const norm=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');const n=parseFloat(norm);return isNaN(n)?null:n;};
+  const acc={fecha:'',soja_ars:null,maiz_ars:null,trigo_ars:null,tc:null,soja_usd:null,maiz_usd:null,trigo_usd:null};
+  for(let i=1;i<rows.length;i++){
+    const p=pRow(rows[i]);
+    const fecha=(p[iF]||'').replace(/"/g,'').trim();
+    const sa=pN(p[iS]),ma=pN(p[iM]),ta=pN(p[iT]),tc=iUSD>=0?pN(p[iUSD]):null;
+    const su=iSU>=0?pN(p[iSU]):null,mu=iMU>=0?pN(p[iMU]):null;
+    if(fecha)acc.fecha=fecha;
+    if(sa!=null)acc.soja_ars=sa;if(ma!=null)acc.maiz_ars=ma;if(ta!=null)acc.trigo_ars=ta;
+    if(tc!=null)acc.tc=tc;if(su!=null)acc.soja_usd=su;if(mu!=null)acc.maiz_usd=mu;
+  }
+  return acc.soja_ars?acc:null;
+}
+function parseChicagoPrices(text){
+  // Si viene HTML, hacer strip de tags primero
+  if(text.includes('<')){
+    text=text.replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&#\d+;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ');
+  }
+  const pN=s=>{s=String(s||'').replace(/[$\s"]/g,'').trim();if(!s||s==='N/A')return null;const ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');const norm=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');const n=parseFloat(norm);return isNaN(n)?null:n;};
+  const mmap={ene:'ENE',feb:'FEB',mar:'MAR',abr:'ABR',may:'MAY',jun:'JUN',jul:'JUL',ago:'AGO',sep:'SEP',oct:'OCT',nov:'NOV',dic:'DIC'};
+  const res={};
+  for(const line of text.split(/[\n;]/)){
+    const m=line.match(/([A-Za-z]{3,4})-(\d{2})\s+([\d\s,.\-+]+)/);
+    if(!m)continue;
+    const mc=mmap[m[1].toLowerCase()];if(!mc)continue;
+    const key=mc+m[2];
+    const nums=m[3].trim().split(/\s+/).map(pN).filter(v=>v!==null);
+    if(nums.length<2)continue;
+    const entry={};let trigoCount=0;
+    for(let i=0;i<nums.length-1;i+=2){
+      const p=nums[i];
+      if(p>900)entry.aceite=p;
+      else if(p>370)entry.soja=p;
+      else if(p>290)entry.harina=p;
+      else if(p>185){if(trigoCount===0){entry.trigo=p;trigoCount++;}else{entry.trigo_kan=p;trigoCount++;}}
+      else if(p>120)entry.maiz=p;
+    }
+    if(Object.keys(entry).length)res[key]=entry;
+  }
+  return Object.keys(res).length?res:null;
+}
+function parseChicagoMarkdown(text){
+  // Columnas fijas del BCR (precio | variación por par):
+  // 0=mes, 1=Trigo/1, 2=var, 3=Trigo/2(Kansas), 4=var,
+  // 5=Maíz, 6=var, 7=Soja, 8=var, 9=Aceite, 10=var, 11=Harina, 12=var
+  const COLS={1:'trigo',3:'trigo_kan',5:'maiz',7:'soja',9:'aceite',11:'harina'};
+  const pN=s=>{if(!s)return null;s=s.replace(/[$\s"\\]/g,'').trim();if(!s||s==='N/A'||s==='-')return null;const ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');const norm=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');const n=parseFloat(norm);return isNaN(n)?null:n;};
+  const mmap={ene:'ENE',feb:'FEB',mar:'MAR',abr:'ABR',may:'MAY',jun:'JUN',jul:'JUL',ago:'AGO',sep:'SEP',oct:'OCT',nov:'NOV',dic:'DIC'};
+  const res={};
+  for(const line of text.split('\n')){
+    const l=line.trim();
+    if(!l.startsWith('|'))continue;
+    if(/^[|:\s\-]+$/.test(l))continue;
+    const cells=l.replace(/^\||\|$/g,'').split('|').map(s=>s.replace(/\\/g,'').trim());
+    if(!cells[0])continue;
+    const mRaw=cells[0].toLowerCase().replace(/[^a-záéíóú0-9]/g,' ').trim();
+    const mMatch=mRaw.match(/^([a-záéíóú]+)\s*(\d{2})$/);
+    if(!mMatch)continue;
+    const mc=mmap[mMatch[1]];if(!mc)continue;
+    const key=mc+mMatch[2];
+    const entry={};
+    Object.entries(COLS).forEach(([ci,ck])=>{const v=pN(cells[+ci]);if(v!==null&&v>0)entry[ck]=v;});
+    if(entry.soja||entry.maiz||entry.trigo)res[key]=entry;
+  }
+  return Object.keys(res).length?res:null;
+}
+function parseChicagoSheetCSV(text){
+  // Columnas fijas del BCR (precio | variación por par):
+  // 0=mes, 1=Trigo/1, 2=var, 3=Trigo/2(Kansas), 4=var,
+  // 5=Maíz, 6=var, 7=Soja, 8=var, 9=Aceite, 10=var, 11=Harina, 12=var
+  const COLS={1:'trigo',3:'trigo_kan',5:'maiz',7:'soja',9:'aceite',11:'harina'};
+  const pRow=row=>{const c=[];let cur='',q=false;for(const ch of row+','){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur.trim());cur='';}else cur+=ch;}return c;};
+  const pN=s=>{if(!s)return null;s=s.replace(/[$\s"]/g,'').trim();if(!s||s==='N/A'||s==='-')return null;const ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');const norm=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');const n=parseFloat(norm);return isNaN(n)?null:n;};
+  const mmap={ene:'ENE',feb:'FEB',mar:'MAR',abr:'ABR',may:'MAY',jun:'JUN',jul:'JUL',ago:'AGO',sep:'SEP',oct:'OCT',nov:'NOV',dic:'DIC',
+              enero:'ENE',febrero:'FEB',marzo:'MAR',abril:'ABR',mayo:'MAY',junio:'JUN',julio:'JUL',agosto:'AGO',septiembre:'SEP',octubre:'OCT',noviembre:'NOV',diciembre:'DIC'};
+  const rows=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(rows.length<2)return null;
+  const res={};
+  for(let i=0;i<rows.length;i++){
+    const p=pRow(rows[i]);
+    if(!p[0])continue;
+    const mRaw=p[0].toLowerCase().replace(/[^a-záéíóú0-9]/g,' ').trim();
+    const mMatch=mRaw.match(/^([a-záéíóú]+)\s*(\d{2})$/);
+    if(!mMatch)continue;
+    const mc=mmap[mMatch[1]];if(!mc)continue;
+    const key=mc+mMatch[2];
+    const entry={};
+    Object.entries(COLS).forEach(([ci,ck])=>{const v=pN(p[+ci]);if(v!==null&&v>0)entry[ck]=v;});
+    if(entry.soja||entry.maiz||entry.trigo)res[key]=entry;
+  }
+  return Object.keys(res).length?res:null;
+}
+function parseFobFas(text){
+  const pN=s=>{if(!s)return null;s=s.replace(/[$\s"\\]/g,'').trim();if(!s||s==='N/A'||s==='-')return null;const ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');const norm=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');const n=parseFloat(norm);return isNaN(n)?null:n;};
+  const pCSV=row=>{const c=[];let cur='',q=false;for(const ch of row+','){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur.trim());cur='';}else cur+=ch;}return c;};
+  const res={trigo:{},maiz:{},soja:{}};
+  const done={trigo:false,maiz:false,soja:false};
+  let cult=null;
+  let inAceitera=false; // cuando es true, el FAS de soja proviene de la Industria Aceitera (B42) y sobreescribe el de Molinera
+  // Detect format: markdown pipe-table vs CSV
+  const lines=text.split('\n');
+  const isMd=lines.some(l=>l.trim().startsWith('|'));
+  for(const line of lines){
+    const l=line.trim();
+    if(!l)continue;
+    // Detectar sección Aceitera antes de parsear celdas (funciona en texto plano y pipe-table)
+    if(/aceitera/i.test(l))inAceitera=true;
+    let cells,f;
+    if(isMd){
+      if(!l.startsWith('|'))continue;
+      if(/^[|:\s\-]+$/.test(l))continue;
+      cells=l.replace(/^\||\|$/g,'').split('|').map(s=>s.replace(/\\/g,'').trim());
+    } else {
+      cells=pCSV(l);
+    }
+    f=cells[0]||'';
+    if(/commodity/i.test(f)){
+      const c1=cells[1]||'';
+      if(/trigo|wheat/i.test(c1))cult='trigo';
+      else if(/ma[íi]z|corn/i.test(c1))cult='maiz';
+      else if(/soja|soybean/i.test(c1))cult='soja';
+      else cult=null;
+    }
+    if(!cult)continue;
+    // Para soja en sección Aceitera: permitir sobreescribir el FAS aunque ya esté marcado como done
+    const allowFasOverride=cult==='soja'&&inAceitera;
+    if(done[cult]&&!allowFasOverride)continue;
+    if(/fob.*(comprador|bid)/i.test(f)){const v=pN(cells[1]);if(v&&!done[cult])res[cult].fob=v;}
+    if(/fas.*te[oó]rico/i.test(f)){const v=pN(cells[1]);if(v){res[cult].fas=v;if(res[cult].fob)done[cult]=true;}}
+  }
+  return(res.soja.fob||res.maiz.fob||res.trigo.fob)?res:null;
+}
+async function loadChicagoPrices(){
+  const setStatus=(msg,isError=false)=>{
+    const el=document.getElementById('chicago-status');if(!el)return;
+    el.textContent=msg;
+    el.style.color=isError?'#ff6b6b':'rgba(255,255,255,0.6)';
+    el.style.fontWeight=isError?'700':'normal';
+  };
+  CHICAGO=null;
+  CHICAGO_ERROR=false;
+  CHICAGO_STATUS='';
+  FOB_FAS=null; // resetear para que el step 3 siempre re-fetche el tab FOB/FAS
+  let upgraded=false;
+  // Extrae la fecha de actualización del texto crudo (celda I1 de la sheet: DD/MM/YYYY)
+  function extractChicagoDate(raw){
+    // Busca la fecha en la sección CBOT primero, luego en todo el texto
+    const cbot=raw.split(/Precios\s+de\s+cierre\s+de\s+GRANOS/i)[0];
+    const m=cbot.match(/\b(\d{2}\/\d{2}\/\d{4})\b/);
+    if(m)return m[1];
+    // Fallback: cualquier fecha DD/MM/YYYY en el texto completo
+    const m2=raw.match(/\b(\d{2}\/\d{2}\/\d{4})\b/);
+    return m2?m2[1]:null;
+  }
+  // 1. MCP Google Drive read_file_content (funciona en Cowork, mismo mecanismo que datos A3)
+  if(!upgraded&&window.cowork&&typeof window.cowork.callMcpTool==='function'){
+    try{
+      const res=await window.cowork.callMcpTool('mcp__b5211e5b-bb8a-4302-ab9c-1a9da1d9d6a6__read_file_content',{fileId:CHICAGO_SHEET_ID});
+      const raw=extractText(res);
+      if(raw&&raw.length>100){
+        let md=raw;try{const j=JSON.parse(raw);if(j.fileContent)md=j.fileContent;}catch(e){}
+        const fresh=parseChicagoMarkdown(md)||parseChicagoSheetCSV(md);
+        if(fresh&&Object.keys(fresh).length>0){
+          CHICAGO=fresh;
+          const fecha=extractChicagoDate(md);
+          CHICAGO_STATUS=`Chicago CBOT: ${fecha||new Date().toLocaleDateString('es-AR')}`;
+          upgraded=true;
+        }
+        const freshFob=parseFobFas(md);
+        if(freshFob)FOB_FAS=freshFob;
+      }
+    }catch(e){console.warn('[Chicago] MCP Drive error:',e.message);}
+  }
+  // 2. Google Sheet CSV export (funciona en Netlify cuando la sheet es pública)
+  if(!upgraded){
+    try{
+      const r=await fetch(CHICAGO_SHEET_URL,{cache:'no-store'});
+      if(r.ok){
+        const t=await r.text();
+        if(t&&t.length>50&&!t.trim().startsWith('<')){
+          const fresh=parseChicagoSheetCSV(t);
+          if(fresh&&Object.keys(fresh).length>0){
+            CHICAGO=fresh;
+            const fecha=extractChicagoDate(t);
+            CHICAGO_STATUS=`Chicago CBOT: ${fecha||new Date().toLocaleDateString('es-AR')}`;
+            upgraded=true;
+          }
+          const freshFob=parseFobFas(t);
+          if(freshFob)FOB_FAS=freshFob;
+        }
+      }
+    }catch(e){console.warn('[Chicago] CSV fetch error:',e.message);}
+  }
+  // 3. Tab específico de FOB/FAS (gid=1438718704)
+  if(!FOB_FAS){
+    try{
+      const r=await fetch(CHICAGO_FOB_URL,{cache:'no-store'});
+      if(r.ok){
+        const t=await r.text();
+        if(t&&t.length>50&&!t.trim().startsWith('<')){
+          const freshFob=parseFobFas(t);
+          if(freshFob)FOB_FAS=freshFob;
+        }
+      }
+    }catch(e){console.warn('[Chicago] FOB/FAS tab error:',e.message);}
+  }
+  if(upgraded){
+    setStatus(CHICAGO_STATUS,false);
+  } else {
+    CHICAGO=null;
+    CHICAGO_ERROR=true;
+    CHICAGO_STATUS='⚠️ Chicago: sin datos';
+    setStatus(CHICAGO_STATUS,true);
+  }
+}
+async function loadSpotData(){
+  const prev=SPOT;
+  SPOT=null; // resetear para forzar fetch fresco en cada actualización
+  try{
+    if(window.cowork&&typeof window.cowork.callMcpTool==='function'){
+      const res=await window.cowork.callMcpTool('mcp__b5211e5b-bb8a-4302-ab9c-1a9da1d9d6a6__read_file_content',{fileId:DATA_FILE_ID});
+      const raw=extractText(res);
+      if(raw&&raw.length>50){let md=raw;try{const j=JSON.parse(raw);if(j.fileContent)md=j.fileContent;}catch(e){}SPOT=parseSpotData(md);}
+    }
+  }catch(e){console.warn('Spot MCP error:',e);}
+  if(!SPOT){
+    try{
+      const r=await fetch(DATA_CSV_URL,{cache:'no-store'});
+      if(r.ok){const t=await r.text();if(t&&t.length>10)SPOT=parseSpotDataCSV(t);}
+    }catch(e){console.warn('Spot CSV error:',e);}
+  }
+  if(!SPOT&&prev)SPOT=prev; // si todo falla, mantener el último valor conocido
+}
+if(!window._customSpotArs)window._customSpotArs={};
+window._setCustomSpotArs=function(panelId,val){
+  const v=parseFloat(String(val).replace(/\s/g,'').replace(/\./g,'').replace(',','.'));
+  if(val===''||val===null||isNaN(v)||v<=0){delete window._customSpotArs[panelId];}
+  else{window._customSpotArs[panelId]=v;}
+  if(window._futState&&window._futState[panelId]){
+    _renderFutPanel(panelId);
+    injectSpotCard(panelId,SPOT);
+    if(panelId==='soj-fut')injectSojSeasonalChart();
+  }
+};
+function injectSpotCard(panelId,spot){
+  if(!spot)return;
+  const panel=document.getElementById('panel-'+panelId);
+  if(!panel)return;
+  const cult=panelId.startsWith('soj')?'soja':panelId.startsWith('mai')?'maiz':'trigo';
+  const ars=spot[cult+'_ars'],tc=spot.tc,fecha=spot.fecha;
+  if(!ars)return;
+  const usdS=spot[cult+'_usd']||(tc&&ars?ars/tc:null);
+  const tcDisplay=tc?tc.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+  const arsDisplay=ars.toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0});
+  const fobData=FOB_FAS?FOB_FAS[cult]:null;
+  const fobDisplay=fobData&&fobData.fob!=null?fobData.fob.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+  const fasDisplay=fobData&&fobData.fas!=null?fobData.fas.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+  let pizarraAnteriorHtml='';
+  {
+    const piz=cult==='soja'?lookupPizarra2025(fecha):cult==='maiz'?lookupPizarraMai2025(fecha):cult==='trigo'?lookupPizarraTri2025(fecha):null;
+    if(piz!=null){const pizDisplay=piz.toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1});pizarraAnteriorHtml=`<div class="spot-divider"></div><div class="spot-metric"><div class="spot-metric-label">Pizarra 2025</div><div class="spot-metric-value">${pizDisplay}</div></div>`;}
+  }
+  const customArs=window._customSpotArs&&window._customSpotArs[panelId];
+  const customUsd=customArs&&tc?customArs/tc:null;
+  const autoUsdDisplay=usdS?usdS.toFixed(2):(tc&&ars?(ars/tc).toFixed(2):'—');
+  const effectiveUsdDisplay=customUsd?customUsd.toFixed(2):autoUsdDisplay;
+  const isManual=!!customArs;
+  const acopioArsInput=customArs?customArs.toLocaleString('es-AR',{maximumFractionDigits:0}):'';
+  const html=`<div class="spot-card">
+    <div style="min-width:100px"><div class="spot-card-title">📍 Precio Spot</div><div class="spot-card-fecha">Dato: ${fecha}</div></div>
+    <div class="spot-metrics">
+      <div class="spot-metric"><div class="spot-metric-label">ARS / tn${isManual?' (mercado)':''}</div><div class="spot-metric-value" style="${isManual?'text-decoration:line-through;opacity:0.45':''}">$${arsDisplay}</div></div>
+      <div class="spot-divider"></div>
+      <div class="spot-metric"><div class="spot-metric-label">USD / tn${isManual?' ✏️':''}</div><div class="spot-metric-value" style="${isManual?'color:#ffc850;font-weight:800':''}">USD ${effectiveUsdDisplay}</div></div>
+      <div class="spot-divider"></div>
+      <div class="spot-metric"><div class="spot-metric-label">FOB</div><div class="spot-metric-value">${fobDisplay}</div></div>
+      <div class="spot-divider"></div>
+      <div class="spot-metric"><div class="spot-metric-label">FAS Teórico</div><div class="spot-metric-value">${fasDisplay}</div></div>
+      <div class="spot-divider"></div>
+      <div class="spot-metric"><div class="spot-metric-label">TC Mayorista</div><div class="spot-metric-value">$${tcDisplay}</div></div>
+      ${pizarraAnteriorHtml}
+      <div class="spot-divider"></div>
+      <div class="spot-metric" style="flex-direction:column;gap:5px;min-width:160px">
+        <div class="spot-metric-label" style="display:flex;align-items:center;gap:5px">✏️ Precio Acopio${isManual?` <span style="font-size:0.6rem;background:#f59e0b;color:#1a1a2e;padding:1px 6px;border-radius:3px;font-weight:800">MANUAL</span>`:''}</div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="font-size:0.78rem;color:rgba(255,255,255,0.5)">$</span>
+          <input type="text" id="acopio-ars-${panelId}" value="${acopioArsInput}" placeholder="${arsDisplay}"
+            style="width:105px;padding:5px 8px;border:1.5px solid ${isManual?'#f59e0b':'rgba(255,255,255,0.22)'};border-radius:6px;background:${isManual?'rgba(245,158,11,0.15)':'rgba(255,255,255,0.07)'};color:white;font-size:0.88rem;font-weight:700;outline:none"
+            onkeydown="if(event.key==='Enter'){window._setCustomSpotArs('${panelId}',this.value);this.blur();}"
+            onblur="window._setCustomSpotArs('${panelId}',this.value)">
+          <span style="font-size:0.65rem;color:rgba(255,255,255,0.35)">ARS/tn</span>
+          ${isManual?`<button onmousedown="event.preventDefault();window._setCustomSpotArs('${panelId}','')" style="background:none;border:none;color:rgba(255,110,110,0.85);cursor:pointer;font-size:0.9rem;padding:1px 4px" title="Volver al precio de mercado">✕</button>`:''}
+        </div>
+        <div style="font-size:0.61rem;color:${isManual?'rgba(255,200,80,0.75)':'rgba(255,255,255,0.25)'}">
+          ${isManual?`= USD ${customUsd?customUsd.toFixed(2):'—'}/tn · afecta curva de futuros`:'Enter para aplicar · afecta curva de futuros'}
+        </div>
+      </div>
+    </div>
+  </div>`;
+  if(window._futState&&window._futState[panelId])window._futState[panelId].spotHtml=html;
+  panel.insertAdjacentHTML('afterbegin',html);
+}
+function firstValidVenc(arr){
+  const s=sortByVenc(arr.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));
+  return s[0]?.venc_display||'';
+}
+function secondValidVenc(arr){
+  const s=sortByVenc(arr.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));
+  return s[1]?.venc_display||s[0]?.venc_display||'';
+}
+function parseDlrDate(venc){const m=venc.match(/^(\d{2})\/(\d{4})$/);if(m)return new Date(parseInt(m[2]),parseInt(m[1])-1,25);return null;}
+function findVencByMonth(arr,prefix){
+  const s=sortByVenc(arr.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));
+  return s.find(r=>(r.venc_display||'').startsWith(prefix))?.venc_display||s[0]?.venc_display||'';
+}
+function injectSojSeasonalChart(){
+  const panel=document.getElementById('panel-soj-fut');
+  if(!panel)return;
+  const existing=document.getElementById('soj-seasonal-wrap');
+  if(existing)existing.remove();
+  const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const datasets=[
+    {label:'MAY',data:[2,4,6,1,8,2,0,0,1,0,0,2],color:'#22c55e'},
+    {label:'JUL',data:[3,0,3,0,5,5,5,2,1,1,0,0],color:'#f97316'},
+    {label:'SEP',data:[2,0,3,0,3,4,3,1,8,1,1,0],color:'#06b6d4'},
+    {label:'NOV',data:[2,0,2,1,3,4,1,1,2,4,6,0],color:'#a855f7'},
+  ];
+  const wrap=document.createElement('div');
+  wrap.id='soj-seasonal-wrap';
+  wrap.style.cssText='margin:18px 0 4px;padding:20px 22px 18px;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border-radius:14px;border:1px solid #334155;';
+  wrap.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div>
+        <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8;">Estacionalidad Histórica · 2001–2025</div>
+        <div style="font-size:0.72rem;color:#64748b;margin-top:2px;">Frecuencia de picos mensuales por contrato</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+        ${datasets.map(d=>`<span style="display:flex;align-items:center;gap:5px;font-size:0.72rem;color:#cbd5e1;"><span style="width:10px;height:10px;border-radius:2px;background:${d.color};display:inline-block;"></span>${d.label}</span>`).join('')}
+      </div>
+    </div>
+    <div style="position:relative;height:200px;"><canvas id="soj-seasonal-chart"></canvas></div>`;
+  panel.appendChild(wrap);
+  requestAnimationFrame(()=>{
+    const ctx=document.getElementById('soj-seasonal-chart');
+    if(!ctx||!window.Chart)return;
+    if(ctx._chartInst){ctx._chartInst.destroy();}
+    ctx._chartInst=new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:months,
+        datasets:datasets.map(d=>({
+          label:d.label,
+          data:d.data,
+          backgroundColor:d.color+'cc',
+          borderColor:d.color,
+          borderWidth:1,
+          borderRadius:3,
+          borderSkipped:false,
+        }))
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false},
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            backgroundColor:'#1e293b',
+            borderColor:'#334155',
+            borderWidth:1,
+            titleColor:'#f1f5f9',
+            bodyColor:'#94a3b8',
+            callbacks:{
+              title:items=>`${items[0].label}`,
+              label:item=>`  ${item.dataset.label}: ${item.raw} veces`
+            }
+          }
+        },
+        scales:{
+          x:{
+            grid:{color:'#1e293b',drawBorder:false},
+            ticks:{color:'#94a3b8',font:{size:11}},
+          },
+          y:{
+            beginAtZero:true,
+            grid:{color:'#1e293b88',drawBorder:false},
+            ticks:{color:'#94a3b8',font:{size:11},stepSize:1,precision:0},
+            title:{display:true,text:'Frecuencia',color:'#64748b',font:{size:10}}
+          }
+        }
+      }
+    });
+  });
+}
+function injectChicagoErrorBanner(panelId){
+  const panel=document.getElementById('panel-'+panelId);if(!panel)return;
+  const existing=document.getElementById('chicago-err-'+panelId);if(existing)existing.remove();
+  const div=document.createElement('div');
+  div.id='chicago-err-'+panelId;
+  div.style.cssText='display:flex;align-items:center;gap:12px;background:#fff3cd;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 18px;margin-bottom:14px;';
+  div.innerHTML=`<span style="font-size:1.3rem">⚠️</span><div style="flex:1"><div style="font-size:0.85rem;font-weight:700;color:#92400e">No se pudieron cargar los precios de Chicago (CBOT)</div><div style="font-size:0.75rem;color:#b45309;margin-top:2px">La columna de referencia internacional no está disponible. Verificá la conexión a Google Drive.</div></div><button onclick="loadChicagoPrices().then(()=>{if(!CHICAGO_ERROR){document.getElementById('chicago-err-${panelId}')?.remove();}})" style="padding:6px 14px;background:#f59e0b;color:#1a1a2e;border:none;border-radius:7px;font-size:0.78rem;font-weight:700;cursor:pointer">🔄 Reintentar</button>`;
+  const spotCard=panel.querySelector('.spot-card');
+  if(spotCard)spotCard.insertAdjacentElement('afterend',div);
+  else panel.insertAdjacentElement('afterbegin',div);
+}
+function applyA3(p){
+  SOJ_FUT=p.sojFut;MAI_FUT=p.maiFut;TRI_FUT=p.triFut;DLR_FUT=p.dlrFut;SOJ_OPTS=p.sojOpts;MAI_OPTS=p.maiOpts;TRI_OPTS=p.triOpts||[];
+  a3DataLoaded=true;
+  const sR=findVencByMonth(SOJ_FUT,'MAY')||'MAY26';
+  const mR=findVencByMonth(MAI_FUT,'JUL')||'JUL26';
+  const tR=secondValidVenc(TRI_FUT)||'JUL26';
+  const dR=firstValidVenc(DLR_FUT)||'05/2026';
+  buildFutPanel('soj-fut',SOJ_FUT,'USD',sR,CHICAGO);injectSpotCard('soj-fut',SPOT);injectSojSeasonalChart();if(CHICAGO_ERROR)injectChicagoErrorBanner('soj-fut');
+  buildFutPanel('mai-fut',MAI_FUT,'USD',mR,CHICAGO);injectSpotCard('mai-fut',SPOT);if(CHICAGO_ERROR)injectChicagoErrorBanner('mai-fut');
+  buildFutPanel('tri-fut',TRI_FUT,'USD',tR,CHICAGO);injectSpotCard('tri-fut',SPOT);if(CHICAGO_ERROR)injectChicagoErrorBanner('tri-fut');
+  buildFutPanel('dlr-fut',DLR_FUT,'$',dR);injectDollarRatesCard('dlr-fut');
+  buildChain('soj-opts',SOJ_OPTS,[...new Set(SOJ_OPTS.map(r=>r.venc_serie))].sort());
+  buildChain('mai-opts',MAI_OPTS,[...new Set(MAI_OPTS.map(r=>r.venc_serie))].sort());
+  buildChain('tri-opts',TRI_OPTS,[...new Set(TRI_OPTS.map(r=>r.venc_serie))].sort());
+  buildStratPanel();
+  buildFinanciamientoPanel();
+  const fecha=DLR_FUT[0]?.fecha||SOJ_FUT[0]?.fecha||'';
+  if(fecha){const el=document.querySelector('.header .fecha');if(el)el.textContent='Actualizado: '+fecha;}
+}
+async function loadAndInitA3(){
+  const pids=['soj-fut','mai-fut','tri-fut','dlr-fut','soj-opts','mai-opts','tri-opts'];
+  pids.forEach(id=>{const p=document.getElementById('panel-'+id);if(p)p.innerHTML='<div style="padding:48px;text-align:center;color:#aaa;font-size:0.9rem">⏳ Cargando datos de mercado…</div>';});
+  const spotPromise=loadSpotData();
+  const chicagoPromise=loadChicagoPrices();
+  const dollarRatesPromise=loadDollarRates();
+  let parsed=null,errMsg='';
+  if(window.cowork&&typeof window.cowork.callMcpTool==='function'){
+    try{
+      const res=await window.cowork.callMcpTool('mcp__b5211e5b-bb8a-4302-ab9c-1a9da1d9d6a6__read_file_content',{fileId:A3_FILE_ID});
+      const raw=extractText(res);
+      if(raw&&raw.length>100){let md=raw;try{const j=JSON.parse(raw);if(j.fileContent)md=j.fileContent;}catch(e){}parsed=parseMdA3(md);}
+    }catch(e1){errMsg+='Drive: '+e1.message+'; ';}
+  }
+  if(!parsed){
+    try{
+      let combined='';
+      const r1=await fetch(A3_AGRO_URL,{cache:'no-store'});
+      if(r1.ok){const t=await r1.text();if(t&&t.trim().length>50)combined=t;}
+      const r2=await fetch(A3_FIN_URL,{cache:'no-store'});
+      if(r2.ok){const t=await r2.text();if(t&&t.trim().length>50)combined+=(combined?'\n':'')+t;}
+      if(combined)parsed=parseA3CSV(combined);
+      if(!combined)errMsg+='CSV vacío; ';
+    }catch(e2){errMsg+='fetch: '+e2.message+'; ';}
+  }
+  await spotPromise;
+  await chicagoPromise;
+  await dollarRatesPromise;
+  if(parsed){applyA3(parsed);}
+  else{
+    pids.forEach(id=>{const p=document.getElementById('panel-'+id);if(p)p.innerHTML=`<div style="padding:48px;text-align:center"><div style="font-weight:700;color:#c00;margin-bottom:8px">No se pudieron cargar los datos</div><div style="font-size:0.78rem;color:#888;margin-bottom:16px">${errMsg||'Sin datos'}</div><button onclick="a3DataLoaded=false;loadAndInitA3()" style="padding:8px 20px;border:none;border-radius:8px;background:#1a1a2e;color:white;cursor:pointer;font-size:0.85rem">Reintentar</button></div>`;});
+    buildStratPanel();
+  }
+}
+
+// ── Tipos de Cambio (sheet Dólares) ─────────────────────────────────────
+function parseDollarRatesCSV(text){const fl=text.trim().split("\n")[0]||"";if(fl.includes("|"))return null;
+  const pRow=row=>{const c=[];let cur='',q=false;for(const ch of row+','){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur.trim());cur='';}else cur+=ch;}return c;};
+  const lines=text.trim().split(/\r?\n/);if(lines.length<2)return null;
+  const hdrs=pRow(lines[0]).map(h=>h.toLowerCase().replace(/['"]/g,'').trim());
+  const iTipo=hdrs.findIndex(h=>h.includes('tipo'));
+  const iCompra=hdrs.findIndex(h=>h.includes('compra'));
+  const iVenta=hdrs.findIndex(h=>h.includes('venta'));
+  if(iTipo<0||iVenta<0)return null;
+  const pN=s=>{if(!s)return null;s=String(s).replace(/[$\s"]/g,'').trim();const n=parseFloat(s.replace(',','.'));return isNaN(n)?null:n;};
+  const res=[];
+  for(let i=1;i<lines.length;i++){
+    const p=pRow(lines[i]);if(!p[iTipo])continue;
+    const tipo=p[iTipo].replace(/['"]/g,'').trim();if(!tipo)continue;
+    res.push({tipo,compra:pN(p[iCompra]),venta:pN(p[iVenta])});
+  }
+  return res.length?res:null;
+}
+function parseDollarRatesMd(text){
+  const res=[];
+  for(const line of text.split('\n')){
+    const l=line.trim();
+    if(!l.startsWith('|'))continue;
+    if(/^[|:\s\-]+$/.test(l))continue;
+    const cells=l.replace(/^\||\|$/g,'').split('|').map(s=>s.replace(/\\/g,'').trim());
+    if(cells.length<3)continue;
+    const tipo=cells[0];if(!tipo||/tipo/i.test(tipo))continue;
+    const pN=s=>{const n=parseFloat((s||'').replace(',','.'));return isNaN(n)?null:n;};
+    res.push({tipo,compra:pN(cells[1]),venta:pN(cells[2])});
+  }
+  return res.length?res:null;
+}
+async function loadDollarRates(){
+  DOLLAR_RATES=null;
+  try{
+    if(window.cowork&&typeof window.cowork.callMcpTool==='function'){
+      const res=await window.cowork.callMcpTool('mcp__b5211e5b-bb8a-4302-ab9c-1a9da1d9d6a6__read_file_content',{fileId:DOLLAR_RATES_FILE_ID});
+      const raw=extractText(res);
+      if(raw&&raw.length>20){
+        let text=raw;try{const j=JSON.parse(raw);if(j.fileContent)text=j.fileContent;}catch(e){}
+        const parsed=parseDollarRatesCSV(text)||parseDollarRatesMd(text);
+        if(parsed){DOLLAR_RATES=parsed;return;}
+      }
+    }
+  }catch(e){console.warn('[DollarRates] MCP:',e.message);}
+  try{
+    const r=await fetch(DOLLAR_RATES_CSV_URL,{cache:'no-store'});
+    if(r.ok){const t=await r.text();if(t&&t.length>10&&!t.trim().startsWith('<')){const parsed=parseDollarRatesCSV(t);if(parsed)DOLLAR_RATES=parsed;}}
+  }catch(e){console.warn('[DollarRates] CSV:',e.message);}
+}
+function injectDollarRatesCard(panelId){
+  if(!DOLLAR_RATES)return;
+  const panel=document.getElementById('panel-'+panelId);if(!panel)return;
+  const firstFut=sortByVenc(DLR_FUT.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))))[0];
+  const futPrice=firstFut?parseFloat(firstFut.ajuste):null;
+  const futLabel=firstFut?firstFut.venc_display:'—';
+  const TIPOS=[
+    {key:'Oficial',      label:'Oficial',   color:'#1565c0', bg:'#dbeafe', field:'compra'},
+    {key:'Bolsa',        label:'Bolsa/MEP', color:'#7c3aed', bg:'#ede9f7', field:'venta'},
+    {key:'Contado',      label:'CCL',       color:'#0d6e56', bg:'#d1fae5', field:'venta'},
+    {key:'Mayorista',    label:'Mayorista', color:'#e65100', bg:'#fff3e0', field:'venta'},
+  ];
+  const find=key=>DOLLAR_RATES.find(d=>d.tipo.toLowerCase().includes(key.toLowerCase()));
+  const cards=TIPOS.map(t=>{
+    const r=find(t.key);
+    const val=r?r[t.field]:null;
+    const brecha=(futPrice&&val)?((val/futPrice-1)*100):null;
+    const brechaStr=brecha!==null?`${brecha>=0?'+':''}${brecha.toFixed(1)}%`:'—';
+    const brechaColor=brecha===null?'#888':brecha<0?'#9b1c1c':'#1e7e34';
+    const valStr=val?`$${val.toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1})}`:'—';
+    return`<div style="background:white;border-radius:10px;padding:12px 16px;flex:1;min-width:120px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid ${t.color}">
+      <div style="font-size:0.68rem;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">${t.label}</div>
+      <div style="font-size:1.4rem;font-weight:800;color:${t.color}">${valStr}</div>
+      <div style="font-size:0.72rem;margin-top:4px;color:${brechaColor};font-weight:600">vs fut ${futLabel}: ${brechaStr}</div>
+    </div>`;
+  }).join('');
+  const html=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">${cards}</div>`;
+  panel.insertAdjacentHTML('afterbegin',html);
+}
+
+const VENC_DATES = {'ABR26':new Date(2026,3,23),'MAY26':new Date(2026,4,21),'JUN26':new Date(2026,5,22),'JUL26':new Date(2026,6,24),'AGO26':new Date(2026,7,21),'SEP26':new Date(2026,8,23),'OCT26':new Date(2026,9,22),'NOV26':new Date(2026,10,20),'DIC26':new Date(2026,11,21),'ENE27':new Date(2027,0,21),'FEB27':new Date(2027,1,18),'MAR27':new Date(2027,2,22),'ABR27':new Date(2027,3,22),'MAY27':new Date(2027,4,21),'JUN27':new Date(2027,5,23),'JUL27':new Date(2027,6,23)};
+
+function fmt(v,dec=2){if(v===null||v===undefined||v==='N/A'||v==='')return'—';const n=parseFloat(v);if(isNaN(n))return v;return n.toLocaleString('es-AR',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+function fmtVol(v){if(!v||v==='N/A')return'—';const n=parseInt(v);if(isNaN(n))return v;if(n>=1000000)return(n/1000000).toFixed(1)+'M';if(n>=1000)return(n/1000).toFixed(1)+'k';return n.toString();}
+function sortByVenc(rows){const mmap={ABR:4,MAY:5,JUN:6,JUL:7,AGO:8,SEP:9,OCT:10,NOV:11,DIC:12,ENE:1,FEB:2,MAR:3};return[...rows].sort((a,b)=>{const pa=(a.venc_display||'').match(/^(\d{2})\/(\d{4})$/),pb=(b.venc_display||'').match(/^(\d{2})\/(\d{4})$/);if(pa&&pb)return(pa[2]+pa[1]).localeCompare(pb[2]+pb[1]);const ma=(a.venc_display||'').match(/^([A-Z]{3})(\d{2})$/),mb=(b.venc_display||'').match(/^([A-Z]{3})(\d{2})$/);if(ma&&mb){const ya=parseInt(ma[2]),yb=parseInt(mb[2]);if(ya!==yb)return ya-yb;return(mmap[ma[1]]||0)-(mmap[mb[1]]||0);}return(a.venc_display||'').localeCompare(b.venc_display||'');});}
+function calcSpread(rows,refVenc){const sorted=sortByVenc(rows);const refRow=sorted.find(r=>r.venc_display===refVenc);if(!refRow)return sorted.map(r=>({...r,dif_pct:null,tna:null,tem:null,is_ref:false}));const pRef=parseFloat(refRow.ajuste),dRef=VENC_DATES[refVenc]||parseDlrDate(refVenc);return sorted.map(r=>{const isRef=r.venc_display===refVenc,p=parseFloat(r.ajuste),dVenc=VENC_DATES[r.venc_display]||parseDlrDate(r.venc_display);if(isRef||!dVenc||!dRef||isNaN(p)||isNaN(pRef)||pRef===0)return{...r,dif_pct:null,tna:null,tem:null,is_ref:isRef};const dias=(dVenc-dRef)/(1000*60*60*24);if(dias<=0){const d=Math.abs(dias),dif_pct=(p/pRef-1)*100,tna=d>0?(Math.pow(p/pRef,365/d)-1)*100:null,tem=d>0?(Math.pow(p/pRef,30/d)-1)*100:null;return{...r,dif_pct,tna,tem,is_ref:false};}const dif_pct=(p/pRef-1)*100,tna=dias>0?(Math.pow(p/pRef,365/dias)-1)*100:null,tem=dias>0?(Math.pow(p/pRef,30/dias)-1)*100:null;return{...r,dif_pct,tna,tem,is_ref:false};});}
+function fmtPct(v){if(v===null||v===undefined)return'—';return(v>=0?'+':'')+v.toFixed(2)+'%';}
+function fmtTNA(v){if(v===null||v===undefined)return'—';return(v>=0?'+':'')+v.toFixed(1)+'%';}
+function pctClass(v){if(v===null||v===undefined)return'neutral';return v>0?'pos':v<0?'neg':'neutral';}
+
+if(!window._futState)window._futState={};
+if(!window._futCharts)window._futCharts={};
+window._setFutRef=function(panelId,venc){
+  const st=window._futState[panelId];if(!st)return;
+  st.refVenc=venc;
+  _renderFutPanel(panelId);
+  if(st.spotHtml)document.getElementById('panel-'+panelId).insertAdjacentHTML('afterbegin',st.spotHtml);
+  if(panelId==='dlr-fut')injectDollarRatesCard('dlr-fut');
+  if(panelId==='soj-fut')injectSojSeasonalChart();
+};
+function buildFutPanel(panelId,rows,currency,refVenc,chicago=null){
+  window._futState[panelId]={rows,currency,chicago,refVenc,spotHtml:null};
+  _renderFutPanel(panelId);
+}
+function _renderFutPanel(panelId){
+  const st=window._futState[panelId];if(!st)return;
+  const{rows,currency,chicago,refVenc}=st;
+  const panel=document.getElementById('panel-'+panelId);if(!panel)return;
+  if(window._futCharts[panelId]){try{window._futCharts[panelId].destroy();}catch(e){}window._futCharts[panelId]=null;}
+  const lineColor=panelId.startsWith('soj')?'#2e7d32':panelId.startsWith('mai')?'#e65100':panelId.startsWith('tri')?'#1565c0':'#6a1b9a';
+  const hasSpread=!!refVenc;
+  const cKey=panelId.startsWith('soj')?'soja':panelId.startsWith('mai')?'maiz':panelId.startsWith('tri')?'trigo':null;
+  const _customArs=window._customSpotArs&&window._customSpotArs[panelId];
+  const _spotUsd=_customArs&&SPOT&&SPOT.tc?_customArs/SPOT.tc:(cKey&&SPOT)?(SPOT[cKey+'_usd']||(SPOT.tc&&SPOT[cKey+'_ars']?SPOT[cKey+'_ars']/SPOT.tc:null)):null;
+  const _isDispRef=refVenc==='Disp.';
+  const _isDlr=(panelId==='dlr-fut');
+  const _oficialUsd=_isDlr&&DOLLAR_RATES?(()=>{const r=DOLLAR_RATES.find(d=>d.tipo.toLowerCase().includes('oficial'));return r&&r.compra?parseFloat(r.compra):null;})():null;
+  const _isOficialRef=refVenc==='Oficial';
+  const _refSpot=_isDispRef?_spotUsd:_isOficialRef?_oficialUsd:null;
+  const _today=new Date();
+  const enriched=(_isDispRef||_isOficialRef)?sortByVenc(rows).map(r=>{const p=parseFloat(r.ajuste);const dVenc=VENC_DATES[r.venc_display]||parseDlrDate(r.venc_display);const dif_pct=(_refSpot&&!isNaN(p))?(p/_refSpot-1)*100:null;const dias=dVenc?((dVenc-_today)/(1000*60*60*24)):null;const tna=(dias>0&&_refSpot&&!isNaN(p))?(Math.pow(p/_refSpot,365/dias)-1)*100:null;const tem=(dias>0&&_refSpot&&!isNaN(p))?(Math.pow(p/_refSpot,30/dias)-1)*100:null;return{...r,dif_pct,tna,tem,is_ref:false};}):refVenc?calcSpread(rows,refVenc):sortByVenc(rows).map(r=>({...r,dif_pct:null,tna:null,tem:null,is_ref:false}));
+  const sorted=enriched;
+  const validAdj=sorted.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste)));
+  const _dispRow=_spotUsd?{contrato:'Disponible',venc_display:'Disp.',ajuste:_spotUsd.toFixed(2),is_ref:_isDispRef,is_disp:true,dif_pct:_isDispRef?null:(refVenc?(()=>{const rr=enriched.find(r=>r.venc_display===refVenc);return rr?((_spotUsd-parseFloat(rr.ajuste))/parseFloat(rr.ajuste)*100):null;})():null),tna:(!_isDispRef&&refVenc)?(()=>{const rr=enriched.find(r=>r.venc_display===refVenc);const dVenc=VENC_DATES[refVenc];const dias=dVenc?((dVenc-_today)/(1000*60*60*24)):null;return(dias>0&&rr&&!isNaN(parseFloat(rr.ajuste)))?(Math.pow(_spotUsd/parseFloat(rr.ajuste),365/dias)-1)*100:null;})():null,tem:(!_isDispRef&&refVenc)?(()=>{const rr=enriched.find(r=>r.venc_display===refVenc);const dVenc=VENC_DATES[refVenc];const dias=dVenc?((dVenc-_today)/(1000*60*60*24)):null;return(dias>0&&rr&&!isNaN(parseFloat(rr.ajuste)))?(Math.pow(_spotUsd/parseFloat(rr.ajuste),30/dias)-1)*100:null;})():null}:null;
+  const _oficialRow=_oficialUsd?{contrato:'Oficial A3500',venc_display:'Oficial',ajuste:_oficialUsd.toFixed(2),is_ref:_isOficialRef,is_disp:true,dif_pct:_isOficialRef?null:(refVenc?(()=>{const rr=enriched.find(r=>r.venc_display===refVenc);return rr?((_oficialUsd-parseFloat(rr.ajuste))/parseFloat(rr.ajuste)*100):null;})():null),tna:(!_isOficialRef&&refVenc)?(()=>{const rr=enriched.find(r=>r.venc_display===refVenc);const dVenc=VENC_DATES[refVenc]||parseDlrDate(refVenc);const dias=dVenc?((dVenc-_today)/(1000*60*60*24)):null;return(dias>0&&rr&&!isNaN(parseFloat(rr.ajuste)))?(Math.pow(_oficialUsd/parseFloat(rr.ajuste),365/dias)-1)*100:null;})():null,tem:(!_isOficialRef&&refVenc)?(()=>{const rr=enriched.find(r=>r.venc_display===refVenc);const dVenc=VENC_DATES[refVenc]||parseDlrDate(refVenc);const dias=dVenc?((dVenc-_today)/(1000*60*60*24)):null;return(dias>0&&rr&&!isNaN(parseFloat(rr.ajuste)))?(Math.pow(_oficialUsd/parseFloat(rr.ajuste),30/dias)-1)*100:null;})():null}:null;
+  const tableRows=[...(_oficialRow?[_oficialRow]:[]),...(_dispRow?[_dispRow]:[]),...sorted];
+  const labels=(_dispRow?['Disp.']:_oficialRow?['Oficial']:[]).concat(sorted.filter(r=>!isNaN(parseFloat(r.ajuste))).map(r=>r.venc_display));
+  const prices=(_dispRow?[_spotUsd]:_oficialRow?[_oficialUsd]:[]).concat(sorted.filter(r=>!isNaN(parseFloat(r.ajuste))).map(r=>parseFloat(r.ajuste)));
+  const hasChicago=!!(chicago&&cKey);
+  const chicagoStatus=cKey?`<div style="font-size:0.7rem;color:#888;margin-bottom:8px">${CHICAGO_STATUS||''}</div>`:'';
+  const selectorHtml=validAdj.length>1?`<div class="chain-controls" style="margin-bottom:14px"><span style="font-size:0.78rem;color:#888;margin-right:4px">Referencia Dif%/TNA:</span>${_spotUsd?`<button class="venc-btn${_isDispRef?' active':''}" onclick="_setFutRef('${panelId}','Disp.')">Disp.</button> `:''}${_oficialRow?`<button class="venc-btn${_isOficialRef?' active':''}" onclick="_setFutRef('${panelId}','Oficial')" style="${_isOficialRef?'background:#1565c0;color:white;border-color:#1565c0':'color:#1565c0;border-color:#1565c0'}">Oficial A3500</button> `:''}${validAdj.map(r=>`<button class="venc-btn${r.venc_display===refVenc?' active':''}" onclick="_setFutRef('${panelId}','${r.venc_display}')">${r.venc_display}</button>`).join('')}</div>`:'';
+  const isMob=window.a3DeviceMode==='mobile';
+  const wrapStyle=isMob?'display:flex;flex-direction:column;gap:16px':'display:flex;gap:12px;align-items:stretch';
+  const chartCardStyle=isMob?'min-width:0;display:flex;flex-direction:column':'flex:1.3;min-width:0;display:flex;flex-direction:column';
+  const tableCardStyle=isMob?'min-width:0;overflow-x:auto':'flex:1.1;min-width:0;overflow-x:auto';
+  const chartH=isMob?(panelId==='dlr-fut'?'200px':'250px'):(panelId==='dlr-fut'?'160px':'210px');
+  panel.innerHTML=`<div style="${wrapStyle}"><div class="full-card" style="${chartCardStyle}"><h3>Curva de Precios</h3><div class="canvas-wrap" style="flex:1;height:auto;min-height:${chartH}"><canvas id="chart-${panelId}-price"></canvas></div></div><div class="full-card" style="${tableCardStyle}">${chicagoStatus}${selectorHtml}<h3>Contratos${hasSpread?` <span style="font-size:0.8rem;font-weight:400;color:#888;text-transform:none">· diferencial vs ${refVenc} ★</span>`:''}</h3><table class="fut-table"><thead><tr><th>Contrato</th><th>Ajuste (${currency})</th>${hasSpread?'<th>Dif. %</th><th>TNA</th>':''}${_isDlr&&hasSpread?'<th>TEM</th>':''}${hasChicago?'<th>Chicago</th><th>Dif. Local</th>':''}</tr></thead><tbody>${tableRows.map(r=>{const isRef=r.is_ref;const isDisp=!!r.is_disp;const chic=hasChicago&&!isDisp?(chicago[r.venc_display]?.[cKey]||null):null;const difLocal=chic&&!isNaN(parseFloat(r.ajuste))?(((parseFloat(r.ajuste)-chic)/chic)*100):null;return`<tr class="${isRef?'ref-row':isDisp?'disp-row':''}"><td>${isDisp?'<strong style="color:#64748b">'+r.contrato+'</strong>':r.contrato}</td><td>${fmt(r.ajuste)}</td>${hasSpread?`<td>${isRef?'<span class="tna-ref tna-badge">ref</span>':`<span class="${pctClass(r.dif_pct)}">${fmtPct(r.dif_pct)}</span>`}</td><td>${isRef?'<span class="tna-ref tna-badge">ref</span>':(r.tna!==null?`<span class="tna-badge ${r.tna>=0?'tna-pos':'tna-neg'}">${fmtTNA(r.tna)}</span>`:'—')}</td>`:''}${(_isDlr&&hasSpread)?`<td>${isRef?'<span class="tna-ref tna-badge">ref</span>':(r.tem!==null?(r.tem>=0?'<span style="font-weight:700;color:#1e7e34">+'+r.tem.toFixed(2)+'%</span>':'<span style="font-weight:700;color:#9b1c1c">'+r.tem.toFixed(2)+'%</span>'):'—')}</td>`:''}${hasChicago?`<td style="color:#555">${chic?chic.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}</td><td>${difLocal!==null?`<span class="${pctClass(difLocal)}">${fmtPct(difLocal)}</span>`:'—'}</td>`:''}</tr>`;}).join('')}</tbody></table></div></div>`;
+  const _isSoj=(panelId==='soj-fut');
+  const _isMai=(panelId==='mai-fut');
+  const _isTri=(panelId==='tri-fut');
+  const _f25=(_isSoj&&SPOT)?lookupFuturos2025(SPOT.fecha):(_isMai&&SPOT)?lookupFuturosMai2025(SPOT.fecha):(_isTri&&SPOT)?lookupFuturosTri2025(SPOT.fecha):null;
+  const _p25=_f25?labels.map(l=>{if(!l.endsWith('26'))return null;const k=l.substring(0,3);if(k==='JUL')return _f25.jul??null;if(k==='SEP')return _f25.sept??null;if(k==='NOV')return _f25.nov??null;if(k==='DIC')return _f25.dic??null;return null;}):null;
+  const _has25=!!(_p25&&_p25.some(v=>v!=null));
+  if(labels.length>0){window._futCharts[panelId]=new Chart(document.getElementById('chart-'+panelId+'-price'),{type:'line',data:{labels,datasets:[{data:prices,borderColor:lineColor,backgroundColor:lineColor+'22',borderWidth:2.5,pointRadius:5,pointHoverRadius:7,fill:true,tension:0.3},...(_has25?[{label:'Curva 2025',data:_p25,borderColor:lineColor+'99',backgroundColor:'transparent',borderWidth:1.5,borderDash:[6,4],pointRadius:4,pointHoverRadius:6,fill:false,tension:0.3,spanGaps:false}]:[])],},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,bottom:4}},plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{display:false},afterDataLimits:scale=>{const r=scale.max-scale.min||1;scale.max+=r*0.22;scale.min-=r*0.05;}},x:{grid:{display:false}}}},plugins:[{id:'valueLabels',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,i)=>{const meta=chart.getDatasetMeta(i);const is2025=i===1;meta.data.forEach((pt,j)=>{const v=ds.data[j];if(v==null)return;ctx.save();if(is2025){ctx.fillStyle='#222';ctx.font='bold 11px Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(v.toFixed(2)+' (2025)',pt.x,pt.y-8);}else{ctx.fillStyle='#333';ctx.font='bold 11.5px Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(v.toFixed(2),pt.x,pt.y-8);}ctx.restore();});});}}]});}}
+
+function buildChain(panelId,opts,vencs){
+  const panel=document.getElementById('panel-'+panelId);
+  const futs=panelId==='soj-opts'?SOJ_FUT:panelId==='mai-opts'?MAI_FUT:TRI_FUT;
+  function getFutPrice(venc){if(!futs||!futs.length)return null;const r=futs.find(f=>f.venc_display===venc&&f.ajuste&&f.ajuste!=='N/A'&&!isNaN(parseFloat(f.ajuste)));return r?parseFloat(r.ajuste):null;}
+  function render(){
+    const sections=vencs.map(venc=>{
+      const futPrice=getFutPrice(venc);
+      const filtered=opts.filter(r=>r.venc_serie===venc);
+      if(!filtered.length)return '';
+      const callMap={},putMap={};
+      filtered.forEach(r=>{if(r.tipo_op==='C')callMap[r.strike]=r;else putMap[r.strike]=r;});
+      let strikes=[...new Set(filtered.map(r=>r.strike))].sort((a,b)=>a-b);
+      if(!strikes.length)return '';
+      const atmStrike=futPrice!==null?strikes.reduce((b,s)=>Math.abs(s-futPrice)<Math.abs(b-futPrice)?s:b,strikes[0]):null;
+      // Filtrar strikes con actividad (IA o volumen > 0 en call o put)
+      const toN=v=>v&&v!=='N/A'?parseInt(v)||0:0;
+      const activeStrikes=strikes.filter(s=>{const c=callMap[s]||{},p=putMap[s]||{};return toN(c.interes_abierto)>0||toN(c.volumen)>0||toN(p.interes_abierto)>0||toN(p.volumen)>0;});
+      if(futPrice!==null&&atmStrike!==null){const base=activeStrikes.length?activeStrikes:strikes;const below=base.filter(s=>s<atmStrike).slice(-3);const above=base.filter(s=>s>atmStrike).slice(0,3);strikes=[...below,atmStrike,...above];}else{strikes=(activeStrikes.length?activeStrikes:strikes).slice(0,7);}
+      if(!strikes.length)return '';
+      const futTag=futPrice!==null?`<span style="background:#e8f5e9;color:#2e7d32;font-size:0.78rem;font-weight:700;padding:3px 10px;border-radius:6px;margin-left:10px">▶ Futuro: ${futPrice.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})} USD/tn</span>`:'';
+      const rows=strikes.map(s=>{const c=callMap[s]||{},p=putMap[s]||{};const isAtm=s===atmStrike;const cPrima=c.ajuste&&c.ajuste!=='N/A'?parseFloat(c.ajuste):null;const piso=(futPrice!==null&&cPrima!==null)?(futPrice-cPrima).toFixed(2):'—';const techo=cPrima!==null?(s+cPrima).toFixed(2):'—';const pctPrima=(futPrice!==null&&cPrima!==null&&futPrice>0)?((cPrima/futPrice)*100).toFixed(1)+'%':'—';return`<tr class="${isAtm?'ref-row':''}"><td class="call-td xtra-col">${fmtVol(c.volumen)}</td><td class="call-td xtra-col">${fmtVol(c.interes_abierto)}</td><td class="call-td"><b>${fmt(c.ajuste,4)}</b></td><td class="call-td" style="color:#0d6e56;font-size:0.79rem">${piso}</td><td class="call-td" style="color:#7c3aed;font-size:0.79rem">${techo}</td><td class="call-td" style="color:#b45309;font-size:0.79rem;font-weight:600">${pctPrima}</td><td class="strike-td" style="${isAtm?'font-weight:800;color:#1565c0':''}">${s}${isAtm?'<span style="font-size:0.65rem;color:#2e7d32;margin-left:4px">ATM</span>':''}</td><td class="put-td"><b>${fmt(p.ajuste,4)}</b></td><td class="put-td xtra-col">${fmtVol(p.interes_abierto)}</td><td class="put-td xtra-col">${fmtVol(p.volumen)}</td></tr>`;}).join('');
+      return `<div class="full-card" style="margin-bottom:12px"><div style="display:flex;align-items:center;margin-bottom:10px"><h3 style="margin:0">${venc}</h3>${futTag}</div><div class="chain-wrap"><table class="chain-table"><thead><tr><th class="call-hdr xtra-col" style="font-size:0.68rem">Vol.</th><th class="call-hdr xtra-col" style="font-size:0.68rem">I.A.</th><th class="call-hdr" style="font-size:0.75rem">CALL Prima</th><th class="call-hdr" style="font-size:0.68rem;background:#0a4a3a">Piso</th><th class="call-hdr" style="font-size:0.68rem;background:#3b1f7a">Techo</th><th class="call-hdr" style="font-size:0.68rem;background:#7a3800">% Prima</th><th class="strike-hdr" style="font-size:0.68rem">STRIKE (USD)</th><th class="put-hdr" style="font-size:0.75rem">PUT Prima</th><th class="put-hdr xtra-col" style="font-size:0.68rem">I.A.</th><th class="put-hdr xtra-col" style="font-size:0.68rem">Vol.</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+    }).join('');
+    const hidden=panel.classList.contains('chain-hide-xtra');
+    const btnTxt=hidden?'👁 Mostrar Vol. / I.A.':'👁 Ocultar Vol. / I.A.';
+    panel.innerHTML=`<div style="text-align:right;margin-bottom:8px"><button class="venc-btn" onclick="toggleChainXtra('${panelId}')">${btnTxt}</button></div>`+(sections||'<div style="color:#aaa;padding:20px">Sin datos disponibles</div>');
+  }
+  panel.classList.add('chain-hide-xtra');
+  render();
+  window['_venc_'+panelId]={render:()=>render()};
+}
+window.toggleChainXtra=function(panelId){const panel=document.getElementById('panel-'+panelId);panel.classList.toggle('chain-hide-xtra');window['_venc_'+panelId].render();};
+window.setVenc=(panelId,v)=>window['_venc_'+panelId].render(v);
+
+
+
+let stratLegs=[], stratChart=null, selectedPreset=null, stratMode='preset';
+const PRESET_STRATEGIES = [
+  {id:'bull_call_spread',nombre:'Bull Call Spread',mercado:'📈 Alcista',mercadoColor:'#1e7e34',mercadoBg:'#e6f4ea',descripcion:'Compra 1 call ATM + vende 1 call OTM. Apuesta alcista con costo y ganancia acotados.',riesgo:'⚠ Pérdida máx: prima neta pagada',legs:(opts,venc)=>{const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(calls.length<2)return null;const mid=Math.floor(calls.length/2),atm=calls[mid],otm=calls[mid+1]||calls[calls.length-1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'C',tipo:'C',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'ratio_call_spread',nombre:'Ratio Call Spread 1×2',mercado:'📈 Alcista Moderado',mercadoColor:'#1e7e34',mercadoBg:'#e6f4ea',descripcion:'Compra 1 call ATM + vende 2 calls OTM. Prima reducida o cobrada.',riesgo:'⚠ Riesgo si el precio sube mucho más allá del strike OTM',legs:(opts,venc)=>{const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(calls.length<2)return null;const mid=Math.floor(calls.length/2),atm=calls[mid],otm=calls[mid+1]||calls[calls.length-1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'C',tipo:'C',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'bear_put_spread',nombre:'Bear Put Spread',mercado:'📉 Bajista',mercadoColor:'#9b1c1c',mercadoBg:'#fce8e8',descripcion:'Compra 1 put ATM + vende 1 put OTM más bajo. Apuesta bajista de bajo costo.',riesgo:'⚠ Pérdida máx: prima neta pagada',legs:(opts,venc)=>{const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>b.strike-a.strike);if(puts.length<2)return null;const atm=puts[0],otm=puts[1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'C',tipo:'P',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'V',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'ratio_put_spread',nombre:'Ratio Put Spread 1×2',mercado:'📉 Bajista Moderado',mercadoColor:'#9b1c1c',mercadoBg:'#fce8e8',descripcion:'Compra 1 put ATM + vende 2 puts OTM. Capta caídas moderadas con prima reducida.',riesgo:'⚠ Riesgo si el precio cae mucho más allá del strike OTM',legs:(opts,venc)=>{const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>b.strike-a.strike);if(puts.length<2)return null;const atm=puts[0],otm=puts[1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'C',tipo:'P',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'V',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie},{accion:'V',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'covered_call',nombre:'Lanzamiento Cubierto Sintético',mercado:'🔒 Conservador',mercadoColor:'#b45309',mercadoBg:'#fef3c7',descripcion:'Futuro sintético largo (compra call ATM + venta put ATM mismo strike) + venta call OTM.',riesgo:'⚠ Ganancia limitada al alza · Pérdida ilimitada a la baja',legs:(opts,venc)=>{const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(calls.length<2||puts.length<1)return null;const mid=Math.floor(calls.length/2);const atmCall=calls[mid];const atmPut=puts.reduce((best,p)=>Math.abs(p.strike-atmCall.strike)<Math.abs(best.strike-atmCall.strike)?p:best,puts[0]);const otmCall=calls[Math.min(mid+1,calls.length-1)];if(!otmCall||otmCall.strike===atmCall.strike)return null;return[{accion:'C',tipo:'C',strike:atmCall.strike,prima:parseFloat(atmCall.ajuste),contrato:atmCall.contrato,venc:atmCall.venc_serie},{accion:'V',tipo:'P',strike:atmPut.strike,prima:parseFloat(atmPut.ajuste),contrato:atmPut.contrato,venc:atmPut.venc_serie},{accion:'V',tipo:'C',strike:otmCall.strike,prima:parseFloat(otmCall.ajuste),contrato:otmCall.contrato,venc:otmCall.venc_serie}];}},
+  {id:'bull_put_spread',nombre:'Bull Put Spread',mercado:'🔒 Conservador / Alcista',mercadoColor:'#1565c0',mercadoBg:'#dbeafe',descripcion:'Vende 1 put ATM + compra 1 put OTM más bajo. Cobra prima neta apostando a que el precio se mantiene o sube.',riesgo:'⚠ Pérdida máx: diferencia de strikes – prima cobrada',legs:(opts,venc)=>{const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>b.strike-a.strike);if(puts.length<2)return null;const atm=puts[0],otm=puts[1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'V',tipo:'P',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'C',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'fut_buy_sell_call',nombre:'Futuro Long + Call Cubierto',mercado:'📈 Alcista c/ Futuro',mercadoColor:'#1e7e34',mercadoBg:'#e6f4ea',descripcion:'Compra un futuro (long directo) + vende un call OTM. Alternativa líquida al Bull Call Spread: el futuro reemplaza la compra del call ATM.',riesgo:'⚠ Upside capped por el call vendido · Pérdida ilimitada a la baja',legs:(opts,venc,futs)=>{if(!futs||!futs.length)return null;const vf=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));const mf=vf.find(r=>r.venc_display===venc)||vf[0];if(!mf)return null;const fp=parseFloat(mf.ajuste);const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(!calls.length)return null;const otm=calls.find(c=>c.strike>fp)||calls[calls.length-1];return[{accion:'C',tipo:'F',strike:fp,prima:0,contrato:mf.contrato,venc:mf.venc_display},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'fut_sell_buy_put',nombre:'Futuro Short + Put Protector',mercado:'📉 Bajista c/ Futuro',mercadoColor:'#9b1c1c',mercadoBg:'#fce8e8',descripcion:'Vende un futuro (short directo) + compra un put OTM como seguro contra rebotes. Alternativa líquida al Bear Put Spread.',riesgo:'⚠ El costo del put reduce la ganancia · Pérdida acotada al alza por el put',legs:(opts,venc,futs)=>{if(!futs||!futs.length)return null;const vf=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));const mf=vf.find(r=>r.venc_display===venc)||vf[0];if(!mf)return null;const fp=parseFloat(mf.ajuste);const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>b.strike-a.strike);if(!puts.length)return null;const otm=puts.find(p=>p.strike<fp)||puts[puts.length-1];return[{accion:'V',tipo:'F',strike:fp,prima:0,contrato:mf.contrato,venc:mf.venc_display},{accion:'C',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'covered_call_fut',nombre:'Lanzamiento Cubierto c/ Futuro',mercado:'🔒 Conservador c/ Futuro',mercadoColor:'#b45309',mercadoBg:'#fef3c7',descripcion:'Compra un futuro (long directo) + vende un call OTM. Similar al lanzamiento cubierto sintético pero más líquido al usar el futuro como base.',riesgo:'⚠ Ganancia limitada al alza · Pérdida ilimitada a la baja',legs:(opts,venc,futs)=>{if(!futs||!futs.length)return null;const vf=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));const mf=vf.find(r=>r.venc_display===venc)||vf[0];if(!mf)return null;const fp=parseFloat(mf.ajuste);const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(!calls.length)return null;const otm=calls.find(c=>c.strike>fp)||calls[calls.length-1];return[{accion:'C',tipo:'F',strike:fp,prima:0,contrato:mf.contrato,venc:mf.venc_display},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}}
+];
+function getStratOpts(){return document.getElementById('strat-cultivo').value==='SOJ'?SOJ_OPTS:MAI_OPTS;}
+function getStratFuts(){return document.getElementById('strat-cultivo').value==='SOJ'?SOJ_FUT:MAI_FUT;}
+function setStratMode(mode){stratMode=mode;document.querySelectorAll('.strat-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));document.getElementById('preset-section').style.display=mode==='preset'?'block':'none';document.getElementById('manual-section').style.display=mode==='manual'?'block':'none';}
+function selectPreset(id){selectedPreset=id;document.querySelectorAll('.preset-card').forEach(c=>c.classList.toggle('selected',c.dataset.id===id));const p=PRESET_STRATEGIES.find(p=>p.id===id);const info=document.getElementById('preset-selected-info');if(p)info.innerHTML=`Seleccionada: <strong>${p.nombre}</strong> — elegí vencimiento y aplicá`;document.getElementById('btn-apply-preset').disabled=false;}
+function applyPreset(){if(!selectedPreset)return;const p=PRESET_STRATEGIES.find(p=>p.id===selectedPreset);if(!p)return;const legs=p.legs(getStratOpts(),document.getElementById('preset-venc').value,getStratFuts());if(!legs){alert('No hay suficientes contratos disponibles para este vencimiento.');return;}stratLegs=legs.map((l,i)=>({...l,id:Date.now()+i}));renderStratLegs();renderStratResults();setTimeout(()=>document.getElementById('strat-results')?.scrollIntoView({behavior:'smooth',block:'start'}),100);}
+function stratCultivoChange(){stratLegs=[];updatePresetVencOpts();updateStratVencOpts();updateStratContractOpts();renderStratLegs();renderStratResults();}
+function updatePresetVencOpts(){const vencs=[...new Set(getStratOpts().map(r=>r.venc_serie))].sort();const sel=document.getElementById('preset-venc');if(sel)sel.innerHTML=vencs.map(v=>`<option value="${v}">${v}</option>`).join('');}
+function updateStratVencOpts(){const vencs=[...new Set(getStratOpts().map(r=>r.venc_serie))].sort();const sel=document.getElementById('strat-venc');if(sel)sel.innerHTML=vencs.map(v=>`<option value="${v}">${v}</option>`).join('');updateStratContractOpts();}
+function updateStratContractOpts(){const opts=getStratOpts(),futs=getStratFuts(),venc=document.getElementById('strat-venc')?.value,tipo=document.getElementById('strat-tipo')?.value;const sel=document.getElementById('strat-contrato');if(!sel)return;if(tipo==='F'){const vf=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));sel.innerHTML=vf.length===0?'<option value="">Sin futuros disponibles</option>':vf.map(r=>`<option value="${r.contrato}" data-strike="${parseFloat(r.ajuste).toFixed(2)}" data-prima="0" data-tipo="F" data-venc="${r.venc_display}">${r.contrato} — precio: ${parseFloat(r.ajuste).toFixed(2)} USD/tn</option>`).join('');}else{const filtered=opts.filter(r=>r.venc_serie===venc&&r.tipo_op===tipo&&parseFloat(r.ajuste)>0);sel.innerHTML=filtered.length===0?'<option value="">Sin contratos disponibles</option>':filtered.sort((a,b)=>a.strike-b.strike).map(r=>`<option value="${r.contrato}" data-strike="${r.strike}" data-prima="${r.ajuste}" data-tipo="${r.tipo_op}" data-venc="${r.venc_serie}">${r.contrato} — prima: ${parseFloat(r.ajuste).toFixed(4)} USD/tn</option>`).join('');}}
+function addStratLeg(){const sel=document.getElementById('strat-contrato'),opt=sel.options[sel.selectedIndex];if(!opt||!opt.dataset.strike)return;stratLegs.push({accion:document.getElementById('strat-accion').value,tipo:opt.dataset.tipo,strike:parseFloat(opt.dataset.strike),prima:parseFloat(opt.dataset.prima),contrato:opt.value,venc:opt.dataset.venc,id:Date.now()});renderStratLegs();renderStratResults();}
+function removeStratLeg(id){stratLegs=stratLegs.filter(l=>l.id!==id);renderStratLegs();renderStratResults();}
+function clearStratLegs(){stratLegs=[];renderStratLegs();renderStratResults();}
+function legPayoff(leg,S){if(leg.tipo==='F'){const sign=leg.accion==='C'?1:-1;return sign*(S-leg.strike);}const sign=leg.accion==='C'?1:-1;const intrinsic=leg.tipo==='C'?Math.max(0,S-leg.strike):Math.max(0,leg.strike-S);return sign*intrinsic+(leg.accion==='C'?-leg.prima:leg.prima);}
+function totalPayoff(S){return stratLegs.reduce((sum,leg)=>sum+legPayoff(leg,S),0);}
+function renderStratLegs(){const tbody=document.getElementById('strat-legs-tbody');if(stratLegs.length===0){tbody.innerHTML='<tr><td colspan="6" class="empty-legs">Seleccioná una estrategia y aplicala, o usá el constructor manual</td></tr>';return;}tbody.innerHTML=stratLegs.map(l=>`<tr><td><span class="${l.accion==='C'?'compra-badge':'venta-badge'}">${l.accion==='C'?'COMPRA':'VENTA'}</span></td><td><span class="${l.tipo==='C'?'call-badge':l.tipo==='P'?'put-badge':'futuro-badge'}">${l.tipo==='C'?'CALL':l.tipo==='P'?'PUT':'FUTURO'}</span></td><td style="text-align:center;font-weight:700">${l.tipo==='F'?l.strike.toFixed(2):l.strike}</td><td style="text-align:right">${l.tipo==='F'?'<span style="color:#aaa;font-size:0.75rem">sin prima</span>':l.prima.toFixed(4)}</td><td style="text-align:center;font-size:0.75rem;color:#888">${l.venc}</td><td style="text-align:center"><button class="btn-del" onclick="removeStratLeg(${l.id})">✕</button></td></tr>`).join('');}
+function renderStratResults(){const container=document.getElementById('strat-results');if(stratLegs.length===0){container.innerHTML='<div style="color:#aaa;font-size:0.85rem;font-style:italic;padding:20px 0">Aplicá una estrategia para ver el análisis</div>';if(stratChart){stratChart.destroy();stratChart=null;}return;}const strikes=stratLegs.map(l=>l.strike);const midStrike=strikes.reduce((a,b)=>a+b,0)/strikes.length;const minS=Math.round(midStrike*0.65),maxS=Math.round(midStrike*1.35),step=(maxS-minS)/200;const prices=[];for(let s=minS;s<=maxS;s+=step)prices.push(parseFloat(s.toFixed(2)));const payoffs=prices.map(s=>parseFloat(totalPayoff(s).toFixed(4)));const primaNeta=stratLegs.reduce((sum,l)=>sum+(l.accion==='C'?-l.prima:l.prima),0);const maxGain=Math.max(...payoffs),maxLoss=Math.min(...payoffs);const breakevens=[];for(let i=0;i<payoffs.length-1;i++){if((payoffs[i]<=0&&payoffs[i+1]>0)||(payoffs[i]>=0&&payoffs[i+1]<0))breakevens.push((prices[i]+(prices[i+1]-prices[i])*(-payoffs[i])/(payoffs[i+1]-payoffs[i])).toFixed(2));}const isGainInfinite=maxGain>midStrike*2,isLossInfinite=maxLoss<-midStrike;const presetName=selectedPreset?(PRESET_STRATEGIES.find(p=>p.id===selectedPreset)?.nombre||''):'';container.innerHTML=`<div class="full-card" style="margin-bottom:12px;padding:14px 18px"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">${presetName||'Estrategia personalizada'}</h3><button class="btn-clear" onclick="clearStratLegs()">✕ Limpiar</button></div><div class="kpi-row" style="margin-bottom:0"><div class="kpi ${primaNeta>=0?'green':'red'}"><div class="label">Prima Neta</div><div class="value">${primaNeta>=0?'+':''}${primaNeta.toFixed(4)}</div><div class="sub">USD/tn · ${primaNeta>=0?'cobrada':'pagada'}</div></div><div class="kpi ${isGainInfinite?'':'green'}"><div class="label">Ganancia Máx.</div><div class="value">${isGainInfinite?'∞':(maxGain>=0?'+':'')+maxGain.toFixed(4)}</div><div class="sub">USD/tn al vencimiento</div></div><div class="kpi ${isLossInfinite?'':'red'}"><div class="label">Pérdida Máx.</div><div class="value">${isLossInfinite?'-∞':maxLoss.toFixed(4)}</div><div class="sub">USD/tn al vencimiento</div></div><div class="kpi yellow"><div class="label">Breakeven${breakevens.length!==1?'s':''}</div><div class="value" style="font-size:1rem">${breakevens.length>0?breakevens.join(' / '):'—'}</div><div class="sub">USD/tn</div></div></div></div><div class="full-card"><h3>Payoff al Vencimiento <span style="font-size:0.78rem;font-weight:400;text-transform:none;color:#888">USD/tn</span></h3><div class="canvas-wrap-lg"><canvas id="strat-payoff-chart"></canvas></div></div>`;if(stratChart){stratChart.destroy();stratChart=null;}setTimeout(()=>{const ctx=document.getElementById('strat-payoff-chart');if(!ctx)return;stratChart=new Chart(ctx,{type:'line',data:{labels:prices.map(p=>p.toFixed(0)),datasets:[{label:'Resultado (USD/tn)',data:payoffs,borderWidth:2,pointRadius:0,tension:0.1,fill:false,segment:{borderColor:ctx2=>ctx2.p0.parsed.y>=0&&ctx2.p1.parsed.y>=0?'rgba(34,134,58,0.9)':ctx2.p0.parsed.y<0&&ctx2.p1.parsed.y<0?'rgba(203,36,49,0.9)':'rgba(150,150,150,0.7)'}}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>`Precio subyacente: USD ${items[0].label}`,label:item=>`Resultado: ${item.raw>=0?'+':''}${item.raw.toFixed(4)} USD/tn`}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{size:11}},title:{display:true,text:'Precio subyacente (USD/tn)',font:{size:11}}},y:{grid:{color:'#f0f2f5'},ticks:{font:{size:11}},title:{display:true,text:'Resultado (USD/tn)',font:{size:11}},afterDataLimits:scale=>{const r=scale.max-scale.min;scale.max+=r*0.1;scale.min-=r*0.1;}}}}});},50);}
+function buildStratPanel(){const panel=document.getElementById('panel-estrategia');const groupLabels=['📈 Alcistas','📉 Bajistas','🔒 Conservadoras'];const groups=[['bull_call_spread','ratio_call_spread','fut_buy_sell_call'],['bear_put_spread','ratio_put_spread','fut_sell_buy_put'],['covered_call','bull_put_spread','covered_call_fut']].map(ids=>ids.map(id=>PRESET_STRATEGIES.find(p=>p.id===id)).filter(Boolean));const presetsHTML=groups.map((grp,gi)=>`<div class="preset-section-label">${groupLabels[gi]}</div><div class="preset-grid">${grp.map(p=>`<div class="preset-card" data-id="${p.id}" onclick="selectPreset('${p.id}')"><div class="pc-check">✔</div><div class="pc-name">${p.nombre}</div><div class="pc-market" style="background:${p.mercadoBg};color:${p.mercadoColor}">${p.mercado}</div><div class="pc-desc">${p.descripcion}</div><div class="pc-risk">${p.riesgo}</div></div>`).join('')}</div>`).join('');panel.innerHTML=`<div class="full-card"><h3>Estrategias</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px"><div class="strat-field"><label>Cultivo</label><select id="strat-cultivo" class="strat-select" onchange="stratCultivoChange()"><option value="SOJ">🌱 Soja</option><option value="MAI">🌽 Maíz</option></select></div></div><div class="strat-mode-tabs"><button class="strat-mode-btn active" data-mode="preset" onclick="setStratMode('preset')">⚡ Estrategias predeterminadas</button><button class="strat-mode-btn" data-mode="manual" onclick="setStratMode('manual')">🔧 Constructor manual</button></div><div id="preset-section">${presetsHTML}<div class="preset-controls"><div class="strat-field"><label>Vencimiento</label><select id="preset-venc" class="strat-select"></select></div><button class="btn-apply-preset" id="btn-apply-preset" onclick="applyPreset()" disabled>⚡ Aplicar estrategia</button><span id="preset-selected-info" style="color:#888;font-size:0.8rem">Seleccioná una estrategia arriba</span></div></div><div id="manual-section" style="display:none"><div class="add-leg-row"><div class="strat-field"><label>Acción</label><select id="strat-accion" class="strat-select"><option value="C">Compra</option><option value="V">Venta</option></select></div><div class="strat-field"><label>Tipo</label><select id="strat-tipo" class="strat-select" onchange="updateStratContractOpts()"><option value="C">Call</option><option value="P">Put</option><option value="F">Futuro</option></select></div><div class="strat-field"><label>Vencimiento</label><select id="strat-venc" class="strat-select" onchange="updateStratContractOpts()"></select></div><div class="strat-field" style="flex:2;min-width:240px"><label>Contrato (Strike · Prima)</label><select id="strat-contrato" class="strat-select"></select></div><button class="btn-add" onclick="addStratLeg()">+ Agregar pata</button><button class="btn-clear" onclick="clearStratLegs()">Limpiar</button></div></div><div class="full-card" style="margin-bottom:0;box-shadow:none;padding:0 0 4px 0"><table class="legs-table"><thead><tr><th>Acción</th><th>Tipo</th><th>Strike</th><th style="text-align:right">Prima</th><th>Venc.</th><th></th></tr></thead><tbody id="strat-legs-tbody"><tr><td colspan="6" class="empty-legs">Seleccioná una estrategia y aplicala, o usá el constructor manual</td></tr></tbody></table></div></div><div id="strat-results" style="margin-top:4px"><div style="color:#aaa;font-size:0.85rem;font-style:italic;padding:20px 0">Aplicá una estrategia para ver el análisis</div></div>`;updatePresetVencOpts();updateStratVencOpts();}
+
+function showTab(id){
+  const ids=['soj-fut','mai-fut','tri-fut','soj-opts','mai-opts','tri-opts','estrategia','dlr-fut','lecaps','financiamiento','cultivos'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',ids[i]===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(id==='lecaps') loadLecapPanel();
+  if(id==='cultivos') buildCultivosPanel();
+  if(id==='financiamiento') buildFinanciamientoPanel();
+}
+
+// ── PAS – Condición de Cultivos (Bolsa de Cereales) ───────────────
+const PAS_DATA = {
+  fecha: '03/06/2026',
+  campana: '2025/26',
+  soja: {
+    cosecha_pct: 91.7,
+    rinde_qq: 32.0,
+    produccion_mtn: 50.1,
+    condicion_normal_excelente: null,
+    zonas: [
+      {id:'I',   nombre:'NOA',          sembrada:951740,   perdida:26971,  cosechable:924769,   pct:88.6, ha_cos:819760,   rinde:31.1, prod:2550295},
+      {id:'II',  nombre:'NEA',          sembrada:1634210,  perdida:70160,  cosechable:1564050,  pct:85.5, ha_cos:1337020,  rinde:29.2, prod:3899586},
+      {id:'III', nombre:'Ctro N Cba',   sembrada:1792280,  perdida:64252,  cosechable:1728028,  pct:100.0,ha_cos:1728028,  rinde:33.2, prod:5734359},
+      {id:'IV',  nombre:'S Cba',        sembrada:1685520,  perdida:56228,  cosechable:1629292,  pct:99.7, ha_cos:1624905,  rinde:33.6, prod:5458246},
+      {id:'V',   nombre:'Ctro N SFe',   sembrada:1168770,  perdida:59590,  cosechable:1109180,  pct:95.1, ha_cos:1054667,  rinde:31.3, prod:3299831},
+      {id:'VI',  nombre:'Núcleo Norte', sembrada:2077210,  perdida:88822,  cosechable:1988388,  pct:100.0,ha_cos:1988388,  rinde:34.8, prod:6926572},
+      {id:'VII', nombre:'Núcleo Sur',   sembrada:2159800,  perdida:97794,  cosechable:2062006,  pct:98.3, ha_cos:2027344,  rinde:36.2, prod:7329264},
+      {id:'VIII',nombre:'Ctro E ER',    sembrada:992310,   perdida:55500,  cosechable:936810,   pct:90.1, ha_cos:844140,   rinde:23.5, prod:1982237},
+      {id:'IX',  nombre:'N LP-OBA',     sembrada:1743100,  perdida:55980,  cosechable:1687120,  pct:96.8, ha_cos:1632487,  rinde:38.2, prod:6235852},
+      {id:'X',   nombre:'Ctro BA',      sembrada:769200,   perdida:50589,  cosechable:718611,   pct:70.2, ha_cos:504575,   rinde:27.2, prod:1373646},
+      {id:'XI',  nombre:'SO BA-S LP',   sembrada:393630,   perdida:15180,  cosechable:378450,   pct:72.0, ha_cos:272504,   rinde:20.7, prod:562989},
+      {id:'XII', nombre:'SE BA',        sembrada:922520,   perdida:43560,  cosechable:878960,   pct:56.7, ha_cos:498678,   rinde:17.9, prod:894960},
+      {id:'XIII',nombre:'SL',           sembrada:263270,   perdida:18812,  cosechable:244458,   pct:98.9, ha_cos:241867,   rinde:25.3, prod:610758},
+      {id:'XIV', nombre:'Cuenca Sal',   sembrada:168440,   perdida:6437,   cosechable:162003,   pct:66.5, ha_cos:107776,   rinde:18.6, prod:200841},
+      {id:'XV',  nombre:'Otras',        sembrada:78000,    perdida:3027,   cosechable:74973,    pct:100.0,ha_cos:74973,    rinde:19.0, prod:142138},
+    ],
+    total: {sembrada:16800000, perdida:712901, cosechable:16087099, pct:91.7, ha_cos:14757111, rinde:32.0, prod:47201593}
+  },
+  maiz: {
+    cosecha_pct: 40.6,
+    rinde_qq: 82.7,
+    produccion_mtn: 64.0,
+    zonas: [
+      {id:'I',   nombre:'NOA',          sembrada:487450,   perdida:2047,   cosechable:485403,   pct:15.0, ha_cos:72810,    rinde:62.5, prod:454808},
+      {id:'II',  nombre:'NEA',          sembrada:677700,   perdida:2203,   cosechable:675497,   pct:13.0, ha_cos:87815,    rinde:40.0, prod:351259},
+      {id:'III', nombre:'Ctro N Cba',   sembrada:958800,   perdida:6624,   cosechable:952176,   pct:27.2, ha_cos:258539,   rinde:80.0, prod:2068863},
+      {id:'IV',  nombre:'S Cba',        sembrada:1191480,  perdida:47437,  cosechable:1144043,  pct:33.3, ha_cos:380719,   rinde:66.2, prod:2522110},
+      {id:'V',   nombre:'Ctro N SFe',   sembrada:193550,   perdida:2832,   cosechable:190718,   pct:49.5, ha_cos:94440,    rinde:73.9, prod:698371},
+      {id:'VI',  nombre:'Núcleo Norte', sembrada:1022900,  perdida:24954,  cosechable:997946,   pct:84.9, ha_cos:846993,   rinde:99.5, prod:8429257},
+      {id:'VII', nombre:'Núcleo Sur',   sembrada:769100,   perdida:17489,  cosechable:751611,   pct:75.1, ha_cos:564592,   rinde:95.3, prod:5378356},
+      {id:'VIII',nombre:'Ctro E ER',    sembrada:384000,   perdida:9862,   cosechable:374138,   pct:85.4, ha_cos:319472,   rinde:57.5, prod:1835553},
+      {id:'IX',  nombre:'N LP-OBA',     sembrada:1056610,  perdida:8236,   cosechable:1048374,  pct:37.7, ha_cos:395363,   rinde:94.6, prod:3739703},
+      {id:'X',   nombre:'Ctro BA',      sembrada:350530,   perdida:1795,   cosechable:348735,   pct:25.3, ha_cos:88300,    rinde:74.4, prod:657059},
+      {id:'XI',  nombre:'SO BA-S LP',   sembrada:339200,   perdida:1601,   cosechable:337599,   pct:21.7, ha_cos:73125,    rinde:61.4, prod:448818},
+      {id:'XII', nombre:'SE BA',        sembrada:518480,   perdida:1669,   cosechable:516821,   pct:15.9, ha_cos:82127,    rinde:59.1, prod:485775},
+      {id:'XIII',nombre:'SL',           sembrada:339200,   perdida:1383,   cosechable:337817,   pct:13.6, ha_cos:46105,    rinde:76.5, prod:352807},
+      {id:'XIV', nombre:'Cuenca Sal',   sembrada:96000,    perdida:1203,   cosechable:94797,    pct:37.6, ha_cos:35606,    rinde:72.6, prod:258455},
+      {id:'XV',  nombre:'Otras',        sembrada:15000,    perdida:561,    cosechable:14439,    pct:100.0,ha_cos:14439,    rinde:66.9, prod:96631},
+    ],
+    total: {sembrada:8400000, perdida:129887, cosechable:8270113, pct:40.6, ha_cos:3360445, rinde:82.7, prod:27777825}
+  }
+};
+
+function buildCultivosPanel(){
+  const panel=document.getElementById('panel-cultivos');
+  const d=PAS_DATA;
+  const fmtHa=n=>n!=null?n.toLocaleString('es-AR'):'—';
+  const fmtPct=n=>n!=null?n.toFixed(1)+'%':'—';
+  const fmtRinde=n=>n!=null?n.toFixed(1):'—';
+  const fmtProd=n=>n!=null?(n/1000000).toFixed(3)+' MTn':'—';
+  const barColor=(pct,baseColor)=>`<div style="display:flex;align-items:center;gap:6px"><div style="flex:1;background:#f0f2f5;border-radius:4px;height:8px;min-width:60px"><div style="width:${Math.min(pct,100)}%;background:${baseColor};height:8px;border-radius:4px"></div></div><span style="font-size:0.78rem;font-weight:700;color:${baseColor};min-width:38px;text-align:right">${pct.toFixed(1)}%</span></div>`;
+  const makeTable=(cultivo,color)=>`
+    <table class="fut-table" style="font-size:0.79rem">
+      <thead><tr>
+        <th style="text-align:left">Zona</th>
+        <th>Sembrada (Ha)</th>
+        <th>% Cosechado</th>
+        <th>Rinde (qq/Ha)</th>
+        <th>Producción</th>
+      </tr></thead>
+      <tbody>
+        ${cultivo.zonas.map(z=>`<tr>
+          <td style="text-align:left"><span style="font-weight:700;color:#555;margin-right:4px">${z.id}</span>${z.nombre}</td>
+          <td>${fmtHa(z.sembrada)}</td>
+          <td>${z.pct!=null?barColor(z.pct,color):'<span style="color:#bbb">Sin dato</span>'}</td>
+          <td style="font-weight:600">${fmtRinde(z.rinde)}</td>
+          <td style="color:#444">${fmtProd(z.prod)}</td>
+        </tr>`).join('')}
+        <tr style="background:#f7f8fa;font-weight:700;border-top:2px solid #e0e4ea">
+          <td style="text-align:left;color:#1a1a2e">TOTAL</td>
+          <td>${fmtHa(cultivo.total.sembrada)}</td>
+          <td>${barColor(cultivo.total.pct,color)}</td>
+          <td style="color:${color}">${fmtRinde(cultivo.total.rinde)}</td>
+          <td style="color:${color}">${fmtProd(cultivo.total.prod)}</td>
+        </tr>
+      </tbody>
+    </table>`;
+
+  panel.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+      <div>
+        <div style="font-size:1rem;font-weight:700;color:#1a1a2e">🌾 Condición de Cultivos — Campaña ${d.campana}</div>
+        <div style="font-size:0.75rem;color:#888;margin-top:2px">Fuente: Bolsa de Cereales · Relevamiento al ${d.fecha}</div>
+      </div>
+    </div>
+
+    <!-- SOJA -->
+    <div class="full-card" style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+        <h3 style="margin:0;color:#2e7d32">🌱 SOJA</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="background:#e6f4ea;border-radius:8px;padding:8px 14px;text-align:center">
+            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Cosecha</div>
+            <div style="font-size:1.3rem;font-weight:800;color:#2e7d32">${d.soja.cosecha_pct}%</div>
+            <div style="font-size:0.68rem;color:#888">del área apta</div>
+          </div>
+          <div style="background:#e6f4ea;border-radius:8px;padding:8px 14px;text-align:center">
+            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Rinde Medio</div>
+            <div style="font-size:1.3rem;font-weight:800;color:#2e7d32">${d.soja.rinde_qq}</div>
+            <div style="font-size:0.68rem;color:#888">qq/Ha</div>
+          </div>
+          <div style="background:#e6f4ea;border-radius:8px;padding:8px 14px;text-align:center">
+            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Proyección</div>
+            <div style="font-size:1.3rem;font-weight:800;color:#2e7d32">${d.soja.produccion_mtn}</div>
+            <div style="font-size:0.68rem;color:#888">MTn</div>
+          </div>
+          <div style="background:#e6f4ea;border-radius:8px;padding:8px 14px;text-align:center">
+            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Cond. Normal/Exc.</div>
+            <div style="font-size:1.3rem;font-weight:800;color:#2e7d32">${d.soja.condicion_normal_excelente}%</div>
+            <div style="font-size:0.68rem;color:#888">área remanente</div>
+          </div>
+        </div>
+      </div>
+      ${makeTable(d.soja,'#2e7d32')}
+    </div>
+
+    <!-- MAÍZ -->
+    <div class="full-card" style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+        <h3 style="margin:0;color:#e65100">🌽 MAÍZ</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="background:#fff3e0;border-radius:8px;padding:8px 14px;text-align:center">
+            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Cosecha</div>
+            <div style="font-size:1.3rem;font-weight:800;color:#e65100">${d.maiz.cosecha_pct}%</div>
+            <div style="font-size:0.68rem;color:#888">del área apta</div>
+          </div>
+          <div style="background:#fff3e0;border-radius:8px;padding:8px 14px;text-align:center">
+            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Rinde Medio</div>
+            <div style="font-size:1.3rem;font-weight:800;color:#e65100">${d.maiz.rinde_qq}</div>
+            <div style="font-size:0.68rem;color:#888">qq/Ha</div>
+          </div>
+          <div style="background:#fff3e0;border-radius:8px;padding:8px 14px;text-align:center">
+            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Proyección</div>
+            <div style="font-size:1.3rem;font-weight:800;color:#e65100">${d.maiz.produccion_mtn}</div>
+            <div style="font-size:0.68rem;color:#888">MTn</div>
+          </div>
+        </div>
+      </div>
+      ${makeTable(d.maiz,'#e65100')}
+    </div>
+
+    <div style="text-align:right;font-size:0.7rem;color:#bbb">
+      Informe PAS-ECC · Bolsa de Cereales de Buenos Aires · ${d.fecha}
+    </div>`;
+}
+
+// ── LECAPs ────────────────────────────────────────────────────────
+const LECAP_MONTH = {E:1,F:2,M:3,A:4,Y:5,J:6,L:7,G:8,S:9,O:10,N:11,D:12};
+const LECAP_MES   = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+// Precio final por cada 100 VN al vencimiento (estático, provisto por analista)
+const PRECIO_FINAL = {
+  'S15Y6': 105.18,
+  'S29Y6': 132.04,
+  'S17L6': 107.92,
+  'S31L6': 117.68,
+  'S14G6': 108.03,
+  'S31G6': 127.06,
+  'S30O6': 135.28,
+  'S30N6': 129.89,
+  'S30S6': 117.536,
+};
+
+function decodeLecap(ticker){
+  const tipo=ticker[0]==='S'?'LECAP':ticker[0]==='X'?'BONCAP':'Letra';
+  const day=parseInt(ticker.substring(1,3));
+  const mc=ticker[3];
+  const yr=parseInt(ticker[4]);
+  const m=LECAP_MONTH[mc];
+  if(!m||isNaN(day)||isNaN(yr))return null;
+  const year=2020+yr;
+  const venc=new Date(year,m-1,day);
+  const today=new Date();today.setHours(0,0,0,0);
+  const dias=Math.round((venc-today)/(86400000));
+  const display=`${day} ${LECAP_MES[m]} ${year}`;
+  return{tipo,venc,dias,display,month:m,year};
+}
+
+let lecapData=null,lecapChart=null,lecapLoading=false;
+
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/);
+  if(!lines.length)return{headers:[],rows:[]};
+  const parse=line=>{const cols=[];let cur='',inQ=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}else if(c===','&&!inQ){cols.push(cur.trim());cur='';}else cur+=c;}cols.push(cur.trim());return cols;};
+  const headers=parse(lines[0]).map(h=>h.replace(/^"|"$/g,'').trim());
+  return{headers,rows:lines.slice(1).map(l=>parse(l)).filter(r=>r.length>=headers.length&&r.some(c=>c))};
+}
+
+function findCol(headers,...candidates){
+  for(const c of candidates){
+    const i=headers.findIndex(h=>h.toLowerCase().includes(c.toLowerCase()));
+    if(i>=0)return i;
+  }
+  return -1;
+}
+
+// Parsea la hoja LECAP: tabla de 2 columnas (TICKER | PRECIO).
+function parseMdLecaps(text){
+  const lines=text.split('\n');
+  const TICKER_RE=/^[A-Z][A-Z0-9]{4}$/;
+  const seen=new Map();
+  for(const line of lines){
+    const l=line.trim();
+    if(!l.startsWith('|'))continue;
+    if(/^[|:\s\-]+$/.test(l))continue;
+    const cells=l.replace(/^\||\|$/g,'').split('|').map(c=>c.replace(/\\/g,'').trim());
+    if(cells.length!==2)continue;
+    const ticker=cells[0].toUpperCase();
+    const rawPrice=cells[1];
+    if(!TICKER_RE.test(ticker))continue;
+    if(rawPrice==='#N/A'||rawPrice==='N/A'||rawPrice==='')continue;
+    const price=parseFloat(rawPrice.replace(/,/g,'.'));
+    if(isNaN(price)||price<=0)continue;
+    if(!seen.has(ticker))seen.set(ticker,String(price));
+  }
+  if(seen.size===0)return null;
+  const rows=[...seen.entries()].map(([t,p])=>[t,p,'0']);
+  return{headers:['ticker','precio','var'],rows};
+}
+
+function extractText(res){
+  if(!res)return null;
+  if(typeof res==='string')return res;
+  if(Array.isArray(res)){
+    return res.filter(b=>b.type==='text'||typeof b.text==='string').map(b=>b.text||b).join('');
+  }
+  if(res.content){
+    if(typeof res.content==='string')return res.content;
+    if(Array.isArray(res.content))return res.content.filter(b=>b.type==='text'||typeof b.text==='string').map(b=>b.text||b).join('');
+  }
+  if(res.text)return res.text;
+  if(res.body)return res.body;
+  return JSON.stringify(res);
+}
+
+async function loadLecapPanel(){
+  if(lecapLoading)return;
+  const panel=document.getElementById('panel-lecaps');
+  if(!lecapData){
+    panel.innerHTML=`<div style="padding:40px;text-align:center;color:#888"><div style="font-size:2rem;margin-bottom:12px">⏳</div><div>Cargando cotizaciones LECAPs...</div></div>`;
+    lecapLoading=true;
+    const FILE_ID=DATA_FILE_ID;
+    const SHEET_URL='https://docs.google.com/spreadsheets/d/'+FILE_ID+'/export?format=csv&gid=870011159';
+    let parsed=null;
+    let errMsg='';
+    try{
+      // Intento 1: Drive MCP — fuente principal (tabla 2 cols TICKER|PRECIO de la hoja LECAP)
+      if(window.cowork&&typeof window.cowork.callMcpTool==='function'){
+        try{
+          const res=await window.cowork.callMcpTool(
+            'mcp__b5211e5b-bb8a-4302-ab9c-1a9da1d9d6a6__read_file_content',
+            {fileId:FILE_ID}
+          );
+          const raw=extractText(res);
+          if(raw&&raw.length>50){
+            let mdText=raw;
+            try{const j=JSON.parse(raw);if(j.fileContent)mdText=j.fileContent;}catch(e){}
+            parsed=parseMdLecaps(mdText);
+          }
+        }catch(e1){errMsg+='Drive: '+e1.message+'. ';}
+      }
+      // Intento 2: fetch directo al CSV publicado (fallback)
+      if(!parsed){
+        try{
+          const r=await fetch(SHEET_URL,{cache:'no-store'});
+          if(r.ok){
+            const t=await r.text();
+            // verificar que es CSV real (contiene comas y no es un mensaje de error)
+            if(t&&t.trim().length>10&&t.includes(',')&&!t.includes('mcp_tools')){parsed=parseCSV(t);}
+          } else errMsg+='HTTP '+r.status+'. ';
+        }catch(e2){errMsg+='fetch: '+e2.message+'. ';}
+      }
+      if(!parsed||!parsed.headers||parsed.headers.length===0)throw new Error(errMsg||'Sin datos');
+      lecapData={_parsed:parsed};
+    }catch(e){
+      panel.innerHTML=`<div style="padding:40px;text-align:center;color:#cb2431">
+        <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
+        <div style="font-weight:700;margin-bottom:8px">No se pudo leer el Google Sheet</div>
+        <div style="font-size:0.8rem;color:#888;margin-top:8px;max-width:440px;margin-left:auto;margin-right:auto">${e.message}</div>
+        <div style="font-size:0.73rem;color:#bbb;margin-top:6px">Verificá que la hoja esté publicada: Archivo → Compartir → Publicar en la web → CSV</div>
+        <button onclick="lecapData=null;lecapLoading=false;loadLecapPanel()" style="margin-top:16px;padding:8px 20px;border:none;border-radius:8px;background:#1a1a2e;color:white;cursor:pointer;font-size:0.85rem">🔄 Reintentar</button>
+      </div>`;
+      lecapLoading=false;return;
+    }
+    lecapLoading=false;
+  }
+  renderLecapPanel();
+}
+
+let lecapSort='tna';
+
+function calcYields(pa,pf,dias){
+  if(!pf||!pa||dias<=0)return{rend:null,tna:null,tem:null,tea:null};
+  const ratio=pf/pa;
+  const rend=(ratio-1)*100;
+  const tna=(ratio-1)*(365/dias)*100;
+  const tem=(Math.pow(ratio,30/dias)-1)*100;
+  const tea=(Math.pow(ratio,365/dias)-1)*100;
+  return{rend,tna,tem,tea};
+}
+
+function tnaColor(tna){
+  if(tna===null)return'#888';
+  if(tna>=50)return'#1e7e34';
+  if(tna>=35)return'#2e7d32';
+  if(tna>=25)return'#b45309';
+  return'#cb2431';
+}
+function tnaBg(tna){
+  if(tna===null)return'#f0f2f5';
+  if(tna>=50)return'#e6f4ea';
+  if(tna>=35)return'#f0faf0';
+  if(tna>=25)return'#fef3c7';
+  return'#fce8e8';
+}
+
+function renderLecapPanel(){
+  const panel=document.getElementById('panel-lecaps');
+  const {headers,rows}=lecapData._parsed||{headers:[],rows:[]};
+
+  const iTicker=findCol(headers,'ticker','especie','simbolo','symbol','instrumento','letras','bono','codigo');
+  const iPrecio=findCol(headers,'precio','price','ultimo','cierre','close','px','cotiz','valor');
+
+  if(iTicker<0||iPrecio<0){
+    panel.innerHTML=`<div style="padding:24px;background:white;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.07)">
+      <div style="font-size:0.9rem;font-weight:700;color:#cb2431;margin-bottom:12px">⚠️ No se detectaron columnas automáticamente</div>
+      <div style="font-family:monospace;font-size:0.78rem;background:#f7f8fa;padding:10px;border-radius:6px;color:#333">${headers.map((h,i)=>`[${i}] ${h}`).join('<br>')}</div>
+      <button onclick="lecapData=null;lecapLoading=false;loadLecapPanel()" style="margin-top:14px;padding:7px 18px;border:none;border-radius:8px;background:#1a1a2e;color:white;cursor:pointer;font-size:0.82rem">🔄 Reintentar</button>
+    </div>`;
+    return;
+  }
+
+  const items=rows.map(r=>{
+    const ticker=(r[iTicker]||'').replace(/^"|"$/g,'').trim().toUpperCase();
+    if(!ticker||ticker.length!==5||ticker[0]!=='S')return null;
+    const info=decodeLecap(ticker);
+    if(!info||info.dias<0)return null;
+    const rawPrecio=(r[iPrecio]||'').replace(/[$\s"]/g,'').replace(',','.');
+    const price=parseFloat(rawPrecio);
+    if(isNaN(price)||price<50||price>200)return null;
+    const pf=PRECIO_FINAL[ticker]||null;
+    const yields=calcYields(price,pf,info.dias);
+    const tc=SPOT?.tc||null;
+    const dolar_eq=(tc&&pf&&price)?tc*(pf/price):null;
+    return{ticker,...info,price,pf,...yields,dolar_eq,tc};
+  }).filter(Boolean);
+
+  // Deduplicar por ticker, quedándose con el primero de cada uno
+  const seen=new Set();
+  const unique=items.filter(d=>{if(seen.has(d.ticker))return false;seen.add(d.ticker);return true;});
+  const withYield=unique.filter(d=>d.tna!==null);
+  const sorted=[...unique].sort((a,b)=>{
+    if(lecapSort==='venc')return a.venc-b.venc;
+    if(lecapSort==='tna'){
+      if(a.tna===null&&b.tna===null)return 0;
+      if(a.tna===null)return 1;
+      if(b.tna===null)return -1;
+      return b.tna-a.tna;
+    }
+    if(lecapSort==='tem'){
+      if(a.tem===null&&b.tem===null)return 0;
+      if(a.tem===null)return 1;
+      if(b.tem===null)return -1;
+      return b.tem-a.tem;
+    }
+    if(lecapSort==='precio')return a.price-b.price;
+    if(lecapSort==='deq'){
+      if(a.dolar_eq===null&&b.dolar_eq===null)return 0;
+      if(a.dolar_eq===null)return 1;
+      if(b.dolar_eq===null)return -1;
+      return b.dolar_eq-a.dolar_eq;
+    }
+    return 0;
+  });
+
+  const bestTNA=withYield.length?Math.max(...withYield.map(d=>d.tna)):null;
+  const bestTicker=withYield.find(d=>d.tna===bestTNA);
+  const avgTEM=withYield.length?(withYield.reduce((s,d)=>s+d.tem,0)/withYield.length):null;
+  const proxVenc=items.length?items.reduce((m,d)=>d.dias<m.dias?d:m,items[0]):null;
+  const tcActual=SPOT?.tc||null;
+  const withDeq=items.filter(d=>d.dolar_eq!==null);
+  const avgDeq=withDeq.length?(withDeq.reduce((s,d)=>s+d.dolar_eq,0)/withDeq.length):null;
+  const now=new Date();
+  const ts=now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+
+  panel.innerHTML=`
+  <style>
+  .lc-wrap{font-family:'Segoe UI',Arial,sans-serif}
+  .lc-refresh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .lc-refresh-btn{padding:6px 14px;border:1.5px solid #1a1a2e;border-radius:8px;background:white;color:#1a1a2e;font-size:0.78rem;cursor:pointer;transition:all 0.15s}
+  .lc-refresh-btn:hover{background:#1a1a2e;color:white}
+  .lc-ts{font-size:0.74rem;color:#aaa}
+  .lc-kpis{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .lc-kpi{background:white;border-radius:10px;padding:13px 16px;flex:1;min-width:140px;box-shadow:0 2px 8px rgba(0,0,0,0.07)}
+  .lc-kpi .kl{font-size:0.68rem;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px}
+  .lc-kpi .kv{font-size:1.3rem;font-weight:800;color:#1a1a2e}
+  .lc-kpi .ks{font-size:0.72rem;color:#aaa;margin-top:2px}
+  .lc-kpi.kpi-green .kv{color:#1e7e34}
+  .lc-kpi.kpi-teal .kv{color:#0d6e56}
+  .lc-kpi.kpi-amber .kv{color:#b45309}
+  .lc-sort{display:flex;gap:6px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
+  .lc-sort span{font-size:0.75rem;color:#888;font-weight:600}
+  .ls-btn{padding:5px 13px;border:1.5px solid #dde;border-radius:20px;font-size:0.75rem;cursor:pointer;background:white;color:#555;transition:all 0.15s;font-weight:500}
+  .ls-btn.active{background:#1a1a2e;color:white;border-color:#1a1a2e}
+  .lc-table-card{background:white;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.07);overflow:hidden;margin-bottom:16px}
+  .lc-table-wrap{overflow-x:auto}
+  .lc-table{width:100%;border-collapse:collapse;font-size:0.82rem}
+  .lc-table thead tr{background:#f7f8fa}
+  .lc-table th{color:#555;font-weight:700;padding:10px 12px;text-align:right;border-bottom:2px solid #e8eaed;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.4px;cursor:pointer;white-space:nowrap;user-select:none}
+  .lc-table th:first-child{text-align:left}
+  .lc-table th.sort-active{color:#1a1a2e;background:#eef0f6}
+  .lc-table th:hover{background:#eef0f6}
+  .lc-table td{padding:9px 12px;border-bottom:1px solid #f0f2f5;text-align:right;white-space:nowrap;vertical-align:middle}
+  .lc-table td:first-child{text-align:left}
+  .lc-table tr:last-child td{border-bottom:none}
+  .lc-table tr:hover td{background:#f7fbff}
+  .lc-ticker{font-family:monospace;font-size:0.88rem;font-weight:800;color:#1a1a2e;letter-spacing:0.5px}
+  .lc-tipo{display:inline-block;padding:2px 7px;border-radius:10px;font-size:0.68rem;font-weight:700;background:#e0f2ee;color:#0d6e56}
+  .lc-dias{display:inline-block;padding:2px 7px;border-radius:10px;font-size:0.73rem;font-weight:700}
+  .lc-dias.soon{background:#fef3c7;color:#92400e}
+  .lc-dias.mid{background:#dbeafe;color:#1e40af}
+  .lc-dias.far{background:#ede9f7;color:#5b2d8e}
+  .lc-pf{color:#0d6e56;font-weight:700}
+  .lc-rend{font-weight:600;color:#1e7e34}
+  .lc-tna{display:inline-block;padding:3px 9px;border-radius:6px;font-size:0.82rem;font-weight:800;letter-spacing:0.2px}
+  .lc-tem{font-weight:600;color:#1565c0}
+  .lc-tea{font-size:0.78rem;color:#888}
+  .lc-na{color:#ccc;font-size:0.75rem}
+  .lc-best td{background:#f0fdf4!important}
+  .lc-chart-card{background:white;border-radius:10px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.07)}
+  .lc-chart-card h3{font-size:0.82rem;font-weight:700;color:#444;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px}
+  .lc-chart-card p{font-size:0.72rem;color:#aaa;margin-bottom:14px}
+  .lc-note{font-size:0.7rem;color:#bbb;margin-top:10px;text-align:right;font-style:italic}
+  </style>
+  <div class="lc-wrap">
+  <div class="lc-refresh">
+    <div class="lc-ts">Precio actual: ${ts} · ${items.length} instrumentos · Precio final: estático al vencimiento</div>
+    <button class="lc-refresh-btn" onclick="lecapData=null;lecapLoading=false;loadLecapPanel()">🔄 Actualizar precios</button>
+  </div>
+
+  <div class="lc-kpis">
+    <div class="lc-kpi kpi-green">
+      <div class="kl">Mejor TNA</div>
+      <div class="kv">${bestTNA!==null?bestTNA.toFixed(1)+'%':'—'}</div>
+      <div class="ks">${bestTicker?bestTicker.ticker+' · '+bestTicker.dias+'d':''}</div>
+    </div>
+    <div class="lc-kpi kpi-amber">
+      <div class="kl">Próx. Vencimiento</div>
+      <div class="kv">${proxVenc?proxVenc.dias+'d':'—'}</div>
+      <div class="ks">${proxVenc?proxVenc.ticker+' · '+proxVenc.display:''}</div>
+    </div>
+    <div class="lc-kpi" style="border-left:3px solid #1565c0">
+      <div class="kl">TC Mayorista</div>
+      <div class="kv" style="color:#1565c0">${tcActual?'$'+tcActual.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}</div>
+      <div class="ks">${SPOT?.fecha||'sin dato'}</div>
+    </div>
+  </div>
+
+  <div class="lc-sort">
+    <span>Ordenar:</span>
+    <button class="ls-btn ${lecapSort==='venc'?'active':''}" onclick="lecapSort='venc';renderLecapPanel()">Vencimiento</button>
+    <button class="ls-btn ${lecapSort==='tna'?'active':''}" onclick="lecapSort='tna';renderLecapPanel()">Mayor TNA</button>
+    <button class="ls-btn ${lecapSort==='tem'?'active':''}" onclick="lecapSort='tem';renderLecapPanel()">Mayor TEM</button>
+    <button class="ls-btn ${lecapSort==='precio'?'active':''}" onclick="lecapSort='precio';renderLecapPanel()">Precio actual</button>
+    <button class="ls-btn ${lecapSort==='deq'?'active':''}" onclick="lecapSort='deq';renderLecapPanel()">Mayor $ Equilibrio</button>
+  </div>
+
+  <div class="lc-table-card">
+    <div class="lc-table-wrap">
+    <table class="lc-table">
+      <thead><tr>
+        <th style="text-align:left">Ticker</th>
+        <th onclick="lecapSort='venc';renderLecapPanel()" class="${lecapSort==='venc'?'sort-active':''}">Vencimiento ↕</th>
+        <th>Días</th>
+        <th onclick="lecapSort='precio';renderLecapPanel()" class="${lecapSort==='precio'?'sort-active':''}">P. Actual ↕</th>
+        <th>P. Final</th>
+        <th>Rend. Total</th>
+        <th onclick="lecapSort='tna';renderLecapPanel()" class="${lecapSort==='tna'?'sort-active':''}">TNA ↕</th>
+        <th onclick="lecapSort='tem';renderLecapPanel()" class="${lecapSort==='tem'?'sort-active':''}">TEM ↕</th>
+        <th>TEA</th>
+        <th onclick="lecapSort='deq';renderLecapPanel()" class="${lecapSort==='deq'?'sort-active':''}" style="color:#7c3aed">$ Equilibrio ↕</th>
+      </tr></thead>
+      <tbody>${sorted.map(d=>{
+        const isBest=bestTNA!==null&&d.tna===bestTNA;
+        const diasCls=d.dias<=30?'soon':d.dias<=90?'mid':'far';
+        const hasYield=d.tna!==null;
+        const tnaBgVal=tnaBg(d.tna);
+        const tnaClr=tnaColor(d.tna);
+        return`<tr class="${isBest?'lc-best':''}">
+          <td><span class="lc-ticker">${d.ticker}</span>${isBest?' <span style="color:#f59e0b;font-size:0.7rem">★ mejor</span>':''}</td>
+          <td style="text-align:left;color:#555;font-size:0.8rem">${d.display}</td>
+          <td><span class="lc-dias ${diasCls}">${d.dias}d</span></td>
+          <td><strong>${d.price.toFixed(2)}</strong></td>
+          <td class="lc-pf">${d.pf?d.pf.toFixed(2):'<span class="lc-na">—</span>'}</td>
+          <td class="lc-rend">${hasYield?'+'+d.rend.toFixed(2)+'%':'<span class="lc-na">—</span>'}</td>
+          <td>${hasYield?`<span class="lc-tna" style="background:${tnaBgVal};color:${tnaClr}">${d.tna.toFixed(1)}%</span>`:'<span class="lc-na">—</span>'}</td>
+          <td class="lc-tem">${hasYield?d.tem.toFixed(2)+'%':'<span class="lc-na">—</span>'}</td>
+          <td class="lc-tea">${hasYield?d.tea.toFixed(1)+'%':'<span class="lc-na">—</span>'}</td>
+          <td style="font-weight:700;color:#7c3aed">${d.dolar_eq?'$'+d.dolar_eq.toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0}):'<span class="lc-na">—</span>'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+    </div>
+    <div class="lc-note" style="padding:8px 14px">TNA = tasa nominal anual (interés simple) · TEM = tasa efectiva mensual · TEA = tasa efectiva anual · P. Final = valor al vencimiento cada 100 VN</div>
+  </div>
+
+  <div class="lc-chart-card">
+    <h3>Curva de Rendimientos — TNA por Plazo</h3>
+    <p>Cada punto representa una letra. Un punto por encima de la curva indica mayor rendimiento relativo a su plazo.</p>
+    <div class="canvas-wrap" style="height:260px"><canvas id="lecap-chart"></canvas></div>
+  </div>
+  </div>`;
+
+  // Chart: TNA vs días, usando precio final real
+  const chartItems=sorted.filter(d=>d.dias>0&&d.tna!==null);
+  if(lecapChart){lecapChart.destroy();lecapChart=null;}
+  setTimeout(()=>{
+    const ctx=document.getElementById('lecap-chart');
+    if(!ctx||chartItems.length===0)return;
+    lecapChart=new Chart(ctx,{
+      type:'scatter',
+      data:{datasets:[{
+        label:'TNA',
+        data:chartItems.map(d=>({x:d.dias,y:d.tna,t:d.ticker,tem:d.tem,rend:d.rend,deq:d.dolar_eq})),
+        backgroundColor:chartItems.map(d=>tnaColor(d.tna)+'cc'),
+        pointRadius:8,pointHoverRadius:11,
+        pointStyle:'circle',
+      }]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{
+            title:items=>`${items[0].raw.t}`,
+            label:item=>[
+              `Plazo: ${item.raw.x}d`,
+              `TNA: ${item.raw.y.toFixed(2)}%`,
+              `Rend. total: +${item.raw.rend.toFixed(2)}%`,
+              ...(item.raw.deq?[`$ Equilibrio: ${item.raw.deq.toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0})}`]:[])
+            ]
+          }}
+        },
+        scales:{
+          x:{title:{display:true,text:'Días al vencimiento',font:{size:11}},grid:{color:'#f0f2f5'},ticks:{font:{size:11}}},
+          y:{title:{display:true,text:'TNA (%)',font:{size:11}},grid:{color:'#f0f2f5'},ticks:{font:{size:11},callback:v=>v.toFixed(0)+'%'}}
+        }
+      }
+    });
+    chartItems.forEach((d,i)=>{
+      const meta=lecapChart.getDatasetMeta(0);
+      if(!meta||!meta.data[i])return;
+    });
+  },50);
+}
+
+
+// ── Financiamiento ────────────────────────────────────────────────────
+let _finCultivo='soj';
+let _finTNA=32;
+let _finVA={soj:null,mai:null,tri:null};
+
+function _finSetCultivo(c){_finCultivo=c;buildFinanciamientoPanel();}
+function _finSetTNA(v){const n=parseFloat(String(v).replace(',','.'));if(!isNaN(n)&&n>0){_finTNA=n;buildFinanciamientoPanel();}}
+function _finSetVA(c,v){
+  const raw=String(v||'').replace(/\s/g,'').replace(/\./g,'').replace(',','.');
+  const n=parseFloat(raw);
+  _finVA[c]=(!v||v===''||isNaN(n)||n<=0)?null:n;
+  buildFinanciamientoPanel();
+}
+function _finGetVA(cult){
+  if(_finVA[cult])return _finVA[cult];
+  const panelId=cult+'-fut';
+  const customArs=window._customSpotArs&&window._customSpotArs[panelId];
+  if(customArs)return customArs;
+  const cultKey=cult==='soj'?'soja':cult==='mai'?'maiz':'trigo';
+  return SPOT?SPOT[cultKey+'_ars']:null;
+}
+function _finFindDollarFut(vencDisplay){
+  // Match exacto por mes/año: JUL26 → 07/2026, SEP26 → 09/2026, etc.
+  if(!DLR_FUT||!DLR_FUT.length)return null;
+  const mmap={ENE:'01',FEB:'02',MAR:'03',ABR:'04',MAY:'05',JUN:'06',JUL:'07',AGO:'08',SEP:'09',OCT:'10',NOV:'11',DIC:'12'};
+  const m=vencDisplay.match(/^([A-Z]{3})(\d{2})$/);
+  if(!m)return null;
+  const mon=mmap[m[1]];const yr='20'+m[2];
+  if(!mon)return null;
+  const target=mon+'/'+yr; // ej: "07/2026"
+  return DLR_FUT.find(r=>r.venc_display===target&&r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste)))||null;
+}
+function buildFinanciamientoPanel(){
+  const panel=document.getElementById('panel-financiamiento');if(!panel)return;
+  const cult=_finCultivo;
+  const cultLabel=cult==='soj'?'Soja':cult==='mai'?'Maíz':'Trigo';
+  const cultColor=cult==='soj'?'#2e7d32':cult==='mai'?'#e65100':'#1565c0';
+  const futs=cult==='soj'?SOJ_FUT:cult==='mai'?MAI_FUT:TRI_FUT;
+  if(!futs||!futs.length){panel.innerHTML='<div style="padding:48px;text-align:center;color:#aaa;font-size:0.9rem">Sin datos de futuros. Actualizá los datos primero.</div>';return;}
+  const va=_finGetVA(cult);
+  const isVAManual=!!_finVA[cult];
+  const isVAFromAcopio=!isVAManual&&!!(window._customSpotArs&&window._customSpotArs[cult+'-fut']);
+  const vaDisplay=va?va.toLocaleString('es-AR',{maximumFractionDigits:0}):'';
+  const tna=_finTNA/100;
+  const today=new Date();
+  const fmtARS=n=>n!=null?n.toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0}):'—';
+  const fmtUSD=n=>n!=null?n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+  // 3 próximos vencimientos válidos
+  const validFuts=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste)))).slice(0,3);
+  const cards=validFuts.map(f=>{
+    const vencDate=VENC_DATES[f.venc_display];
+    const dias=vencDate?Math.round((vencDate-today)/(1000*60*60*24)):null;
+    const vtoAnios=dias!=null?dias/365:null;
+    const vn=(va!=null&&dias!=null)?va*(1+tna*dias/365):null;
+    const dlrFut=_finFindDollarFut(f.venc_display);
+    const futPriceUsd=parseFloat(f.ajuste);
+    const dlrPrice=dlrFut?parseFloat(dlrFut.ajuste):null;
+    const resultado=(futPriceUsd&&dlrPrice)?futPriceUsd*dlrPrice:null;
+    const conviene=(resultado!=null&&vn!=null)?(resultado>=vn):null;
+    const diferencia=(resultado!=null&&vn!=null)?resultado-vn:null;
+    const ratio=(resultado!=null&&vn!=null)?(resultado/vn*100):null;
+    const cardClass=conviene===null?'fin-venc-card':conviene?'fin-venc-card conviene':'fin-venc-card no-conviene';
+    const badge=conviene===null?'<span style="color:#aaa;font-size:0.82rem">Sin datos suficientes</span>':
+      conviene?'<span class="fin-badge-conv">✅ Conviene financiarse</span>':
+               '<span class="fin-badge-noconv">❌ No conviene financiarse</span>';
+    const difHtml=diferencia!=null?`<div style="display:flex;justify-content:space-between;margin-top:4px">
+      <span style="font-size:0.85rem;font-weight:800;color:${conviene?'#166534':'#991b1b'}">${diferencia>=0?'+':''}$${fmtARS(diferencia)}/tn</span>
+      <span style="font-size:0.82rem;font-weight:700;color:${conviene?'#166534':'#991b1b'}">${ratio?(ratio-100>=0?'+':'')+(ratio-100).toFixed(1)+'%':''}</span>
+    </div>`:'';
+    const fechaStr=vencDate?vencDate.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+    return `<div class="${cardClass}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="font-size:1.15rem;font-weight:900;color:${cultColor}">${f.venc_display}</div>
+        <div style="text-align:right"><div style="font-size:0.7rem;color:#aaa">Vto: ${fechaStr}</div><div style="font-size:0.7rem;color:#aaa">${dias!=null?dias+' días':''}</div></div>
+      </div>
+      <div class="fin-section-title">📄 Costo de financiamiento</div>
+      <div class="fin-row"><span class="fin-label">Precio disponible (VA)</span><span class="fin-val">${va?'$'+fmtARS(va):'—'}</span></div>
+      <div class="fin-row"><span class="fin-label">TNA · días · años</span><span class="fin-val">${_finTNA}% · ${dias!=null?dias:'—'}d · ${vtoAnios!=null?vtoAnios.toFixed(3):'—'}</span></div>
+      <div class="fin-total-row"><span style="font-size:0.8rem;font-weight:700;color:#555">VN del cheque</span><span style="font-size:1rem;font-weight:800;color:#1a1a2e">${vn?'$'+fmtARS(vn):'—'}</span></div>
+      <div class="fin-section-title" style="margin-top:6px">📈 Futuro ${cultLabel} × Futuro Dólar</div>
+      <div class="fin-row"><span class="fin-label">Futuro ${cultLabel}</span><span class="fin-val">USD ${fmtUSD(futPriceUsd)}/tn</span></div>
+      <div class="fin-row"><span class="fin-label">Futuro Dólar ${dlrFut?'('+dlrFut.venc_display+')':''}</span><span class="fin-val">${dlrPrice?'$'+fmtARS(dlrPrice)+'/USD':'—'}</span></div>
+      <div class="fin-total-row" style="background:#eff6ff;"><span style="font-size:0.8rem;font-weight:700;color:#1e40af">Resultado futuros</span><span style="font-size:1rem;font-weight:800;color:#1e40af">${resultado?'$'+fmtARS(resultado):'—'}</span></div>
+      <div style="border-top:1px solid #f0f2f5;margin-top:4px;padding-top:10px">
+        ${badge}${difHtml}
+      </div>
+    </div>`;
+  });
+  const cultBtns=['soj','mai','tri'].map(c=>{
+    const lbl=c==='soj'?'🌱 Soja':c==='mai'?'🌽 Maíz':'🌾 Trigo';
+    const act=c===cult;
+    const cc=c==='soj'?'#2e7d32':c==='mai'?'#e65100':'#1565c0';
+    return `<button onclick="_finSetCultivo('${c}')" style="padding:8px 22px;border:2px solid ${act?cc:'#dde'};border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;background:${act?cc:'white'};color:${act?'white':'#555'};transition:all 0.15s">${lbl}</button>`;
+  }).join('');
+  const vaBadge=isVAManual?'<span style="font-size:0.65rem;background:#f59e0b;color:#1a1a2e;padding:1px 7px;border-radius:3px;font-weight:800;margin-left:6px">MANUAL</span>':
+    isVAFromAcopio?'<span style="font-size:0.65rem;background:#6366f1;color:white;padding:1px 7px;border-radius:3px;font-weight:700;margin-left:6px">desde acopio</span>':
+    '<span style="font-size:0.65rem;color:#aaa;margin-left:5px">mercado</span>';
+  const vaClearBtn=isVAManual?`<button onclick="_finVA['${cult}']=null;buildFinanciamientoPanel()" style="background:none;border:none;color:#f59e0b;cursor:pointer;font-size:0.78rem;font-weight:700;padding:0 4px">✕ auto</button>`:'';
+  panel.innerHTML=`
+    <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">${cultBtns}</div>
+    <div class="fin-card" style="margin-bottom:4px">
+      <div style="font-size:0.8rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">⚙️ Parámetros</div>
+      <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:0.7rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.4px">VA – Precio disponible ARS/tn ${vaBadge}</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="color:#888;font-size:0.9rem">$</span>
+            <input type="text" id="fin-va-${cult}" value="${vaDisplay}" placeholder="ej: 465.000"
+              style="padding:7px 12px;border:1.5px solid ${isVAManual?'#f59e0b':'#dde'};border-radius:8px;font-size:0.9rem;font-weight:700;color:#1a1a2e;width:155px;outline:none;background:${isVAManual?'#fffbeb':'white'}"
+              onkeydown="if(event.key==='Enter'){_finSetVA('${cult}',this.value);this.blur();}"
+              onblur="_finSetVA('${cult}',this.value)">
+            ${vaClearBtn}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:0.7rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.4px">Tasa TNA</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="fin-tna" value="${_finTNA}" min="1" max="300" step="0.5"
+              style="padding:7px 12px;border:1.5px solid #dde;border-radius:8px;font-size:0.9rem;font-weight:700;color:#1a1a2e;width:85px;outline:none"
+              onkeydown="if(event.key==='Enter'){_finSetTNA(this.value);this.blur();}"
+              onblur="_finSetTNA(this.value)">
+            <span style="color:#888;font-size:0.85rem">% TNA</span>
+          </div>
+        </div>
+        <div style="font-size:0.72rem;color:#bbb;padding-bottom:8px;font-style:italic">VN = VA × (1 + TNA × días/365)</div>
+      </div>
+    </div>
+    <div class="fin-venc-grid">${cards.join('')}</div>`;
+}
+
+// ── Selección de dispositivo ──────────────────────────────────────
+function showSplash(){
+  const el=document.createElement('div');
+  el.id='splash-overlay';
+  el.innerHTML=`<div class="splash-inner">
+    <div class="splash-logo">🌾</div>
+    <div class="splash-title">Data Miazzo · Dashboard</div>
+    <div class="splash-sub">¿Desde qué dispositivo estás ingresando?</div>
+    <div class="splash-options">
+      <div class="splash-btn" onclick="chooseDevice('mobile')">
+        <div class="sb-icon">📱</div>
+        <div class="sb-label">Celular</div>
+        <div class="sb-desc"></div>
+      </div>
+      <div class="splash-btn" onclick="chooseDevice('desktop')">
+        <div class="sb-icon">💻</div>
+        <div class="sb-label">Computadora</div>
+        <div class="sb-desc"></div>
+      </div>
+    </div>
+    <div class="splash-note">Tu preferencia se recordará para la próxima vez · <span style="cursor:pointer;text-decoration:underline;color:rgba(255,255,255,0.4)" onclick="localStorage.removeItem('a3_device_mode')">olvidar preferencia</span></div>
+  </div>`;
+  document.body.appendChild(el);
+}
+window.chooseDevice=function(mode){
+  localStorage.setItem('a3_device_mode',mode);
+  window.a3DeviceMode=mode;
+  document.getElementById('splash-overlay')?.remove();
+  loadAndInitA3();
+};
+window.a3DeviceMode=localStorage.getItem('a3_device_mode');
+if(window.a3DeviceMode){loadAndInitA3();}else{showSplash();}
+</script>
+</body>
+</html>
