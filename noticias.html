@@ -195,6 +195,8 @@ body {
    Última actualización: 2026-06-13
    ═══════════════════════════════════════════════════════════════════════ */
 const NEWS_DATA = [
+  {"fecha":"2026-06-13","fuente":"Bichos de Campo","cultivo":"Trigo / Maíz","titulo":"Los precios de los fertilizantes nitrogenados siguen cayendo, pero el fósforo se muestra aún reacio a convalidar bajas","resumen":"La urea CFR Argentina cayó a US$500–530/t (mayorista US$610–630/t), una baja acumulada de US$340/t desde el máximo de abril; hay señales de reactivación de importaciones apuntando a embarques de julio. India licitó 1,7 Mt con ofertas récord de 5,8–6,2 Mt de 33 proveedores; China reinstauró un piso de US$500–510/t FOB exclusivo para India el 9/jun, desplazando la adjudicación hacia Rusia y Omán. El DAP/MAP se mantiene en US$910–940/t CFR (mayorista US$970–990/t, unos US$100–130/t sobre paridad de importación); los productores argentinos recortan dosis de fosfatados para la campaña fina, generando incertidumbre sobre el consumo real del ciclo de invierno.","link":"https://bichosdecampo.com/los-precios-de-los-fertilizantes-nitrogenados-siguen-cayendo-pero-el-fosforo-se-muestra-aun-reacio-a-convalidar-bajas/"},
+  {"fecha":"2026-06-12","fuente":"Bichos de Campo","cultivo":"Maíz / Soja","titulo":"Barajar y dar de nuevo: Los fondos especulativos liquidaron todas sus posiciones compradas en maíz","resumen":"Según datos de la CFTC publicados el 12/jun, los fondos especulativos alcanzaron posición neta neutra en maíz en Chicago al cierre del martes 9/jun, completando la liquidación de todas las posiciones compradas acumuladas desde principios de año: la presión vendedora de los fondos deja de operar como factor bajista adicional en ese cereal. En soja, los fondos aún mantienen un volumen significativo de posiciones compradas sin liquidar, por lo que la toma de ganancias podría continuar si no emerge un nuevo catalizador alcista. El factor financiero sigue dominando por encima de los fundamentos agrícolas.","link":"https://bichosdecampo.com/barajar-y-dar-de-nuevo-los-administradores-de-fondos-agricolas-terminaron-de-liquidar-todas-las-posiciones-compradas-en-maiz/"},
   {"fecha":"2026-06-11","fuente":"La Nacion Campo","cultivo":"Maíz / Soja","titulo":"La soja en el mercado internacional tiene el peor precio en cuatro meses y el maíz en mínimos en ocho meses","resumen":"La posición julio de la soja en Chicago cerró el 11/jun en US$409,69/t, mínimo desde el 5 de febrero, mientras el maíz alcanzó sus valores más bajos en ocho meses (US$162,10/t). El USDA publicó su informe mensual: elevó la estimación de cosecha de soja argentina a 50 Mt y de Brasil a 180 Mt, con existencias mundiales de maíz en 281,22 Mt. Los fondos especulativos continúan deshaciendo posiciones compradas acumuladas desde principios de año. El clima favorable en EE.UU. reduce el riesgo productivo para la nueva campaña, y China sigue sin mostrar señales claras de compras de soja, presionando las cotizaciones a la baja.","link":"https://www.lanacion.com.ar/economia/campo/la-soja-en-el-mercado-internacional-esta-en-el-peor-precio-en-cuatro-meses-y-el-maiz-en-minimos-en-nid11062026/"},
   {"fecha":"2026-06-11","fuente":"Bichos de Campo","cultivo":"Trigo / Maíz / Soja","titulo":"¿Salió el informe del USDA? Eso ya no importa porque los precios de los commodities agroindustriales están determinados por factores financieros","resumen":"El USDA publicó su informe mensual recortando la estimación de cosecha de trigo de EE.UU. 2026/27 a 42,0 Mt (desde 42,4 Mt) y manteniendo la oferta exportable en 21,0 Mt, lo que generó alzas moderadas en trigo Kansas. Sin embargo, el factor financiero continúa dominando: el Banco Central Europeo subió tasas 25 pb a 2,25% para contener la inflación energética del conflicto en Medio Oriente, y la inflación mayorista de EE.UU. en mayo alcanzó 6,5% (máximo desde nov 2022). Se descuenta que el presidente de la Fed, Kevin Warsh, no subirá las tasas el 17/jun (tasa actual: 3,5-3,75%), aunque el mercado de bonos anticipa lo contrario. La alta volatilidad financiera sigue eclipsando los fundamentos agrícolas en la formación de precios de granos.","link":"https://bichosdecampo.com/salio-el-informe-del-usda-eso-ya-no-importa-porque-los-precios-de-los-commodities-agroindustriales-estan-determinados-por-factores-financieros/"},
   {"fecha":"2026-06-11","fuente":"Agrositio","cultivo":"Trigo / Maíz / Soja","titulo":"USDA, costos de fertilizantes y el nuevo impulso a las estimaciones de trigo y soja en Argentina","resumen":"Con el informe mensual del USDA publicado el 11/jun, el mercado espera ajustes menores en oferta/demanda. La Bolsa de Comercio de Rosario elevó su estimación de producción de trigo a 20 Mt y de soja a 51,5 Mt para el ciclo 2025/26 de Argentina. En maíz persiste la estacionalidad bajista, con operadores reduciendo posiciones compradas. Los altos costos de fertilizantes en EE.UU. llevaron a productores a reconsiderar rotaciones de cultivos. El mercado espera definiciones más claras hacia fines de junio para confirmar el rumbo de los granos.","link":"https://www.agrositio.com.ar/noticia/246758-usda-costos-de-fertilizantes-y-el-nuevo-impulso-a-las-estimaciones-de-trigo-y-soja-en-argentina.html"},
@@ -275,67 +277,4 @@ function renderNews() {
     filtered.length + (filtered.length === 1 ? ' noticia' : ' noticias');
 
   if (filtered.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">🌿</div>
-        <p>No hay noticias recientes para el filtro seleccionado.</p>
-      </div>`;
-    return;
-  }
-
-  // Agrupar por fecha para los separadores
-  const porFecha = {};
-  filtered.forEach(n => {
-    if (!porFecha[n.fecha]) porFecha[n.fecha] = [];
-    porFecha[n.fecha].push(n);
-  });
-
-  const html = Object.keys(porFecha).sort((a,b) => b.localeCompare(a)).map(fecha => {
-    const etiqueta = (() => {
-      const d = Math.floor((Date.now() - new Date(fecha)) / 86400000);
-      if (d === 0) return '⚡ Hoy';
-      if (d === 1) return '✅ Ayer';
-      return `📅 ${formatFecha(fecha)}`;
-    })();
-
-    const cards = porFecha[fecha].map(n => {
-      const cc = cultivoClass(n.cultivo);
-      return `
-      <div class="news-card c-${cc}">
-        <div class="card-meta">
-          <span class="card-fuente">${fuente_emoji(n.fuente)}</span>
-          <span class="card-cultivo ${tagClass(cc)}">${cultivoEmoji(n.cultivo)}${n.cultivo}</span>
-          <span class="age-badge ${isFresh(n.fecha)?'fresh':''}">${diasAtras(n.fecha)}</span>
-        </div>
-        <div class="card-titulo">${n.titulo}</div>
-        <div class="card-resumen">${n.resumen}</div>
-        <div class="card-footer">
-          <a class="btn-ver-nota" href="${n.link}" target="_blank">🔗 Ver nota completa</a>
-        </div>
-      </div>`;
-    }).join('');
-
-    return `<div class="date-divider">${etiqueta}</div>${cards}`;
-  }).join('');
-
-  container.innerHTML = `<div class="news-list">${html}</div>`;
-}
-
-function setFilter(f) {
-  activeFilter = f;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-  document.getElementById('chip-' + f).classList.add('active');
-  renderNews();
-}
-
-function setUpdateDate() {
-  if (!NEWS_DATA.length) return;
-  const latest = NEWS_DATA.reduce((a,b) => a.fecha > b.fecha ? a : b);
-  document.getElementById('update-date').textContent = formatFecha(latest.fecha);
-}
-
-setUpdateDate();
-renderNews();
-</script>
-</body>
-</html>
+    container.innerHT
