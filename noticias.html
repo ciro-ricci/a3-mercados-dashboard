@@ -213,5 +213,90 @@ const NEWS_DATA = [
   {"fecha":"2026-06-09","fuente":"Bichos de Campo","cultivo":"Trigo / Maíz","titulo":"Lejos del puerto, lejos de la rentabilidad: el transporte absorbe hasta un tercio del valor del trigo y el maíz en el norte santafesino","resumen":"Según el último informe de la Bolsa de Comercio de Santa Fe, en el departamento 9 de Julio el costo del flete representa el 30,4% del precio del trigo y el 31,4% del maíz. Situaciones similares se registran en General Obligado, donde el transporte al puerto rosarino se lleva hasta el 31,7% del valor del maíz. Argentina mueve el 93% de su producción granaria por camión, muy por encima del 61% de Brasil, que combina ferrocarril e hidrovías. Esta brecha logística estructura una desventaja competitiva permanente para los productores del norte bonaerense y el noreste santafesino, que ven recortada su rentabilidad independientemente de lo que ocurra con los precios internacionales.","link":"https://bichosdecampo.com/lejos-del-puerto-lejos-de-la-rentabilidad-en-el-norte-santafesino-el-transporte-ya-se-lleva-hasta-un-tercio-del-valor-del-trigo-maiz-y-sorgo/"},
   {"fecha":"2026-06-09","fuente":"Bichos de Campo","cultivo":"Trigo","titulo":"El trigo argentino recupera parte de su «ego» al dar por finalizada la etapa de bullying de la cebada forrajera","resumen":"Durante los últimos ciclos, la cebada forrajera había ganado terreno frente al trigo en varias zonas productoras, impulsada por mejores márgenes y menores exigencias de fertilización. Sin embargo, la campaña 2026/27 marca una reversión de esa tendencia: la rentabilidad proyectada del trigo supera nuevamente a la cebada en la mayoría de las regiones analizadas, empujando a los productores a reasignar área al cereal. Este cambio podría ampliar el área fina total del país y reforzar la proyección exportable de trigo argentino para la próxima temporada, en un contexto donde ya se registra el mejor ritmo de siembra en más de quince años.","link":"https://bichosdecampo.com/el-trigo-argentino-recupera-parte-de-su-ego-al-dar-por-finalizada-la-etapa-de-bullying-de-la-cebada-forrajera/"},
   {"fecha":"2026-06-08","fuente":"Bichos de Campo","cultivo":"Soja","titulo":"La turbulencia es rentable: algunos productores sacaron todo el «jugo» a la volatilidad de la soja","resumen":"El contrato futuro de Soja Rosario Julio 2026 en A3 Mercados encontró resistencia en la zona de US$320–325/t, nivel que actuó como techo técnico en las últimas ruedas. Los productores que construyeron posiciones compradas en marzo, cuando los contratos cotizaban entre US$330 y US$340/t, y las cerraron en el pico de mayo lograron capturar diferencias de US$10 a US$20/t. Mientras el interés abierto en la posición julio se reduce paulatinamente con tomas de ganancia, crece el posicionamiento en la posición noviembre 2026, que cerró en US$333,5/t, sugiriendo que el mercado ya está mirando la próxima campaña.","link":"https://bichosdecampo.com/la-turbulencia-es-rentable-algunos-productores-le-sacaron-todo-el-jugo-a-la-volatilidad-salvaje-que-esta-registrando-la-soja/"},
-  {"fecha":"2026-06-06","fuente":"Bichos de Campo","cultivo":"Soja","titulo":"Dale las gracias a Trump: si fuese por China estarías cobrando una miseria por la soja","resumen":"La política de biocombustibles de Trump —que eleva el mandato de uso de biodiesel en EE.UU.— sostiene el precio del aceite de soja y arrastra al alza los FOB de aceite argentino y brasileño. Sin fábricas aceiteras activas, la capacidad de pago del exportador de poroto sería de apenas US$295/t; con la industria procesadora, la Soja Rosario disponible cerró el viernes en US$318/t y el contrato julio 2026 en US$322,1/t en A3 Mercados. La BCR estima que Argentina procesará 48,1 Mt de soja sobre una oferta de 60,5 Mt en el ciclo 2025/26, exportando solo 5,5 Mt de poroto sin procesar principalmente a China. La firmeza del aceite (US$1.730/t) y el buen nivel de la harina completan el sostén del precio al productor.","link":"https://bichosdecampo.com/dale-las-gracias-a-trump-si-fuese-por-china-estarias-cobrando-una-miseria-por-la-soja/"},
-  {"fecha":"2026-06-06","fuente":"Bichos de Campo","cultivo":"Trigo / Maíz","titulo":"Cara y Ceca: Los precios de la urea bajan por el tobogán, pero los valores de los fertilizantes fosfatados ni se inmutan","resumen":"La urea cayó de su pico de mediados de abril (US$850–870/t CFR) a US$590–600/t CFR sin lograr concretar negocios; en el mercado mayorista argentino cotiza a US$720–740/t. E
+  {"fecha":"2026-06-06","fuente":"Bichos de Campo","cultivo":"Soja","titulo":"Dale las gracias a Trump: si fuese por China estarías cobrando una miseria por la soja","resumen":"La política de biocombustibles de Trump —que eleva el mandato de uso de biodiesel en EE.UU.— sostiene el precio del aceite de soja y arrastra al alza los FOB de aceite argentino y brasileño. Sin fábricas aceiteras activas, la capacidad de pago del exportador de poroto sería de apenas US$295/t; con la industria procesadora, la Soja Rosario disponible cerró el viernes en US$318/t y el contrato julio 2026 en US$322,1/t en A3 Mercados. La BCR estima que Argentina procesará 48,1 Mt de soja sobre una oferta de 60,5 Mt en el ciclo 2025/26, exportando solo 5,5 Mt de poroto sin procesar principalmente a China. La firmeza del aceite (US$1.730/t) y el buen nivel de la harina completan el sostén del precio al productor.","link":"https://bichosdecampo.com/dale-las-gracias-a-trump-si-fuese-por-china-estarias-cobrando-una-miseria-por-la-soja/"}
+];
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+var currentFilter = 'todos';
+
+function setFilter(crop) {
+  currentFilter = crop;
+  ['todos','trigo','maiz','soja'].forEach(function(c) {
+    var el = document.getElementById('chip-' + c);
+    if (el) el.classList.toggle('active', c === crop);
+  });
+  render();
+}
+
+function render() {
+  var container = document.getElementById('news-container');
+  var countEl   = document.getElementById('filter-count');
+  var updateEl  = document.getElementById('update-date');
+  var cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 7);
+
+  var items = NEWS_DATA.filter(function(n) {
+    var d = new Date(n.fecha);
+    if (d < cutoff) return false;
+    if (currentFilter === 'todos') return true;
+    return n.cultivo.toLowerCase().indexOf(currentFilter) >= 0;
+  });
+
+  if (countEl) countEl.textContent = items.length + ' nota' + (items.length !== 1 ? 's' : '');
+  if (updateEl && NEWS_DATA.length > 0) updateEl.textContent = NEWS_DATA[0].fecha;
+
+  if (items.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">🌿</div><p>No hay noticias para el filtro seleccionado.</p></div>';
+    return;
+  }
+
+  var html = '<div class="news-list">';
+  var lastDate = '';
+
+  items.forEach(function(n) {
+    var colorClass = n.cultivo.indexOf('/') >= 0 ? 'c-multi'
+      : n.cultivo.toLowerCase().indexOf('trigo') >= 0 ? 'c-trigo'
+      : (n.cultivo.toLowerCase().indexOf('maíz') >= 0 || n.cultivo.toLowerCase().indexOf('maiz') >= 0) ? 'c-maiz'
+      : n.cultivo.toLowerCase().indexOf('soja') >= 0 ? 'c-soja' : '';
+
+    var tagClass = n.cultivo.indexOf('/') >= 0 ? 'tag-multi'
+      : n.cultivo.toLowerCase().indexOf('trigo') >= 0 ? 'tag-trigo'
+      : (n.cultivo.toLowerCase().indexOf('maíz') >= 0 || n.cultivo.toLowerCase().indexOf('maiz') >= 0) ? 'tag-maiz'
+      : n.cultivo.toLowerCase().indexOf('soja') >= 0 ? 'tag-soja' : 'tag-gen';
+
+    var daysAgo = Math.floor((new Date() - new Date(n.fecha)) / 86400000);
+    var age = daysAgo === 0 ? 'Hoy' : daysAgo === 1 ? 'Ayer' : 'Hace ' + daysAgo + ' días';
+    var isFresh = daysAgo <= 1;
+
+    if (n.fecha !== lastDate) {
+      var label = daysAgo === 0 ? 'Hoy' : daysAgo === 1 ? 'Ayer'
+        : new Date(n.fecha + 'T00:00:00').toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long'});
+      html += '<div class="date-divider">' + label + '</div>';
+      lastDate = n.fecha;
+    }
+
+    var resumen = n.resumen.length > 220 ? n.resumen.slice(0, 220).replace(/\s\S+$/, '') + '…' : n.resumen;
+
+    html += '<div class="news-card ' + colorClass + '">'
+      + '<div class="card-meta">'
+      + '<span class="card-fecha">' + n.fecha + '</span>'
+      + '<span class="card-fuente">' + n.fuente + '</span>'
+      + '<span class="card-cultivo ' + tagClass + '">' + n.cultivo + '</span>'
+      + '<span class="age-badge' + (isFresh ? ' fresh' : '') + '">' + age + '</span>'
+      + '</div>'
+      + '<div class="card-titulo">' + n.titulo + '</div>'
+      + '<div class="card-resumen">' + resumen + '</div>'
+      + '<div class="card-footer"><a class="btn-ver-nota" href="' + n.link + '" target="_blank" rel="noopener">Ver nota →</a></div>'
+      + '</div>';
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', render);
+
+</script>
+</body>
+</html>
