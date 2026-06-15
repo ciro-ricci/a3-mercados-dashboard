@@ -1553,7 +1553,7 @@ function buildCultivosPanel(){
           </div>
           <div style="background:#e6f4ea;border-radius:8px;padding:8px 14px;text-align:center">
             <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Cond. Normal/Exc.</div>
-            <div style="font-size:1.3rem;font-weight:800;color:#2e7d32">${d.soja.condicion_normal_excelente}%</div>
+            <div style="font-size:1.3rem;font-weight:800;color:#2e7d32">${d.soja.condicion_normal_excelente != null ? d.soja.condicion_normal_excelente + '%' : 'N/D'}</div>
             <div style="font-size:0.68rem;color:#888">área remanente</div>
           </div>
         </div>
@@ -2266,9 +2266,4 @@ function newsRender() {
   });
 
   html += '</div>';
-  container.innerHTML = html;
-}
-
-</script>
-</body>
-</html>
+  
