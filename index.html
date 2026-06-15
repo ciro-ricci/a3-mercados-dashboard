@@ -1446,54 +1446,45 @@ function showTab(id){
 
 // ── PAS – Condición de Cultivos (Bolsa de Cereales) ───────────────
 const PAS_DATA = {
-  fecha: '03/06/2026',
+  fecha: '11/06/2026',
   campana: '2025/26',
   soja: {
-    cosecha_pct: 91.7,
-    rinde_qq: 32.0,
-    produccion_mtn: 50.1,
+    cosecha_pct: 95.2,
+    rinde_qq: 31.7,
+    produccion_mtn: 45.5,
     condicion_normal_excelente: null,
     zonas: [
-      {id:'I',   nombre:'NOA',          sembrada:951740,   perdida:26971,  cosechable:924769,   pct:88.6, ha_cos:819760,   rinde:31.1, prod:2550295},
-      {id:'II',  nombre:'NEA',          sembrada:1634210,  perdida:70160,  cosechable:1564050,  pct:85.5, ha_cos:1337020,  rinde:29.2, prod:3899586},
-      {id:'III', nombre:'Ctro N Cba',   sembrada:1792280,  perdida:64252,  cosechable:1728028,  pct:100.0,ha_cos:1728028,  rinde:33.2, prod:5734359},
-      {id:'IV',  nombre:'S Cba',        sembrada:1685520,  perdida:56228,  cosechable:1629292,  pct:99.7, ha_cos:1624905,  rinde:33.6, prod:5458246},
-      {id:'V',   nombre:'Ctro N SFe',   sembrada:1168770,  perdida:59590,  cosechable:1109180,  pct:95.1, ha_cos:1054667,  rinde:31.3, prod:3299831},
-      {id:'VI',  nombre:'Núcleo Norte', sembrada:2077210,  perdida:88822,  cosechable:1988388,  pct:100.0,ha_cos:1988388,  rinde:34.8, prod:6926572},
-      {id:'VII', nombre:'Núcleo Sur',   sembrada:2159800,  perdida:97794,  cosechable:2062006,  pct:98.3, ha_cos:2027344,  rinde:36.2, prod:7329264},
-      {id:'VIII',nombre:'Ctro E ER',    sembrada:992310,   perdida:55500,  cosechable:936810,   pct:90.1, ha_cos:844140,   rinde:23.5, prod:1982237},
-      {id:'IX',  nombre:'N LP-OBA',     sembrada:1743100,  perdida:55980,  cosechable:1687120,  pct:96.8, ha_cos:1632487,  rinde:38.2, prod:6235852},
-      {id:'X',   nombre:'Ctro BA',      sembrada:769200,   perdida:50589,  cosechable:718611,   pct:70.2, ha_cos:504575,   rinde:27.2, prod:1373646},
-      {id:'XI',  nombre:'SO BA-S LP',   sembrada:393630,   perdida:15180,  cosechable:378450,   pct:72.0, ha_cos:272504,   rinde:20.7, prod:562989},
-      {id:'XII', nombre:'SE BA',        sembrada:922520,   perdida:43560,  cosechable:878960,   pct:56.7, ha_cos:498678,   rinde:17.9, prod:894960},
-      {id:'XIII',nombre:'SL',           sembrada:263270,   perdida:18812,  cosechable:244458,   pct:98.9, ha_cos:241867,   rinde:25.3, prod:610758},
-      {id:'XIV', nombre:'Cuenca Sal',   sembrada:168440,   perdida:6437,   cosechable:162003,   pct:66.5, ha_cos:107776,   rinde:18.6, prod:200841},
-      {id:'XV',  nombre:'Otras',        sembrada:78000,    perdida:3027,   cosechable:74973,    pct:100.0,ha_cos:74973,    rinde:19.0, prod:142138},
+      {id:'IV',nombre:'S Cba',sembrada:1685520,perdida:56416,cosechable:1629104,pct:1628104.0,ha_cos:336,rinde:5470847.0,prod:0},
+      {id:'V',nombre:'Ctro N SFe',sembrada:1168770,perdida:61708,cosechable:1107062,pct:1078932.0,ha_cos:311,rinde:3362994.0,prod:0},
+      {id:'VI',nombre:'Núcleo Norte',sembrada:2077210,perdida:88877,cosechable:1988388,pct:1988388.0,ha_cos:348,rinde:6926572.0,prod:0},
+      {id:'VII',nombre:'Núcleo Sur',sembrada:2159800,perdida:99734,cosechable:2060006,pct:2053094.0,ha_cos:381,rinde:7406514.0,prod:0},
+      {id:'VIII',nombre:'Ctro E ER',sembrada:992310,perdida:60350,cosechable:931950,pct:908994.0,ha_cos:235,rinde:2132129.0,prod:0},
+      {id:'IX',nombre:'N LP-OBA',sembrada:1743100,perdida:56920,cosechable:1696180,pct:1657891.0,ha_cos:382,rinde:6325202.0,prod:0},
+      {id:'X',nombre:'Ctro BA',sembrada:769200,perdida:62267,cosechable:706933,pct:591921.0,ha_cos:286,rinde:1574054.0,prod:0},
+      {id:'XI',nombre:'SO BA-S LP',sembrada:393630,perdida:16648,cosechable:376983,pct:2966530.0,ha_cos:208,rinde:617362.0,prod:0},
+      {id:'XIII',nombre:'SL',sembrada:263270,perdida:19087,cosechable:244183,pct:244183.0,ha_cos:257,rinde:615019.0,prod:0},
+      {id:'XIV',nombre:'Cuenca Sal',sembrada:168440,perdida:761,cosechable:160809,pct:125703.0,ha_cos:185,rinde:232023.0,prod:0},
+      {id:'XV',nombre:'Otras',sembrada:78000,perdida:3077,cosechable:74973,pct:74373.0,ha_cos:19,rinde:142138.0,prod:0}
     ],
-    total: {sembrada:16800000, perdida:712901, cosechable:16087099, pct:91.7, ha_cos:14757111, rinde:32.0, prod:47201593}
+    total: {sembrada:16500000,perdida:755066,cosechable:16044234,pct:95.2,ha_cos:15279915,rinde:31.7,prod:45479269}
   },
   maiz: {
-    cosecha_pct: 40.6,
-    rinde_qq: 82.7,
-    produccion_mtn: 64.0,
+    cosecha_pct: 43.6,
+    rinde_qq: 82.1,
+    produccion_mtn: 29.6,
     zonas: [
-      {id:'I',   nombre:'NOA',          sembrada:487450,   perdida:2047,   cosechable:485403,   pct:15.0, ha_cos:72810,    rinde:62.5, prod:454808},
-      {id:'II',  nombre:'NEA',          sembrada:677700,   perdida:2203,   cosechable:675497,   pct:13.0, ha_cos:87815,    rinde:40.0, prod:351259},
-      {id:'III', nombre:'Ctro N Cba',   sembrada:958800,   perdida:6624,   cosechable:952176,   pct:27.2, ha_cos:258539,   rinde:80.0, prod:2068863},
-      {id:'IV',  nombre:'S Cba',        sembrada:1191480,  perdida:47437,  cosechable:1144043,  pct:33.3, ha_cos:380719,   rinde:66.2, prod:2522110},
-      {id:'V',   nombre:'Ctro N SFe',   sembrada:193550,   perdida:2832,   cosechable:190718,   pct:49.5, ha_cos:94440,    rinde:73.9, prod:698371},
-      {id:'VI',  nombre:'Núcleo Norte', sembrada:1022900,  perdida:24954,  cosechable:997946,   pct:84.9, ha_cos:846993,   rinde:99.5, prod:8429257},
-      {id:'VII', nombre:'Núcleo Sur',   sembrada:769100,   perdida:17489,  cosechable:751611,   pct:75.1, ha_cos:564592,   rinde:95.3, prod:5378356},
-      {id:'VIII',nombre:'Ctro E ER',    sembrada:384000,   perdida:9862,   cosechable:374138,   pct:85.4, ha_cos:319472,   rinde:57.5, prod:1835553},
-      {id:'IX',  nombre:'N LP-OBA',     sembrada:1056610,  perdida:8236,   cosechable:1048374,  pct:37.7, ha_cos:395363,   rinde:94.6, prod:3739703},
-      {id:'X',   nombre:'Ctro BA',      sembrada:350530,   perdida:1795,   cosechable:348735,   pct:25.3, ha_cos:88300,    rinde:74.4, prod:657059},
-      {id:'XI',  nombre:'SO BA-S LP',   sembrada:339200,   perdida:1601,   cosechable:337599,   pct:21.7, ha_cos:73125,    rinde:61.4, prod:448818},
-      {id:'XII', nombre:'SE BA',        sembrada:518480,   perdida:1669,   cosechable:516821,   pct:15.9, ha_cos:82127,    rinde:59.1, prod:485775},
-      {id:'XIII',nombre:'SL',           sembrada:339200,   perdida:1383,   cosechable:337817,   pct:13.6, ha_cos:46105,    rinde:76.5, prod:352807},
-      {id:'XIV', nombre:'Cuenca Sal',   sembrada:96000,    perdida:1203,   cosechable:94797,    pct:37.6, ha_cos:35606,    rinde:72.6, prod:258455},
-      {id:'XV',  nombre:'Otras',        sembrada:15000,    perdida:561,    cosechable:14439,    pct:100.0,ha_cos:14439,    rinde:66.9, prod:96631},
+      {id:'I',nombre:'NOA',sembrada:677700,perdida:2541,cosechable:675159,pct:15.0,ha_cos:101274,rinde:42.3,prod:427},
+      {id:'V',nombre:'Ctro N SFe',sembrada:193550,perdida:2912,cosechable:190638,pct:51.1,ha_cos:97506,rinde:74.0,prod:721363},
+      {id:'VI',nombre:'Núcleo Norte',sembrada:1022900,perdida:25161,cosechable:997739,pct:86.1,ha_cos:859097,rinde:99.2,prod:8522},
+      {id:'VII',nombre:'Núcleo Sur',sembrada:769100,perdida:17944,cosechable:751156,pct:77.6,ha_cos:582616,rinde:94.8,prod:5521},
+      {id:'I',nombre:'NOA',sembrada:350530,perdida:1884,cosechable:348646,pct:26.6,ha_cos:92640,rinde:74.6,prod:690908},
+      {id:'I',nombre:'NOA',sembrada:339200,perdida:1788,cosechable:337412,pct:24.0,ha_cos:81102,rinde:62.6,prod:507880},
+      {id:'I',nombre:'NOA',sembrada:518480,perdida:1792,cosechable:516688,pct:17.2,ha_cos:88626,rinde:59.2,prod:524766},
+      {id:'I',nombre:'NOA',sembrada:339200,perdida:2287,cosechable:336913,pct:22.3,ha_cos:75186,rinde:69.4,prod:521475},
+      {id:'XIV',nombre:'Cuenca Sal',sembrada:96000,perdida:1348,cosechable:94652,pct:42.2,ha_cos:39956,rinde:72.0,prod:287674},
+      {id:'XV',nombre:'Otras',sembrada:15000,perdida:561,cosechable:14439,pct:100.0,ha_cos:14439,rinde:66.9,prod:96631}
     ],
-    total: {sembrada:8400000, perdida:129887, cosechable:8270113, pct:40.6, ha_cos:3360445, rinde:82.7, prod:27777825}
+    total: {sembrada:8400000,perdida:135399,cosechable:8264601,pct:43.6,ha_cos:3606125,rinde:82.1,prod:29594504}
   }
 };
 
