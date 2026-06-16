@@ -195,8 +195,6 @@ body {
    Última actualización: 2026-06-15
    ═══════════════════════════════════════════════════════════════════════ */
 const NEWS_DATA = [
-  {"fecha":"2026-06-15","fuente":"Bichos de Campo","cultivo":"Trigo / Maíz / Soja","titulo":"Acuerdo EE.UU.-Irán: La fuerte baja del precio del petróleo no impactó en Chicago por el reingreso de capitales especulativos","resumen":"El presidente iraní anunció la firma del acuerdo con EE.UU. para el viernes 19/jun, lo que derrumbó los precios internacionales del petróleo, pero los contratos del CME Group no cedieron porque nuevos fondos especulativos reingresaron al mercado tras la liquidación masiva de posiciones de la semana pasada. El impacto bajista del petróleo —que pesa más sobre los aceites vegetales— está siendo compensado por compras de quienes evalúan que los commodities agroindustriales están baratos. Aún es temprano para determinar si el reingreso de fondos marcará una tendencia alcista sostenida.","link":"https://bichosdecampo.com/acuerdo-ee-uu-iran-la-fuerte-baja-del-precio-del-petroleo-no-impacto-en-chicago-por-el-reingreso-de-capitales-especulativos/"},
-  {"fecha":"2026-06-14","fuente":"Bichos de Campo","cultivo":"Soja","titulo":"¿Locura o estrategia comercial? Apenas el 21% de la cosecha de soja 2025/26 tiene precio hecho","resumen":"Con la cosecha de soja 2025/26 prácticamente completada, solo el 21% de la producción tiene precio cerrado, mínimo histórico desde 1994/95. Los productores retienen el 79% restante apostando a una recuperación de precios mientras Chicago opera en mínimos de varios meses; la demanda industrial urgente sostiene los precios locales por encima de la capacidad teórica de pago pero sin lograr liberar el flujo comercial. El diferencial entre la estrategia de retención y la necesidad de liquidez de la cadena tensiona la comercialización de la campaña 2025/26.","link":"https://bichosdecampo.com/locura-o-estrategia-comercial-apenas-el-21-de-la-cosecha-de-soja-2025-26-tiene-precio-hecho/"},
   {"fecha":"2026-06-13","fuente":"Bichos de Campo","cultivo":"Soja","titulo":"El balance regional de la soja en 2025/26 consolida el rol crucial de la zona central","resumen":"La BCR estima la producción de soja 2025/26 en 51,5 Mt: la región Centro aportaría el 75% (≈38,6 Mt), la Sur 6,4 Mt y la Norte 6,3 Mt. Se procesarían 43,6 Mt en el complejo oleaginoso, con exportaciones de poroto proyectadas en al menos 6,0 Mt. Los stocks finales nacionales subirán de 3,4 a 6,3 Mt gracias a la cosecha récord, con el Gran Rosario concentrando 37,5 Mt de molienda.","link":"https://bichosdecampo.com/el-balance-regional-de-la-soja-en-2025-26-consolida-el-rol-crucial-de-la-zona-central/"},
   {"fecha":"2026-06-12","fuente":"Agrositio","cultivo":"Maíz / Soja","titulo":"La cosecha de soja con precio puesto en mínimos y el maíz con récord de descargas","resumen":"La BCR informa que solo el 21% de la cosecha de soja 2025/26 tiene precio en firme —mínimo histórico desde 1994/95—: 10,4 Mt con precio cerrado y 7,6 Mt pendientes de fijación; los precios en Chicago por debajo de la media histórica desincentivan la venta. Las descargas de maíz en el Gran Rosario acumulan 13 Mt en el año (+25% vs 2025, récord estacional), aunque el ritmo aminora ante la llegada del tardío; 33% de la producción de maíz ya tiene precio, proporción máxima en cuatro años. Los fondos especulativos liquidaron más de 830.000 contratos agro en Chicago —mayor posición comprada de la historia—, presionando soja -5% y maíz a mínimos de octubre 2025.","link":"https://www.agrositio.com.ar/noticia/246797-la-cosecha-de-soja-con-precio-puesto-en-minimos.html"},
   {"fecha":"2026-06-12","fuente":"Agrositio","cultivo":"Trigo / Maíz / Soja","titulo":"Informe USDA: Oferta cómoda en maíz y soja frente a un trigo con mayor soporte","resumen":"El WASDE de junio elevó la producción mundial de trigo 2026/27 a 820 Mt con demanda en 824,6 Mt; los stocks de EE.UU. se recortaron a 20,25 Mt. Para maíz, los stocks mundiales 2026/27 subieron de 309,2 a 312,4 Mt; futuros julio cayeron debajo de US$4,15/bu. En soja, los stocks mundiales se mantuvieron en 124,9 Mt sin cambios; producción rusa de trigo elevada en 2 Mt a 88 Mt, y la australiana recortada en 2 Mt a 28 Mt.","link":"https://www.agrositio.com.ar/noticia/246777-informe-usda-oferta-comoda-en-maiz-y-soja-frente-a-un-trigo-con-mayor-soporte.html"},
@@ -259,4 +257,46 @@ function render() {
   items.forEach(function(n) {
     var colorClass = n.cultivo.indexOf('/') >= 0 ? 'c-multi'
       : n.cultivo.toLowerCase().indexOf('trigo') >= 0 ? 'c-trigo'
-      : (n.cultivo.toLowerCase().indexOf('maíz') 
+      : (n.cultivo.toLowerCase().indexOf('maíz') >= 0 || n.cultivo.toLowerCase().indexOf('maiz') >= 0) ? 'c-maiz'
+      : n.cultivo.toLowerCase().indexOf('soja') >= 0 ? 'c-soja' : '';
+
+    var tagClass = n.cultivo.indexOf('/') >= 0 ? 'tag-multi'
+      : n.cultivo.toLowerCase().indexOf('trigo') >= 0 ? 'tag-trigo'
+      : (n.cultivo.toLowerCase().indexOf('maíz') >= 0 || n.cultivo.toLowerCase().indexOf('maiz') >= 0) ? 'tag-maiz'
+      : n.cultivo.toLowerCase().indexOf('soja') >= 0 ? 'tag-soja' : 'tag-gen';
+
+    var daysAgo = Math.floor((new Date() - new Date(n.fecha)) / 86400000);
+    var age = daysAgo === 0 ? 'Hoy' : daysAgo === 1 ? 'Ayer' : 'Hace ' + daysAgo + ' días';
+    var isFresh = daysAgo <= 1;
+
+    if (n.fecha !== lastDate) {
+      var label = daysAgo === 0 ? 'Hoy' : daysAgo === 1 ? 'Ayer'
+        : new Date(n.fecha + 'T00:00:00').toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long'});
+      html += '<div class="date-divider">' + label + '</div>';
+      lastDate = n.fecha;
+    }
+
+    var resumen = n.resumen.length > 220 ? n.resumen.slice(0, 220).replace(/\s\S+$/, '') + '…' : n.resumen;
+
+    html += '<div class="news-card ' + colorClass + '">'
+      + '<div class="card-meta">'
+      + '<span class="card-fecha">' + n.fecha + '</span>'
+      + '<span class="card-fuente">' + n.fuente + '</span>'
+      + '<span class="card-cultivo ' + tagClass + '">' + n.cultivo + '</span>'
+      + '<span class="age-badge' + (isFresh ? ' fresh' : '') + '">' + age + '</span>'
+      + '</div>'
+      + '<div class="card-titulo">' + n.titulo + '</div>'
+      + '<div class="card-resumen">' + resumen + '</div>'
+      + '<div class="card-footer"><a class="btn-ver-nota" href="' + n.link + '" target="_blank" rel="noopener">Ver nota →</a></div>'
+      + '</div>';
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', render);
+
+</script>
+</body>
+</html>
