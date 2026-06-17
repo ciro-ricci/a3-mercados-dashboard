@@ -15,6 +15,7 @@
 </script>
 <html lang="es">
 <head>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Estrategias al grano</title>
@@ -2270,6 +2271,24 @@ function newsRender() {
   container.innerHTML = html;
 }
 
+</script>
+<script>
+(function(){
+  function showGate(){
+    document.body.innerHTML = '<div id="login-gate" style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#16213e;color:white;font-family:system-ui">' +
+      '<h2 style="margin-bottom:18px">\ud83d\udd12 Acceso restringido</h2>' +
+      '<button onclick="netlifyIdentity.open()" style="padding:12px 28px;border-radius:8px;border:none;background:#22c55e;color:white;font-weight:700;font-size:1rem;cursor:pointer">Iniciar sesi\u00f3n con Google</button>' +
+      '</div>';
+  }
+  if(window.netlifyIdentity){
+    netlifyIdentity.on('init', function(user){
+      if(!user){ showGate(); }
+    });
+    netlifyIdentity.on('login', function(){ location.reload(); });
+    netlifyIdentity.on('logout', function(){ location.reload(); });
+    netlifyIdentity.init();
+  }
+})();
 </script>
 </body>
 </html>
