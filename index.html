@@ -2274,18 +2274,28 @@ function newsRender() {
 </script>
 <script>
 (function(){
+  function hasAuthToken(){
+    return /confirmation_token|invite_token|recovery_token|access_token/.test(location.hash);
+  }
   function showGate(){
-    document.body.innerHTML = '<div id="login-gate" style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#16213e;color:white;font-family:system-ui">' +
-      '<h2 style="margin-bottom:18px">\ud83d\udd12 Acceso restringido</h2>' +
-      '<button onclick="netlifyIdentity.open()" style="padding:12px 28px;border-radius:8px;border:none;background:#22c55e;color:white;font-weight:700;font-size:1rem;cursor:pointer">Iniciar sesi\u00f3n con Google</button>' +
-      '</div>';
+    if(document.getElementById('login-gate')) return;
+    var gate=document.createElement('div');
+    gate.id='login-gate';
+    gate.style.cssText='position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#16213e;color:white;font-family:system-ui';
+    gate.innerHTML='<h2 style="margin-bottom:18px">\ud83d\udd12 Acceso restringido</h2>' +
+      '<button onclick="netlifyIdentity.open()" style="padding:12px 28px;border-radius:8px;border:none;background:#22c55e;color:white;font-weight:700;font-size:1rem;cursor:pointer">Iniciar sesi\u00f3n con Google</button>';
+    document.body.appendChild(gate);
+  }
+  function hideGate(){
+    var g=document.getElementById('login-gate');
+    if(g) g.remove();
   }
   if(window.netlifyIdentity){
     netlifyIdentity.on('init', function(user){
-      if(!user){ showGate(); }
+      if(!user && !hasAuthToken()){ showGate(); }
     });
-    netlifyIdentity.on('login', function(){ location.reload(); });
-    netlifyIdentity.on('logout', function(){ location.reload(); });
+    netlifyIdentity.on('login', function(){ hideGate(); netlifyIdentity.close(); });
+    netlifyIdentity.on('logout', function(){ showGate(); });
     netlifyIdentity.init();
   }
 })();
