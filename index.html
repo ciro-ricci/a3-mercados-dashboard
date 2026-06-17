@@ -1857,6 +1857,8 @@ function renderLecapPanel(){
 let _finCultivo='soj';
 let _finTNA=32;
 let _finVA={soj:null,mai:null,tri:null};
+let _finModo='pesos';
+let _finTasaUsd=7;
 
 function _finSetCultivo(c){_finCultivo=c;buildFinanciamientoPanel();}
 function _finSetTNA(v){const n=parseFloat(String(v).replace(',','.'));if(!isNaN(n)&&n>0){_finTNA=n;buildFinanciamientoPanel();}}
@@ -1866,6 +1868,8 @@ function _finSetVA(c,v){
   _finVA[c]=(!v||v===''||isNaN(n)||n<=0)?null:n;
   buildFinanciamientoPanel();
 }
+function _finSetModo(m){_finModo=m;buildFinanciamientoPanel();}
+function _finSetTasaUsd(v){const n=parseFloat(String(v).replace(',','.'));if(!isNaN(n)&&n>=0){_finTasaUsd=n;buildFinanciamientoPanel();}}
 function _finGetVA(cult){
   if(_finVA[cult])return _finVA[cult];
   const panelId=cult+'-fut';
@@ -1873,6 +1877,14 @@ function _finGetVA(cult){
   if(customArs)return customArs;
   const cultKey=cult==='soj'?'soja':cult==='mai'?'maiz':'trigo';
   return SPOT?SPOT[cultKey+'_ars']:null;
+}
+function _finGetVAUsd(cult){
+  const cultKey=cult==='soj'?'soja':cult==='mai'?'maiz':'trigo';
+  const panelId=cult+'-fut';
+  const customArs=window._customSpotArs&&window._customSpotArs[panelId];
+  if(customArs&&SPOT&&SPOT.tc)return customArs/SPOT.tc;
+  if(!SPOT)return null;
+  return SPOT[cultKey+'_usd']||(SPOT.tc&&SPOT[cultKey+'_ars']?SPOT[cultKey+'_ars']/SPOT.tc:null);
 }
 function _finFindDollarFut(vencDisplay){
   // Match exacto por mes/año: JUL26 → 07/2026, SEP26 → 09/2026, etc.
@@ -1887,6 +1899,97 @@ function _finFindDollarFut(vencDisplay){
 }
 function buildFinanciamientoPanel(){
   const panel=document.getElementById('panel-financiamiento');if(!panel)return;
+  const modoBtns=['pesos','dolar'].map(m=>{
+    const lbl=m==='pesos'?'\ud83d\udcb5 Pesos':'\ud83d\udcb2 D\u00f3lar';
+    const act=m===_finModo;
+    return `<button onclick="_finSetModo('${m}')" style="padding:8px 22px;border:2px solid ${act?'#16213e':'#dde'};border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;background:${act?'#16213e':'white'};color:${act?'white':'#555'};transition:all 0.15s">${lbl}</button>`;
+  }).join('');
+  if(_finModo==='dolar'){
+    if(finChart){finChart.destroy();finChart=null;}
+    buildFinanciamientoDolar(panel,modoBtns);
+    return;
+  }
+  buildFinanciamientoPesos(panel,modoBtns);
+}
+
+function buildFinanciamientoDolar(panel,modoBtnsHtml){
+  const fmtUSD=n=>n!=null?n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'\u2014';
+  const today=new Date();
+  const cultivos=[
+    {key:'soj',label:'Soja',color:'#2e7d32',icon:'\ud83c\udf31',futs:SOJ_FUT},
+    {key:'mai',label:'Ma\u00edz',color:'#e65100',icon:'\ud83c\udf3d',futs:MAI_FUT},
+    {key:'tri',label:'Trigo',color:'#1565c0',icon:'\ud83c\udf3e',futs:TRI_FUT}
+  ];
+  const sections=cultivos.map(cv=>{
+    const futs=cv.futs;
+    if(!futs||!futs.length){
+      return `<div class="fin-card" style="margin-bottom:18px">
+        <div class="fin-section-title">${cv.icon} ${cv.label}</div>
+        <div style="padding:20px;text-align:center;color:#aaa;font-size:0.85rem">Sin datos de futuros.</div>
+      </div>`;
+    }
+    const dispUsd=_finGetVAUsd(cv.key);
+    const validFuts=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste)))).slice(0,3);
+    const cards=validFuts.map(f=>{
+      const vencDate=VENC_DATES[f.venc_display];
+      const dias=vencDate?Math.round((vencDate-today)/(1000*60*60*24)):null;
+      const futUsd=parseFloat(f.ajuste);
+      const pasePct=(dispUsd&&futUsd&&dispUsd>0)?((futUsd/dispUsd-1)*100):null;
+      const tnaPase=(pasePct!=null&&dias!=null&&dias>0)?(pasePct*365/dias):null;
+      const conviene=(tnaPase!=null)?(tnaPase>_finTasaUsd):null;
+      const cardClass=conviene===null?'fin-venc-card':conviene?'fin-venc-card conviene':'fin-venc-card no-conviene';
+      const badge=conviene===null?'<span style="color:#aaa;font-size:0.82rem">Sin datos suficientes</span>':
+        conviene?'<span class="fin-badge-conv">\ud83c\udfe6 Conviene retener y financiarse</span>':
+                 '<span class="fin-badge-noconv">\ud83d\udce4 Conviene vender</span>';
+      const fechaStr=vencDate?vencDate.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}):'\u2014';
+      const diffTna=tnaPase!=null?(tnaPase-_finTasaUsd):null;
+      return `<div class="${cardClass}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="font-size:1.15rem;font-weight:900;color:${cv.color}">${f.venc_display}</div>
+          <div style="text-align:right"><div style="font-size:0.7rem;color:#aaa">Vto: ${fechaStr}</div><div style="font-size:0.7rem;color:#aaa">${dias!=null?dias+' d\u00edas':''}</div></div>
+        </div>
+        <div class="fin-section-title">\ud83d\udcb2 Pase Disponible \u2192 Futuro</div>
+        <div class="fin-row"><span class="fin-label">Disponible USD</span><span class="fin-val">USD ${fmtUSD(dispUsd)}/tn</span></div>
+        <div class="fin-row"><span class="fin-label">Futuro ${cv.label}</span><span class="fin-val">USD ${fmtUSD(futUsd)}/tn</span></div>
+        <div class="fin-row"><span class="fin-label">Pase total</span><span class="fin-val">${pasePct!=null?(pasePct>=0?'+':'')+pasePct.toFixed(2)+'%':'\u2014'}</span></div>
+        <div class="fin-total-row"><span style="font-size:0.8rem;font-weight:700;color:#555">TNA impl\u00edcita del pase</span><span style="font-size:1rem;font-weight:800;color:#1a1a2e">${tnaPase!=null?(tnaPase>=0?'+':'')+tnaPase.toFixed(1)+'%':'\u2014'}</span></div>
+        <div class="fin-total-row" style="background:#eff6ff;"><span style="font-size:0.8rem;font-weight:700;color:#1e40af">Costo financiamiento USD</span><span style="font-size:1rem;font-weight:800;color:#1e40af">${_finTasaUsd.toFixed(1)}%</span></div>
+        <div style="border-top:1px solid #f0f2f5;margin-top:4px;padding-top:10px">
+          ${badge}
+          ${diffTna!=null?`<div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span style="font-size:0.85rem;font-weight:800;color:${conviene?'#166534':'#991b1b'}">${diffTna>=0?'+':''}${diffTna.toFixed(1)}pp vs costo</span>
+          </div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:22px">
+      <div style="font-size:0.85rem;font-weight:800;color:${cv.color};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">${cv.icon} ${cv.label}</div>
+      <div class="fin-venc-grid">${cards}</div>
+    </div>`;
+  }).join('');
+
+  panel.innerHTML=`
+    <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">${modoBtnsHtml}</div>
+    <div class="fin-card" style="margin-bottom:18px">
+      <div style="font-size:0.8rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">\u2699\ufe0f Par\u00e1metros</div>
+      <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:0.7rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.4px">Tasa de financiamiento USD</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="fin-tasa-usd" value="${_finTasaUsd}" min="0" max="100" step="0.5"
+              style="padding:7px 12px;border:1.5px solid #dde;border-radius:8px;font-size:0.9rem;font-weight:700;color:#1a1a2e;width:85px;outline:none"
+              onkeydown="if(event.key==='Enter'){_finSetTasaUsd(this.value);this.blur();}"
+              onblur="_finSetTasaUsd(this.value)">
+            <span style="color:#888;font-size:0.85rem">% TNA</span>
+          </div>
+        </div>
+        <div style="font-size:0.72rem;color:#bbb;padding-bottom:8px;font-style:italic">TNA pase = ((Futuro/Disponible) \u2212 1) \u00d7 365/d\u00edas</div>
+      </div>
+    </div>
+    ${sections}`;
+}
+
+function buildFinanciamientoPesos(panel,modoBtnsHtml){
   const cult=_finCultivo;
   const cultLabel=cult==='soj'?'Soja':cult==='mai'?'Maíz':'Trigo';
   const cultColor=cult==='soj'?'#2e7d32':cult==='mai'?'#e65100':'#1565c0';
@@ -1952,6 +2055,7 @@ function buildFinanciamientoPanel(){
     '<span style="font-size:0.65rem;color:#aaa;margin-left:5px">mercado</span>';
   const vaClearBtn=isVAManual?`<button onclick="_finVA['${cult}']=null;buildFinanciamientoPanel()" style="background:none;border:none;color:#f59e0b;cursor:pointer;font-size:0.78rem;font-weight:700;padding:0 4px">✕ auto</button>`:'';
   panel.innerHTML=`
+    <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">${modoBtnsHtml}</div>
     <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">${cultBtns}</div>
     <div class="fin-card" style="margin-bottom:4px">
       <div style="font-size:0.8rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">⚙️ Parámetros</div>
