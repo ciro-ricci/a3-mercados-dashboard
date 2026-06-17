@@ -1475,6 +1475,7 @@ function decodeLecap(ticker){
 }
 
 let lecapData=null,lecapChart=null,lecapLoading=false;
+let finChart=null;
 
 function parseCSV(text){
   const lines=text.trim().split(/\r?\n/);
@@ -1915,8 +1916,8 @@ function buildFinanciamientoPanel(){
     const ratio=(resultado!=null&&vn!=null)?(resultado/vn*100):null;
     const cardClass=conviene===null?'fin-venc-card':conviene?'fin-venc-card conviene':'fin-venc-card no-conviene';
     const badge=conviene===null?'<span style="color:#aaa;font-size:0.82rem">Sin datos suficientes</span>':
-      conviene?'<span class="fin-badge-conv">✅ Conviene financiarse</span>':
-               '<span class="fin-badge-noconv">❌ No conviene financiarse</span>';
+      conviene?'<span class="fin-badge-conv">📤 Conviene vender</span>':
+               '<span class="fin-badge-noconv">🏦 Conviene retener y financiarse</span>';
     const difHtml=diferencia!=null?`<div style="display:flex;justify-content:space-between;margin-top:4px">
       <span style="font-size:0.85rem;font-weight:800;color:${conviene?'#166534':'#991b1b'}">${diferencia>=0?'+':''}$${fmtARS(diferencia)}/tn</span>
       <span style="font-size:0.82rem;font-weight:700;color:${conviene?'#166534':'#991b1b'}">${ratio?(ratio-100>=0?'+':'')+(ratio-100).toFixed(1)+'%':''}</span>
@@ -1979,7 +1980,52 @@ function buildFinanciamientoPanel(){
         <div style="font-size:0.72rem;color:#bbb;padding-bottom:8px;font-style:italic">VN = VA × (1 + TNA × días/365)</div>
       </div>
     </div>
-    <div class="fin-venc-grid">${cards.join('')}</div>`;
+    <div class="fin-venc-grid">${cards.join('')}</div>
+    <div class="fin-card" style="margin-top:18px">
+      <div class="fin-section-title" style="margin-bottom:10px">📊 Comparativo por mes: VN del cheque vs. Resultado futuros</div>
+      <div class="canvas-wrap" style="height:280px"><canvas id="fin-comparison-chart"></canvas></div>
+    </div>`;
+
+  if(finChart){finChart.destroy();finChart=null;}
+  setTimeout(()=>{
+    const ctx=document.getElementById('fin-comparison-chart');
+    if(!ctx||!validFuts.length)return;
+    const labels=validFuts.map(f=>f.venc_display);
+    const vnData=validFuts.map(f=>{
+      const vencDate=VENC_DATES[f.venc_display];
+      const dias=vencDate?Math.round((vencDate-today)/(1000*60*60*24)):null;
+      return (va!=null&&dias!=null)?va*(1+tna*dias/365):null;
+    });
+    const resData=validFuts.map(f=>{
+      const dlrFut=_finFindDollarFut(f.venc_display);
+      const futPriceUsd=parseFloat(f.ajuste);
+      const dlrPrice=dlrFut?parseFloat(dlrFut.ajuste):null;
+      return (futPriceUsd&&dlrPrice)?futPriceUsd*dlrPrice:null;
+    });
+    finChart=new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:labels,
+        datasets:[
+          {label:'VN del cheque',data:vnData,backgroundColor:'#1a1a2e99',borderRadius:4},
+          {label:'Resultado futuros',data:resData,backgroundColor:'#1e40af99',borderRadius:4}
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:true,position:'top',labels:{font:{size:11}}},
+          tooltip:{callbacks:{
+            label:item=>`${item.dataset.label}: ${item.raw?item.raw.toLocaleString('es-AR',{maximumFractionDigits:0}):'—'}`
+          }}
+        },
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:11,weight:'700'}}},
+          y:{title:{display:true,text:'ARS/tn',font:{size:11}},grid:{color:'#f0f2f5'},ticks:{font:{size:11},callback:v=>v.toLocaleString('es-AR',{maximumFractionDigits:0})}}
+        }
+      }
+    });
+  },50);
 }
 
 // ── Selección de dispositivo ──────────────────────────────────────
