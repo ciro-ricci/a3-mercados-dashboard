@@ -2281,7 +2281,7 @@ function newsRender() {
     if(document.getElementById('login-gate')) return;
     var gate=document.createElement('div');
     gate.id='login-gate';
-    gate.style.cssText='position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#16213e;color:white;font-family:system-ui';
+    gate.style.cssText='position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#16213e;color:white;font-family:system-ui';
     gate.innerHTML='<h2 style="margin-bottom:18px">\ud83d\udd12 Acceso restringido</h2>' +
       '<button onclick="netlifyIdentity.open()" style="padding:12px 28px;border-radius:8px;border:none;background:#22c55e;color:white;font-weight:700;font-size:1rem;cursor:pointer">Iniciar sesi\u00f3n con Google</button>';
     document.body.appendChild(gate);
