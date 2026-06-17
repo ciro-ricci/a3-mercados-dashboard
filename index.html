@@ -1296,7 +1296,8 @@ function injectDollarRatesCard(panelId){
   const find=key=>DOLLAR_RATES.find(d=>d.tipo.toLowerCase().includes(key.toLowerCase()));
   const cards=TIPOS.map(t=>{
     const r=find(t.key);
-    const val=r?r[t.field]:null;
+    let val=r?r[t.field]:null;
+    if(t.key==='Mayorista'&&typeof BCRA_TC_OVERRIDE==='number'&&BCRA_TC_OVERRIDE>0)val=BCRA_TC_OVERRIDE; // pisar card Mayorista con dato oficial BCRA
     const brecha=(futPrice&&val)?((val/futPrice-1)*100):null;
     const brechaStr=brecha!==null?`${brecha>=0?'+':''}${brecha.toFixed(1)}%`:'—';
     const brechaColor=brecha===null?'#888':brecha<0?'#9b1c1c':'#1e7e34';
