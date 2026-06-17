@@ -1916,8 +1916,8 @@ function buildFinanciamientoPanel(){
     const ratio=(resultado!=null&&vn!=null)?(resultado/vn*100):null;
     const cardClass=conviene===null?'fin-venc-card':conviene?'fin-venc-card conviene':'fin-venc-card no-conviene';
     const badge=conviene===null?'<span style="color:#aaa;font-size:0.82rem">Sin datos suficientes</span>':
-      conviene?'<span class="fin-badge-conv">📤 Conviene vender</span>':
-               '<span class="fin-badge-noconv">🏦 Conviene retener y financiarse</span>';
+      conviene?'<span class="fin-badge-conv">🏦 Conviene retener y financiarse</span>':
+               '<span class="fin-badge-noconv">📤 Conviene vender</span>';
     const difHtml=diferencia!=null?`<div style="display:flex;justify-content:space-between;margin-top:4px">
       <span style="font-size:0.85rem;font-weight:800;color:${conviene?'#166534':'#991b1b'}">${diferencia>=0?'+':''}$${fmtARS(diferencia)}/tn</span>
       <span style="font-size:0.82rem;font-weight:700;color:${conviene?'#166534':'#991b1b'}">${ratio?(ratio-100>=0?'+':'')+(ratio-100).toFixed(1)+'%':''}</span>
