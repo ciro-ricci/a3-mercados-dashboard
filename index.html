@@ -315,6 +315,14 @@ let DOLLAR_RATES=null;
 let a3DataLoaded=false;
 let SPOT=null;
 let FOB_FAS=null;
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════
+   BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
+   oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
+   valores (oficial, CCL, soja/maíz/trigo, etc.) siguen viniendo de la sheet.
+   Última actualización: 2026-06-16
+   ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
+const BCRA_TC_OVERRIDE = 1432.6696;
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 // Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
 const PIZARRA_SOJ_2025={
   "05/05":256.6,"09/05":261,"12/05":273.8,"13/05":270,"14/05":269.4,"15/05":270.6,
@@ -995,6 +1003,7 @@ async function loadSpotData(){
     }catch(e){console.warn('Spot CSV error:',e);}
   }
   if(!SPOT&&prev)SPOT=prev; // si todo falla, mantener el último valor conocido
+  if(SPOT&&typeof BCRA_TC_OVERRIDE==='number'&&BCRA_TC_OVERRIDE>0)SPOT.tc=BCRA_TC_OVERRIDE; // pisar solo TC Mayorista con dato oficial BCRA
 }
 if(!window._customSpotArs)window._customSpotArs={};
 window._setCustomSpotArs=function(panelId,val){
