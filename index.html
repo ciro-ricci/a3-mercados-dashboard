@@ -17,7 +17,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Data Miazzo Dashboard</title>
+<title>Estrategias al grano</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -251,7 +251,7 @@ canvas { max-height: 100%; }
 <body>
 <div class="header">
   <div>
-    <h1>🌾 Data Miazzo · Dashboard</h1>
+    <h1>🌾 Estrategias al grano</h1>
     <div class="fecha">Datos al 23-4-2026 &nbsp;·&nbsp; Fuente: A3 Info / MatbaRofex</div>
   </div>
   <div>
@@ -263,7 +263,6 @@ canvas { max-height: 100%; }
   </div>
 </div>
 <div class="tabs">
-  <div class="tab" onclick="showTab('noticias')">📰 Noticias</div>
   <div class="tab active" onclick="showTab('soj-fut')">Futuros Soja</div>
   <div class="tab" onclick="showTab('mai-fut')">Futuros Maíz</div>
   <div class="tab" onclick="showTab('tri-fut')">Futuros Trigo</div>
@@ -274,7 +273,7 @@ canvas { max-height: 100%; }
   <div class="tab" onclick="showTab('dlr-fut')">Futuros Dólar</div>
   <div class="tab lecap-tab" onclick="showTab('lecaps')">📈 LECAPs</div>
   <div class="tab fin-tab" onclick="showTab('financiamiento')">💰 Financiamiento</div>
-  <div class="tab" onclick="showTab('cultivos')" style="color:rgba(255,255,255,0.55)">🌾 Cultivos</div>
+  <div class="tab" onclick="showTab('noticias')">📰 Noticias</div>
   </div>
 <div class="content">
   <div class="panel" id="panel-noticias">
@@ -299,7 +298,6 @@ canvas { max-height: 100%; }
   <div class="panel" id="panel-dlr-fut"></div>
   <div class="panel" id="panel-lecaps"></div>
   <div class="panel" id="panel-financiamiento"></div>
-  <div class="panel" id="panel-cultivos"></div>
 </div>
 <script>
 // ── A3 – Futuros y Opciones (datos dinámicos desde Google Sheet) ─────────
@@ -1434,161 +1432,13 @@ function renderStratResults(){const container=document.getElementById('strat-res
 function buildStratPanel(){const panel=document.getElementById('panel-estrategia');const groupLabels=['📈 Alcistas','📉 Bajistas','🔒 Conservadoras'];const groups=[['bull_call_spread','ratio_call_spread','fut_buy_sell_call'],['bear_put_spread','ratio_put_spread','fut_sell_buy_put'],['covered_call','bull_put_spread','covered_call_fut']].map(ids=>ids.map(id=>PRESET_STRATEGIES.find(p=>p.id===id)).filter(Boolean));const presetsHTML=groups.map((grp,gi)=>`<div class="preset-section-label">${groupLabels[gi]}</div><div class="preset-grid">${grp.map(p=>`<div class="preset-card" data-id="${p.id}" onclick="selectPreset('${p.id}')"><div class="pc-check">✔</div><div class="pc-name">${p.nombre}</div><div class="pc-market" style="background:${p.mercadoBg};color:${p.mercadoColor}">${p.mercado}</div><div class="pc-desc">${p.descripcion}</div><div class="pc-risk">${p.riesgo}</div></div>`).join('')}</div>`).join('');panel.innerHTML=`<div class="full-card"><h3>Estrategias</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px"><div class="strat-field"><label>Cultivo</label><select id="strat-cultivo" class="strat-select" onchange="stratCultivoChange()"><option value="SOJ">🌱 Soja</option><option value="MAI">🌽 Maíz</option></select></div></div><div class="strat-mode-tabs"><button class="strat-mode-btn active" data-mode="preset" onclick="setStratMode('preset')">⚡ Estrategias predeterminadas</button><button class="strat-mode-btn" data-mode="manual" onclick="setStratMode('manual')">🔧 Constructor manual</button></div><div id="preset-section">${presetsHTML}<div class="preset-controls"><div class="strat-field"><label>Vencimiento</label><select id="preset-venc" class="strat-select"></select></div><button class="btn-apply-preset" id="btn-apply-preset" onclick="applyPreset()" disabled>⚡ Aplicar estrategia</button><span id="preset-selected-info" style="color:#888;font-size:0.8rem">Seleccioná una estrategia arriba</span></div></div><div id="manual-section" style="display:none"><div class="add-leg-row"><div class="strat-field"><label>Acción</label><select id="strat-accion" class="strat-select"><option value="C">Compra</option><option value="V">Venta</option></select></div><div class="strat-field"><label>Tipo</label><select id="strat-tipo" class="strat-select" onchange="updateStratContractOpts()"><option value="C">Call</option><option value="P">Put</option><option value="F">Futuro</option></select></div><div class="strat-field"><label>Vencimiento</label><select id="strat-venc" class="strat-select" onchange="updateStratContractOpts()"></select></div><div class="strat-field" style="flex:2;min-width:240px"><label>Contrato (Strike · Prima)</label><select id="strat-contrato" class="strat-select"></select></div><button class="btn-add" onclick="addStratLeg()">+ Agregar pata</button><button class="btn-clear" onclick="clearStratLegs()">Limpiar</button></div></div><div class="full-card" style="margin-bottom:0;box-shadow:none;padding:0 0 4px 0"><table class="legs-table"><thead><tr><th>Acción</th><th>Tipo</th><th>Strike</th><th style="text-align:right">Prima</th><th>Venc.</th><th></th></tr></thead><tbody id="strat-legs-tbody"><tr><td colspan="6" class="empty-legs">Seleccioná una estrategia y aplicala, o usá el constructor manual</td></tr></tbody></table></div></div><div id="strat-results" style="margin-top:4px"><div style="color:#aaa;font-size:0.85rem;font-style:italic;padding:20px 0">Aplicá una estrategia para ver el análisis</div></div>`;updatePresetVencOpts();updateStratVencOpts();}
 
 function showTab(id){
-  const ids=['noticias','soj-fut','mai-fut','tri-fut','soj-opts','mai-opts','tri-opts','estrategia','dlr-fut','lecaps','financiamiento','cultivos'];
+  const ids=['soj-fut','mai-fut','tri-fut','soj-opts','mai-opts','tri-opts','estrategia','dlr-fut','lecaps','financiamiento','noticias'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',ids[i]===id));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   if(id==='noticias') newsRender();
   if(id==='lecaps') loadLecapPanel();
-  if(id==='cultivos') buildCultivosPanel();
   if(id==='financiamiento') buildFinanciamientoPanel();
-}
-
-// ── PAS – Condición de Cultivos (Bolsa de Cereales) ───────────────
-const PAS_DATA = {
-  fecha: '11/06/2026',
-  campana: '2025/26',
-  soja: {
-    cosecha_pct: 95.2,
-    rinde_qq: 31.7,
-    produccion_mtn: 45.5,
-    condicion_normal_excelente: null,
-    zonas: [
-      {id:'IV',nombre:'S Cba',sembrada:1685520,perdida:56416,cosechable:1629104,pct:1628104.0,ha_cos:336,rinde:5470847.0,prod:0},
-      {id:'V',nombre:'Ctro N SFe',sembrada:1168770,perdida:61708,cosechable:1107062,pct:1078932.0,ha_cos:311,rinde:3362994.0,prod:0},
-      {id:'VI',nombre:'Núcleo Norte',sembrada:2077210,perdida:88877,cosechable:1988388,pct:1988388.0,ha_cos:348,rinde:6926572.0,prod:0},
-      {id:'VII',nombre:'Núcleo Sur',sembrada:2159800,perdida:99734,cosechable:2060006,pct:2053094.0,ha_cos:381,rinde:7406514.0,prod:0},
-      {id:'VIII',nombre:'Ctro E ER',sembrada:992310,perdida:60350,cosechable:931950,pct:908994.0,ha_cos:235,rinde:2132129.0,prod:0},
-      {id:'IX',nombre:'N LP-OBA',sembrada:1743100,perdida:56920,cosechable:1696180,pct:1657891.0,ha_cos:382,rinde:6325202.0,prod:0},
-      {id:'X',nombre:'Ctro BA',sembrada:769200,perdida:62267,cosechable:706933,pct:591921.0,ha_cos:286,rinde:1574054.0,prod:0},
-      {id:'XI',nombre:'SO BA-S LP',sembrada:393630,perdida:16648,cosechable:376983,pct:2966530.0,ha_cos:208,rinde:617362.0,prod:0},
-      {id:'XIII',nombre:'SL',sembrada:263270,perdida:19087,cosechable:244183,pct:244183.0,ha_cos:257,rinde:615019.0,prod:0},
-      {id:'XIV',nombre:'Cuenca Sal',sembrada:168440,perdida:761,cosechable:160809,pct:125703.0,ha_cos:185,rinde:232023.0,prod:0},
-      {id:'XV',nombre:'Otras',sembrada:78000,perdida:3077,cosechable:74973,pct:74373.0,ha_cos:19,rinde:142138.0,prod:0}
-    ],
-    total: {sembrada:16500000,perdida:755066,cosechable:16044234,pct:95.2,ha_cos:15279915,rinde:31.7,prod:45479269}
-  },
-  maiz: {
-    cosecha_pct: 43.6,
-    rinde_qq: 82.1,
-    produccion_mtn: 29.6,
-    zonas: [
-      {id:'I',nombre:'NOA',sembrada:677700,perdida:2541,cosechable:675159,pct:15.0,ha_cos:101274,rinde:42.3,prod:427},
-      {id:'V',nombre:'Ctro N SFe',sembrada:193550,perdida:2912,cosechable:190638,pct:51.1,ha_cos:97506,rinde:74.0,prod:721363},
-      {id:'VI',nombre:'Núcleo Norte',sembrada:1022900,perdida:25161,cosechable:997739,pct:86.1,ha_cos:859097,rinde:99.2,prod:8522},
-      {id:'VII',nombre:'Núcleo Sur',sembrada:769100,perdida:17944,cosechable:751156,pct:77.6,ha_cos:582616,rinde:94.8,prod:5521},
-      {id:'I',nombre:'NOA',sembrada:350530,perdida:1884,cosechable:348646,pct:26.6,ha_cos:92640,rinde:74.6,prod:690908},
-      {id:'I',nombre:'NOA',sembrada:339200,perdida:1788,cosechable:337412,pct:24.0,ha_cos:81102,rinde:62.6,prod:507880},
-      {id:'I',nombre:'NOA',sembrada:518480,perdida:1792,cosechable:516688,pct:17.2,ha_cos:88626,rinde:59.2,prod:524766},
-      {id:'I',nombre:'NOA',sembrada:339200,perdida:2287,cosechable:336913,pct:22.3,ha_cos:75186,rinde:69.4,prod:521475},
-      {id:'XIV',nombre:'Cuenca Sal',sembrada:96000,perdida:1348,cosechable:94652,pct:42.2,ha_cos:39956,rinde:72.0,prod:287674},
-      {id:'XV',nombre:'Otras',sembrada:15000,perdida:561,cosechable:14439,pct:100.0,ha_cos:14439,rinde:66.9,prod:96631}
-    ],
-    total: {sembrada:8400000,perdida:135399,cosechable:8264601,pct:43.6,ha_cos:3606125,rinde:82.1,prod:29594504}
-  }
-};
-
-function buildCultivosPanel(){
-  const panel=document.getElementById('panel-cultivos');
-  const d=PAS_DATA;
-  const fmtHa=n=>n!=null?n.toLocaleString('es-AR'):'—';
-  const fmtPct=n=>n!=null?n.toFixed(1)+'%':'—';
-  const fmtRinde=n=>n!=null?n.toFixed(1):'—';
-  const fmtProd=n=>n!=null?(n/1000000).toFixed(3)+' MTn':'—';
-  const barColor=(pct,baseColor)=>`<div style="display:flex;align-items:center;gap:6px"><div style="flex:1;background:#f0f2f5;border-radius:4px;height:8px;min-width:60px"><div style="width:${Math.min(pct,100)}%;background:${baseColor};height:8px;border-radius:4px"></div></div><span style="font-size:0.78rem;font-weight:700;color:${baseColor};min-width:38px;text-align:right">${pct.toFixed(1)}%</span></div>`;
-  const makeTable=(cultivo,color)=>`
-    <table class="fut-table" style="font-size:0.79rem">
-      <thead><tr>
-        <th style="text-align:left">Zona</th>
-        <th>Sembrada (Ha)</th>
-        <th>% Cosechado</th>
-        <th>Rinde (qq/Ha)</th>
-        <th>Producción</th>
-      </tr></thead>
-      <tbody>
-        ${cultivo.zonas.map(z=>`<tr>
-          <td style="text-align:left"><span style="font-weight:700;color:#555;margin-right:4px">${z.id}</span>${z.nombre}</td>
-          <td>${fmtHa(z.sembrada)}</td>
-          <td>${z.pct!=null?barColor(z.pct,color):'<span style="color:#bbb">Sin dato</span>'}</td>
-          <td style="font-weight:600">${fmtRinde(z.rinde)}</td>
-          <td style="color:#444">${fmtProd(z.prod)}</td>
-        </tr>`).join('')}
-        <tr style="background:#f7f8fa;font-weight:700;border-top:2px solid #e0e4ea">
-          <td style="text-align:left;color:#1a1a2e">TOTAL</td>
-          <td>${fmtHa(cultivo.total.sembrada)}</td>
-          <td>${barColor(cultivo.total.pct,color)}</td>
-          <td style="color:${color}">${fmtRinde(cultivo.total.rinde)}</td>
-          <td style="color:${color}">${fmtProd(cultivo.total.prod)}</td>
-        </tr>
-      </tbody>
-    </table>`;
-
-  panel.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-      <div>
-        <div style="font-size:1rem;font-weight:700;color:#1a1a2e">🌾 Condición de Cultivos — Campaña ${d.campana}</div>
-        <div style="font-size:0.75rem;color:#888;margin-top:2px">Fuente: Bolsa de Cereales · Relevamiento al ${d.fecha}</div>
-      </div>
-    </div>
-
-    <!-- SOJA -->
-    <div class="full-card" style="margin-bottom:20px">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
-        <h3 style="margin:0;color:#2e7d32">🌱 SOJA</h3>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <div style="background:#e6f4ea;border-radius:8px;padding:8px 14px;text-align:center">
-            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Cosecha</div>
-            <div style="font-size:1.3rem;font-weight:800;color:#2e7d32">${d.soja.cosecha_pct}%</div>
-            <div style="font-size:0.68rem;color:#888">del área apta</div>
-          </div>
-          <div style="background:#e6f4ea;border-radius:8px;padding:8px 14px;text-align:center">
-            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Rinde Medio</div>
-            <div style="font-size:1.3rem;font-weight:800;color:#2e7d32">${d.soja.rinde_qq}</div>
-            <div style="font-size:0.68rem;color:#888">qq/Ha</div>
-          </div>
-          <div style="background:#e6f4ea;border-radius:8px;padding:8px 14px;text-align:center">
-            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Proyección</div>
-            <div style="font-size:1.3rem;font-weight:800;color:#2e7d32">${d.soja.produccion_mtn}</div>
-            <div style="font-size:0.68rem;color:#888">MTn</div>
-          </div>
-          <div style="background:#e6f4ea;border-radius:8px;padding:8px 14px;text-align:center">
-            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Cond. Normal/Exc.</div>
-            <div style="font-size:1.3rem;font-weight:800;color:#2e7d32">${d.soja.condicion_normal_excelente != null ? d.soja.condicion_normal_excelente + '%' : 'N/D'}</div>
-            <div style="font-size:0.68rem;color:#888">área remanente</div>
-          </div>
-        </div>
-      </div>
-      ${makeTable(d.soja,'#2e7d32')}
-    </div>
-
-    <!-- MAÍZ -->
-    <div class="full-card" style="margin-bottom:20px">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
-        <h3 style="margin:0;color:#e65100">🌽 MAÍZ</h3>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <div style="background:#fff3e0;border-radius:8px;padding:8px 14px;text-align:center">
-            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Cosecha</div>
-            <div style="font-size:1.3rem;font-weight:800;color:#e65100">${d.maiz.cosecha_pct}%</div>
-            <div style="font-size:0.68rem;color:#888">del área apta</div>
-          </div>
-          <div style="background:#fff3e0;border-radius:8px;padding:8px 14px;text-align:center">
-            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Rinde Medio</div>
-            <div style="font-size:1.3rem;font-weight:800;color:#e65100">${d.maiz.rinde_qq}</div>
-            <div style="font-size:0.68rem;color:#888">qq/Ha</div>
-          </div>
-          <div style="background:#fff3e0;border-radius:8px;padding:8px 14px;text-align:center">
-            <div style="font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.4px">Proyección</div>
-            <div style="font-size:1.3rem;font-weight:800;color:#e65100">${d.maiz.produccion_mtn}</div>
-            <div style="font-size:0.68rem;color:#888">MTn</div>
-          </div>
-        </div>
-      </div>
-      ${makeTable(d.maiz,'#e65100')}
-    </div>
-
-    <div style="text-align:right;font-size:0.7rem;color:#bbb">
-      Informe PAS-ECC · Bolsa de Cereales de Buenos Aires · ${d.fecha}
-    </div>`;
 }
 
 // ── LECAPs ────────────────────────────────────────────────────────
@@ -2137,7 +1987,7 @@ function showSplash(){
   el.id='splash-overlay';
   el.innerHTML=`<div class="splash-inner">
     <div class="splash-logo">🌾</div>
-    <div class="splash-title">Data Miazzo · Dashboard</div>
+    <div class="splash-title">Estrategias al grano</div>
     <div class="splash-sub">¿Desde qué dispositivo estás ingresando?</div>
     <div class="splash-options">
       <div class="splash-btn" onclick="chooseDevice('mobile')">
