@@ -160,7 +160,7 @@ canvas { max-height: 100%; }
 .splash-note{margin-top:22px;font-size:0.68rem;color:rgba(0,0,0,0.35);}
 
 /* ── Landing pública (previo al login) ── */
-#landing-gate{position:fixed;inset:0;z-index:9998;background:#ffffff;overflow-y:auto;font-family:'Segoe UI',Arial,sans-serif;}
+#landing-gate{position:fixed;inset:0;z-index:10000;background:#ffffff;overflow-y:auto;font-family:'Segoe UI',Arial,sans-serif;}
 #netlify-identity-widget{z-index:999999 !important;}
 .lg-wrap{max-width:760px;margin:0 auto;padding:36px 20px 60px;}
 .lg-logo{display:flex;justify-content:center;margin-bottom:6px;}
@@ -2220,8 +2220,10 @@ window.chooseDevice=function(mode){
   document.getElementById('splash-overlay')?.remove();
   loadAndInitA3();
 };
-window.a3DeviceMode=localStorage.getItem('a3_device_mode');
-if(window.a3DeviceMode){loadAndInitA3();}else{showSplash();}
+window._initDeviceFlow=function(){
+  window.a3DeviceMode=localStorage.getItem('a3_device_mode');
+  if(window.a3DeviceMode){loadAndInitA3();}else{showSplash();}
+};
 
 // ── NOTICIAS ─────────────────────────────────────────────────────────────────
 /* ═══════════════════════════════════════════════════════════════════════
@@ -2378,10 +2380,17 @@ function newsRender() {
   if(window.netlifyIdentity){
     netlifyIdentity.on('init', function(user){
       if(!user && !hasAuthToken()){ showGate(); }
+      else{ window._initDeviceFlow&&window._initDeviceFlow(); }
     });
-    netlifyIdentity.on('login', function(){ hideGate(); netlifyIdentity.close(); });
-    netlifyIdentity.on('logout', function(){ showGate(); });
+    netlifyIdentity.on('login', function(){ hideGate(); netlifyIdentity.close(); window._initDeviceFlow&&window._initDeviceFlow(); });
+    netlifyIdentity.on('logout', function(){
+      document.getElementById('splash-overlay')?.remove();
+      showGate();
+    });
     netlifyIdentity.init();
+  } else {
+    // Netlify Identity no disponible (ej. entorno local) — no bloquear el acceso
+    window._initDeviceFlow&&window._initDeviceFlow();
   }
 })();
 </script>
