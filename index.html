@@ -159,6 +159,31 @@ canvas { max-height: 100%; }
 .splash-btn .sb-desc{font-size:0.72rem;color:rgba(0,0,0,0.45);line-height:1.4;}
 .splash-note{margin-top:22px;font-size:0.68rem;color:rgba(0,0,0,0.35);}
 
+/* ── Landing pública (previo al login) ── */
+#landing-gate{position:fixed;inset:0;z-index:9998;background:#ffffff;overflow-y:auto;font-family:'Segoe UI',Arial,sans-serif;}
+.lg-wrap{max-width:760px;margin:0 auto;padding:36px 20px 60px;}
+.lg-logo{display:flex;justify-content:center;margin-bottom:6px;}
+.lg-logo img{max-width:260px;width:100%;height:auto;}
+.lg-tagline{text-align:center;font-size:0.95rem;font-weight:700;color:#16213e;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:28px;}
+.lg-plans-card{border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#2e8b57 0%,#22c55e 100%);padding:26px 24px 22px;color:white;margin-bottom:18px;}
+.lg-plans-title{font-size:1.25rem;font-weight:800;margin-bottom:18px;line-height:1.3;}
+.lg-pill{background:rgba(255,255,255,0.18);border-radius:24px;padding:13px 20px;font-weight:700;font-size:0.92rem;margin-bottom:10px;letter-spacing:0.2px;}
+.lg-services-card{background:#f7f8fa;border-radius:14px;padding:20px 22px;margin-bottom:24px;}
+.lg-services-intro{font-size:0.85rem;font-weight:700;color:#16213e;margin-bottom:10px;}
+.lg-services-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px;}
+.lg-services-list li{font-size:0.85rem;color:#333;padding-left:18px;position:relative;}
+.lg-services-list li::before{content:'•';position:absolute;left:2px;color:#22c55e;font-weight:800;}
+.lg-actions{display:flex;flex-direction:column;gap:12px;margin-bottom:8px;}
+.lg-btn{display:flex;align-items:center;justify-content:center;gap:9px;padding:14px 20px;border-radius:10px;font-weight:700;font-size:0.92rem;text-decoration:none;cursor:pointer;border:none;font-family:inherit;transition:transform 0.12s,opacity 0.12s;}
+.lg-btn:hover{opacity:0.92;}
+.lg-btn-informe{background:#16213e;color:white;}
+.lg-btn-audio{background:white;color:#16213e;border:2px solid #16213e;}
+.lg-btn-contacto{background:#25D366;color:white;}
+.lg-btn-login{background:#22c55e;color:white;font-size:1rem;padding:16px 20px;margin-top:14px;}
+.lg-row2{display:flex;gap:12px;}
+.lg-row2 .lg-btn{flex:1;}
+@media (max-width:520px){.lg-row2{flex-direction:column;}}
+
 /* ── Financiamiento ── */
 .fin-tab { color: rgba(100,220,200,0.65); }
 .fin-tab.active { color: #4ecdc4; border-bottom-color: #4ecdc4; }
@@ -315,6 +340,16 @@ let DOLLAR_RATES=null;
 let a3DataLoaded=false;
 let SPOT=null;
 let FOB_FAS=null;
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════
+   LANDING_LINKS — links de la landing pública. El informe y el audio se
+   actualizan aprox. cada 15 días: reemplazar solo las URLs de abajo.
+   ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
+const LANDING_LINKS = {
+  informe: 'https://drive.google.com/file/d/1CbR9UDpVX0TiTbx1DIhe3svRRj1pE6vC/view?usp=drive_link',
+  audio:   'https://drive.google.com/file/d/14zHDdj-563FTL4tX_0TYpsL51fSrBy_9/view?usp=drive_link',
+  whatsapp:'https://api.whatsapp.com/send/?phone=5493584377218&text&type=phone_number&app_absent=0'
+};
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════
    BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
    oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
@@ -2299,16 +2334,44 @@ function newsRender() {
     return /confirmation_token|invite_token|recovery_token|access_token/.test(location.hash);
   }
   function showGate(){
-    if(document.getElementById('login-gate')) return;
+    if(document.getElementById('landing-gate')) return;
+    var L=(window.LANDING_LINKS||{});
     var gate=document.createElement('div');
-    gate.id='login-gate';
-    gate.style.cssText='position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#16213e;color:white;font-family:system-ui';
-    gate.innerHTML='<h2 style="margin-bottom:18px">\ud83d\udd12 Acceso restringido</h2>' +
-      '<button onclick="netlifyIdentity.open()" style="padding:12px 28px;border-radius:8px;border:none;background:#22c55e;color:white;font-weight:700;font-size:1rem;cursor:pointer">Iniciar sesi\u00f3n con Google</button>';
+    gate.id='landing-gate';
+    gate.innerHTML=`<div class="lg-wrap">
+      <div class="lg-logo"><img src="logo-data-miazzo.png" alt="Data Miazzo"></div>
+      <div class="lg-tagline">Estrategias al grano</div>
+      <div class="lg-plans-card">
+        <div class="lg-plans-title">Tenemos tres planes<br>de asesoramiento:</div>
+        <div class="lg-pill">EMPRESAS AGRO (ACOPIOS, INDUSTRIAS, MAQUINARIA, ETC)</div>
+        <div class="lg-pill">PRODUCTORES AGROPECUARIOS</div>
+        <div class="lg-pill" style="margin-bottom:0">DUEÑOS DE CAMPO QUE ALQUILAN</div>
+      </div>
+      <div class="lg-services-card">
+        <div class="lg-services-intro">Mediante reuniones mensuales y un seguimiento al día, trabajamos con las empresas agropecuarias en:</div>
+        <ul class="lg-services-list">
+          <li>Manejo de tesorería</li>
+          <li>Cambios de procesos para mejorar eficiencia financiera</li>
+          <li>Definición de estrategia de comercialización</li>
+          <li>Planificación de compra de insumos</li>
+          <li>Alternativas de financiamiento</li>
+          <li>Análisis de márgenes</li>
+          <li>Planificación estratégica de la empresa</li>
+        </ul>
+      </div>
+      <div class="lg-actions">
+        <div class="lg-row2">
+          <a class="lg-btn lg-btn-informe" href="${L.informe||'#'}" target="_blank" rel="noopener">📄 Último informe</a>
+          <a class="lg-btn lg-btn-audio" href="${L.audio||'#'}" target="_blank" rel="noopener">🎧 Audio</a>
+        </div>
+        <a class="lg-btn lg-btn-contacto" href="${L.whatsapp||'#'}" target="_blank" rel="noopener">💬 Contacto por WhatsApp</a>
+        <button class="lg-btn lg-btn-login" onclick="netlifyIdentity.open()">🔐 Ingresar vía mail</button>
+      </div>
+    </div>`;
     document.body.appendChild(gate);
   }
   function hideGate(){
-    var g=document.getElementById('login-gate');
+    var g=document.getElementById('landing-gate');
     if(g) g.remove();
   }
   if(window.netlifyIdentity){
