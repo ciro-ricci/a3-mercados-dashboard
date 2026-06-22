@@ -367,7 +367,8 @@ let FOB_FAS=null;
 window.LANDING_LINKS = {
   informe: 'https://drive.google.com/file/d/1CbR9UDpVX0TiTbx1DIhe3svRRj1pE6vC/view?usp=drive_link',
   audio:   'https://drive.google.com/file/d/14zHDdj-563FTL4tX_0TYpsL51fSrBy_9/view?usp=drive_link',
-  whatsapp:'https://api.whatsapp.com/send/?phone=5493584377218&text&type=phone_number&app_absent=0'
+  whatsapp:'https://api.whatsapp.com/send/?phone=5493584377218&text&type=phone_number&app_absent=0',
+  whatsappGrupo:'https://chat.whatsapp.com/Dc9wsGCG3ob2wDJDIWYvC3?mode=gi_t'
 };
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════
@@ -2385,7 +2386,7 @@ function newsRender() {
             <a href="#ultimo-informe" class="bg-agro-green hover:bg-green-600 text-white px-8 py-3.5 rounded-lg font-bold text-lg shadow-lg shadow-green-200 transition-all hover:-translate-y-1">
               Ver Último Informe
             </a>
-            <a href="${L.whatsapp||'#'}" target="_blank" rel="noopener" class="bg-white hover:bg-gray-50 border-2 border-gray-200 text-agro-dark px-8 py-3.5 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all hover:-translate-y-1">
+            <a href="${L.whatsappGrupo||'#'}" target="_blank" rel="noopener" class="bg-white hover:bg-gray-50 border-2 border-gray-200 text-agro-dark px-8 py-3.5 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all hover:-translate-y-1">
               <i class="fa-brands fa-whatsapp text-green-500 text-xl"></i> Unirme al Grupo
             </a>
           </div>
@@ -2430,7 +2431,7 @@ function newsRender() {
           </div>
           <h2 class="text-3xl font-bold text-white mb-6">Recibí el informe gratis en tu celular</h2>
           <p class="text-green-100 text-lg mb-8 max-w-2xl mx-auto">Sumate a nuestra lista de difusión en WhatsApp. Te enviamos el informe apenas sale, sin spam, directo al grano.</p>
-          <a href="${L.whatsapp||'#'}" target="_blank" rel="noopener" class="inline-block bg-white text-agro-green font-bold text-lg px-10 py-4 rounded-full shadow-lg hover:bg-gray-50 hover:scale-105 transition-all">
+          <a href="${L.whatsappGrupo||'#'}" target="_blank" rel="noopener" class="inline-block bg-white text-agro-green font-bold text-lg px-10 py-4 rounded-full shadow-lg hover:bg-gray-50 hover:scale-105 transition-all">
             Unirme al grupo ahora
           </a>
         </div>
