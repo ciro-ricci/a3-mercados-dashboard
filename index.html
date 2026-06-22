@@ -275,6 +275,25 @@ canvas { max-height: 100%; }
   content: ''; flex: 1; height: 1px; background: #e5e7eb;
 }
 </style>
+<!-- Landing pública (Gemini design) — Tailwind scope-limited a #landing-gate -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>
+  tailwind.config = {
+    important: '#landing-gate',
+    corePlugins: { preflight: false },
+    theme: {
+      extend: {
+        colors: {
+          agro: { green: '#22c55e', dark: '#1e293b', light: '#f8fafc', text: '#334155' }
+        }
+      }
+    }
+  }
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+</style>
 </head>
 <body>
 <div class="header">
@@ -2331,34 +2350,225 @@ function newsRender() {
     var L=(window.LANDING_LINKS||{});
     var gate=document.createElement('div');
     gate.id='landing-gate';
-    gate.innerHTML=`<div class="lg-wrap">
-      <div class="lg-logo"><img src="logo-data-miazzo.png" alt="Data Miazzo"></div>
-      <div class="lg-plans-card">
-        <div class="lg-plans-title">Tenemos tres planes<br>de asesoramiento:</div>
-        <div class="lg-pill">EMPRESAS AGRO (ACOPIOS, INDUSTRIAS, MAQUINARIA, ETC)</div>
-        <div class="lg-pill">PRODUCTORES AGROPECUARIOS</div>
-        <div class="lg-pill" style="margin-bottom:0">DUEÑOS DE CAMPO QUE ALQUILAN</div>
-      </div>
-      <div class="lg-services-card">
-        <div class="lg-services-intro">Mediante reuniones mensuales y un seguimiento al día, trabajamos con las empresas agropecuarias en:</div>
-        <ul class="lg-services-list">
-          <li>Manejo de tesorería</li>
-          <li>Cambios de procesos para mejorar eficiencia financiera</li>
-          <li>Definición de estrategia de comercialización</li>
-          <li>Planificación de compra de insumos</li>
-          <li>Alternativas de financiamiento</li>
-          <li>Análisis de márgenes</li>
-          <li>Planificación estratégica de la empresa</li>
-        </ul>
-      </div>
-      <div class="lg-actions">
-        <div class="lg-row2">
-          <a class="lg-btn lg-btn-informe" href="${L.informe||'#'}" target="_blank" rel="noopener">📄 Último informe</a>
-          <a class="lg-btn lg-btn-audio" href="${L.audio||'#'}" target="_blank" rel="noopener">🎧 Audio</a>
+    gate.innerHTML=`<div class="lg-gemini bg-agro-light text-agro-text antialiased" style="font-family:'Inter',sans-serif;">
+
+      <!-- NAVEGACIÓN (HEADER) -->
+      <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between h-20 items-center">
+            <div class="flex-shrink-0 flex items-center gap-2">
+              <span class="text-2xl font-bold text-agro-dark tracking-tighter">ESTRATEGIAS AL <span class="text-agro-green">GRANO</span></span>
+              <span class="text-xs text-gray-400 border-l border-gray-300 pl-2 ml-2 hidden md:block">by DATA MIAZZO</span>
+            </div>
+            <div>
+              <button onclick="netlifyIdentity.open()" class="inline-flex items-center gap-2 bg-agro-dark hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-colors shadow-md border-0 cursor-pointer">
+                <i class="fa-solid fa-lock text-sm"></i> Ingresar al Dashboard
+              </button>
+            </div>
+          </div>
         </div>
-        <a class="lg-btn lg-btn-contacto" href="${L.whatsapp||'#'}" target="_blank" rel="noopener">💬 Contacto por WhatsApp</a>
-        <button class="lg-btn lg-btn-login" onclick="netlifyIdentity.open()">🔐 Ingresar vía mail</button>
-      </div>
+      </nav>
+
+      <!-- HERO SECTION -->
+      <section class="pt-32 pb-16 md:pt-40 md:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center">
+        <div class="w-full max-w-4xl text-center">
+          <div class="inline-block bg-green-100 text-agro-green font-semibold px-4 py-1.5 rounded-full text-sm mb-6 border border-green-200 shadow-sm">
+            <i class="fa-solid fa-chart-line mr-2"></i> Inteligencia de Mercados y Finanzas
+          </div>
+          <h1 class="text-4xl md:text-6xl font-bold text-agro-dark leading-tight mb-6">
+            Tomá mejores decisiones comerciales para tu agroempresa.
+          </h1>
+          <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+            Análisis de coyuntura, estrategias de comercialización de granos y finanzas aplicadas al sector agropecuario, directo al grano.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="#ultimo-informe" class="bg-agro-green hover:bg-green-600 text-white px-8 py-3.5 rounded-lg font-bold text-lg shadow-lg shadow-green-200 transition-all hover:-translate-y-1">
+              Ver Último Informe
+            </a>
+            <a href="${L.whatsapp||'#'}" target="_blank" rel="noopener" class="bg-white hover:bg-gray-50 border-2 border-gray-200 text-agro-dark px-8 py-3.5 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all hover:-translate-y-1">
+              <i class="fa-brands fa-whatsapp text-green-500 text-xl"></i> Unirme al Grupo
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 1: ÚLTIMO INFORME -->
+      <section id="ultimo-informe" class="py-16 bg-white border-y border-gray-100">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 class="text-3xl font-bold text-agro-dark mb-4">Accedé al último informe</h2>
+          <p class="text-gray-600 mb-10">Descargá el análisis de esta semana o escuchá el resumen en audio mientras viajás.</p>
+          <div class="grid sm:grid-cols-2 gap-6">
+            <div class="bg-gray-50 rounded-xl p-8 border border-gray-200 hover:border-agro-green transition-colors group">
+              <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-file-pdf text-2xl"></i>
+              </div>
+              <h3 class="text-xl font-bold text-agro-dark mb-2">Informe en PDF</h3>
+              <p class="text-sm text-gray-500 mb-6">Gráficos, tendencias de soja, maíz, trigo y matriz de decisión financiera.</p>
+              <a href="${L.informe||'#'}" target="_blank" rel="noopener" class="block w-full bg-agro-dark text-white py-2.5 rounded-lg font-semibold hover:bg-slate-700 transition-colors">
+                Descargar PDF
+              </a>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-8 border border-gray-200 hover:border-agro-green transition-colors group">
+              <div class="w-16 h-16 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-headphones text-2xl"></i>
+              </div>
+              <h3 class="text-xl font-bold text-agro-dark mb-2">Resumen en Audio</h3>
+              <p class="text-sm text-gray-500 mb-6">Escuchá el análisis directo de David Miazzo. Ideal para la camioneta.</p>
+              <a href="${L.audio||'#'}" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 w-full bg-white border-2 border-agro-dark text-agro-dark py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                <i class="fa-solid fa-play"></i> Reproducir Audio
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 2: COMUNIDAD WHATSAPP -->
+      <section id="comunidad" class="py-20 bg-agro-green">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+          <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+            <i class="fa-brands fa-whatsapp text-4xl text-agro-green"></i>
+          </div>
+          <h2 class="text-3xl font-bold text-white mb-6">Recibí el informe gratis en tu celular</h2>
+          <p class="text-green-100 text-lg mb-8 max-w-2xl mx-auto">Sumate a nuestra lista de difusión en WhatsApp. Te enviamos el informe apenas sale, sin spam, directo al grano.</p>
+          <a href="${L.whatsapp||'#'}" target="_blank" rel="noopener" class="inline-block bg-white text-agro-green font-bold text-lg px-10 py-4 rounded-full shadow-lg hover:bg-gray-50 hover:scale-105 transition-all">
+            Unirme al grupo ahora
+          </a>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 3: EL DASHBOARD -->
+      <section class="py-20 bg-agro-dark relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-1/2 h-full bg-slate-800 skew-x-12 translate-x-32 opacity-20"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center gap-12">
+          <div class="md:w-5/12 text-white">
+            <div class="inline-flex items-center gap-2 bg-slate-800 text-green-400 px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-6 border border-slate-700">
+              <i class="fa-solid fa-star"></i> Exclusivo Clientes
+            </div>
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">El nuevo Dashboard Interactivo</h2>
+            <ul class="space-y-4 mb-8 text-slate-300">
+              <li class="flex items-start gap-3">
+                <i class="fa-solid fa-check text-agro-green mt-1"></i>
+                <span>Curvas de precios en tiempo real (Soja, Maíz, Trigo).</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <i class="fa-solid fa-check text-agro-green mt-1"></i>
+                <span>Matriz de decisión y comparativas de futuros.</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <i class="fa-solid fa-check text-agro-green mt-1"></i>
+                <span>Opciones financieras y estacionamiento histórico.</span>
+              </li>
+            </ul>
+            <div class="flex items-center gap-4">
+              <p class="text-sm text-slate-400 italic">Si ya sos cliente:</p>
+              <button onclick="netlifyIdentity.open()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white px-5 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 cursor-pointer">
+                <i class="fa-regular fa-envelope"></i> Ingreso con Mail
+              </button>
+            </div>
+          </div>
+          <div class="md:w-7/12">
+            <div class="bg-slate-900 rounded-xl shadow-2xl border border-slate-700 overflow-hidden transform md:rotate-2 md:hover:rotate-0 transition-transform duration-500">
+              <div class="bg-slate-800 px-4 py-3 border-b border-slate-700 flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                <span class="text-slate-400 text-xs ml-4 font-mono">estrategiasalgrano.com/dashboard</span>
+              </div>
+              <div class="p-4 flex gap-4 opacity-80">
+                <div class="w-full space-y-4">
+                  <div class="flex gap-4">
+                    <div class="h-16 w-1/4 bg-slate-800 rounded animate-pulse"></div>
+                    <div class="h-16 w-1/4 bg-slate-800 rounded animate-pulse"></div>
+                    <div class="h-16 w-1/4 bg-slate-800 rounded animate-pulse"></div>
+                    <div class="h-16 w-1/4 bg-slate-800 rounded animate-pulse"></div>
+                  </div>
+                  <div class="h-48 w-full bg-slate-800 rounded flex items-center justify-center border border-slate-700">
+                    <span class="text-slate-600 text-sm">Visualización Gráficos Matba-ROFEX</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 4: ASESORAMIENTO -->
+      <section id="asesoramiento" class="py-20 bg-gray-50 border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-3xl font-bold text-agro-dark mb-4">Planes de Asesoramiento</h2>
+            <p class="text-gray-600">Llevamos la estrategia a los números reales de tu empresa. Trabajamos mediante reuniones mensuales y seguimiento al día.</p>
+          </div>
+          <div class="grid md:grid-cols-3 gap-8 mb-12">
+            <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-xl shadow-gray-200/50 relative overflow-hidden">
+              <div class="h-2 w-full bg-agro-green absolute top-0 left-0"></div>
+              <h3 class="text-xl font-bold text-agro-dark mb-4 mt-2">Empresas Agro</h3>
+              <p class="text-sm text-gray-500 mb-6 font-medium">Acopios, Industrias, Maquinaria.</p>
+              <ul class="space-y-3 mb-8 text-sm text-gray-600">
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Planificación estratégica</li>
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Manejo de tesorería</li>
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Alternativas de financiamiento</li>
+              </ul>
+            </div>
+            <div class="bg-agro-dark rounded-2xl p-8 border border-slate-700 shadow-2xl relative transform md:-translate-y-4">
+              <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-agro-green text-white text-xs font-bold uppercase tracking-wider py-1 px-4 rounded-full">
+                Más Elegido
+              </div>
+              <h3 class="text-xl font-bold text-white mb-4 mt-2">Productores</h3>
+              <p class="text-sm text-slate-300 mb-6 font-medium">Productores agropecuarios directos.</p>
+              <ul class="space-y-3 mb-8 text-sm text-slate-300">
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Definición de estrategia comercial</li>
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Análisis de márgenes</li>
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Planificación de compra de insumos</li>
+              </ul>
+            </div>
+            <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-xl shadow-gray-200/50 relative overflow-hidden">
+              <div class="h-2 w-full bg-blue-500 absolute top-0 left-0"></div>
+              <h3 class="text-xl font-bold text-agro-dark mb-4 mt-2">Dueños de Campo</h3>
+              <p class="text-sm text-gray-500 mb-6 font-medium">Propietarios que alquilan su tierra.</p>
+              <ul class="space-y-3 mb-8 text-sm text-gray-600">
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Estrategias de cobro</li>
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Inversión de liquidez</li>
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Mejora de eficiencia financiera</li>
+              </ul>
+            </div>
+          </div>
+          <div class="text-center">
+            <a href="${L.whatsapp||'#'}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-agro-dark text-white px-8 py-3.5 rounded-lg font-bold hover:bg-slate-700 transition-colors">
+              Consultar por planes vía WhatsApp <i class="fa-brands fa-whatsapp text-xl text-green-400"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- SPONSOR & FOOTER -->
+      <footer class="bg-white border-t border-gray-200 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+          <p class="text-sm text-gray-500 uppercase tracking-widest font-semibold mb-6">Este informe llega a ustedes gracias a:</p>
+          <div class="flex justify-center items-center gap-2 mb-8 grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100 cursor-default">
+            <i class="fa-solid fa-leaf text-4xl text-green-500"></i>
+            <div class="text-left leading-none">
+              <span class="text-xs font-bold tracking-widest text-blue-500 uppercase block">Grupo</span>
+              <span class="text-4xl font-bold text-black tracking-tighter">depetris</span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-500 max-w-md mx-auto mb-12">
+            Grandes en servicio. Soluciones integradas. Relaciones sólidas.
+            <br>Acopio, insumos, financiación y logística.
+          </p>
+          <div class="border-t border-gray-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-agro-dark tracking-tighter">DATA MIAZZO</span>
+              <span class="text-xs text-gray-400">© 2026. Todos los derechos reservados.</span>
+            </div>
+            <div class="flex gap-4">
+              <a href="mailto:datamiazzo@gmail.com" class="text-gray-400 hover:text-agro-dark"><i class="fa-regular fa-envelope"></i> datamiazzo@gmail.com</a>
+              <a href="https://www.datamiazzo.com" class="text-gray-400 hover:text-agro-dark"><i class="fa-solid fa-globe"></i> datamiazzo.com</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
     </div>`;
     document.body.appendChild(gate);
   }
