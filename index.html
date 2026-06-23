@@ -2471,16 +2471,53 @@ function newsRender() {
                 <div class="w-3 h-3 rounded-full bg-green-500"></div>
                 <span class="text-slate-400 text-xs ml-4 font-mono">estrategiasalgrano.com/dashboard</span>
               </div>
-              <div class="p-4 flex gap-4 opacity-80">
-                <div class="w-full space-y-4">
-                  <div class="flex gap-4">
-                    <div class="h-16 w-1/4 bg-slate-800 rounded animate-pulse"></div>
-                    <div class="h-16 w-1/4 bg-slate-800 rounded animate-pulse"></div>
-                    <div class="h-16 w-1/4 bg-slate-800 rounded animate-pulse"></div>
-                    <div class="h-16 w-1/4 bg-slate-800 rounded animate-pulse"></div>
+              <div class="bg-slate-50 p-4">
+                <div class="flex gap-1.5 flex-wrap mb-3 text-xs">
+                  <span class="text-slate-500 px-2.5 py-1.5">Futuros Soja</span>
+                  <span class="text-slate-500 px-2.5 py-1.5">Futuros Maíz</span>
+                  <span class="text-slate-500 px-2.5 py-1.5">Futuros Trigo</span>
+                  <span class="bg-agro-green text-white px-2.5 py-1.5 rounded-md font-semibold">Estrategia</span>
+                  <span class="text-slate-500 px-2.5 py-1.5">Futuros Dólar</span>
+                  <span class="text-slate-500 px-2.5 py-1.5">LECAPs</span>
+                  <span class="text-slate-500 px-2.5 py-1.5">Matriz de decisión</span>
+                </div>
+                <div class="flex gap-2 mb-3">
+                  <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 flex-1">
+                    <p class="text-[10px] text-agro-green font-semibold mb-0.5">PRECIO SPOT</p>
+                    <p class="text-sm font-semibold text-agro-dark">$465.000 <span class="text-[10px] text-slate-400 font-normal">ARS/TN</span></p>
                   </div>
-                  <div class="h-48 w-full bg-slate-800 rounded flex items-center justify-center border border-slate-700">
-                    <span class="text-slate-600 text-sm">Visualización Gráficos Matba-ROFEX</span>
+                  <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 flex-1">
+                    <p class="text-[10px] text-slate-400 mb-0.5">USD/TN</p>
+                    <p class="text-sm font-semibold text-agro-dark">USD 324.61</p>
+                  </div>
+                  <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 flex-1">
+                    <p class="text-[10px] text-slate-400 mb-0.5">FOB</p>
+                    <p class="text-sm font-semibold text-agro-dark">419,00</p>
+                  </div>
+                  <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 flex-1">
+                    <p class="text-[10px] text-slate-400 mb-0.5">FAS TEÓRICO</p>
+                    <p class="text-sm font-semibold text-agro-dark">326,50</p>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <div class="bg-white border border-gray-200 rounded-lg p-3 flex-1">
+                    <div class="flex justify-between items-center mb-2">
+                      <span class="text-[11px] font-semibold text-slate-600">CURVA DE PRECIOS</span>
+                      <span class="text-[9px] text-agro-green border border-green-200 rounded px-1.5 py-0.5">Comparar con Chicago</span>
+                    </div>
+                    <svg viewBox="0 0 220 70" class="w-full h-16">
+                      <polyline points="5,45 40,25 75,32 110,18 145,28 180,12 215,20" fill="none" stroke="#16a34a" stroke-width="2"></polyline>
+                      <polygon points="5,45 40,25 75,32 110,18 145,28 180,12 215,20 215,70 5,70" fill="#16a34a" opacity="0.12"></polygon>
+                    </svg>
+                  </div>
+                  <div class="bg-white border border-gray-200 rounded-lg p-3 w-32">
+                    <p class="text-[11px] font-semibold text-slate-600 mb-2">CONTRATOS</p>
+                    <div class="flex justify-between text-[10px] mb-1.5">
+                      <span class="text-slate-600">SOJ.JUL26</span><span class="text-red-600">-1,0%</span>
+                    </div>
+                    <div class="flex justify-between text-[10px]">
+                      <span class="text-slate-600">SOJ.SEP26</span><span class="text-red-600">-0,5%</span>
+                    </div>
                   </div>
                 </div>
               </div>
