@@ -1344,7 +1344,7 @@ function injectDollarRatesCard(panelId){
   const futPrice=firstFut?parseFloat(firstFut.ajuste):null;
   const futLabel=firstFut?firstFut.venc_display:'—';
   const TIPOS=[
-    {key:'Oficial',      label:'Oficial',   color:'#1565c0', bg:'#dbeafe', field:'compra'},
+    {key:'Oficial',      label:'Oficial',   color:'#1565c0', bg:'#dbeafe', field:'venta'},
     {key:'Bolsa',        label:'Bolsa/MEP', color:'#7c3aed', bg:'#ede9f7', field:'venta'},
     {key:'Contado',      label:'CCL',       color:'#0d6e56', bg:'#d1fae5', field:'venta'},
     {key:'Mayorista',    label:'Mayorista', color:'#e65100', bg:'#fff3e0', field:'venta'},
@@ -1411,7 +1411,7 @@ function _renderFutPanel(panelId){
   const _spotUsd=_customArs&&SPOT&&SPOT.tc?_customArs/SPOT.tc:(cKey&&SPOT)?(SPOT[cKey+'_usd']||(SPOT.tc&&SPOT[cKey+'_ars']?SPOT[cKey+'_ars']/SPOT.tc:null)):null;
   const _isDispRef=refVenc==='Disp.';
   const _isDlr=(panelId==='dlr-fut');
-  const _oficialUsd=_isDlr&&DOLLAR_RATES?(()=>{const r=DOLLAR_RATES.find(d=>d.tipo.toLowerCase().includes('oficial'));return r&&r.compra?parseFloat(r.compra):null;})():null;
+  const _oficialUsd=_isDlr&&DOLLAR_RATES?(()=>{const r=DOLLAR_RATES.find(d=>d.tipo.toLowerCase().includes('oficial'));return r&&r.venta?parseFloat(r.venta):null;})():null;
   const _isOficialRef=refVenc==='Oficial';
   const _refSpot=_isDispRef?_spotUsd:_isOficialRef?_oficialUsd:null;
   const _today=new Date();
