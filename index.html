@@ -2189,8 +2189,8 @@ function buildFinanciamientoPesos(panel,modoBtnsHtml){
       <div class="canvas-wrap" style="height:280px"><canvas id="fin-comparison-chart"></canvas></div>
     </div>`;
 
-  if(finChart){finChart.destroy();finChart=null;}
   setTimeout(()=>{
+    if(finChart){finChart.destroy();finChart=null;}
     const ctx=document.getElementById('fin-comparison-chart');
     if(!ctx||!validFuts.length)return;
     const labels=validFuts.map(f=>f.venc_display);
