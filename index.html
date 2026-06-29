@@ -2,7 +2,7 @@
 {
   "name": "A3 Mercados Dashboard",
   "schemaVersion": 1,
-  "description": "Dashboard A3 Mercados: futuros soja, maÃ­z, trigo, dÃ³lar + opciones + estrategia + LECAPs. Datos en vivo desde Google Sheet A3 y Google Drive MCP.",
+  "description": "Dashboard A3 Mercados: futuros soja, maíz, trigo, dólar + opciones + estrategia + LECAPs. Datos en vivo desde Google Sheet A3 y Google Drive MCP.",
   "mcpTools": [
     "mcp__b5211e5b-bb8a-4302-ab9c-1a9da1d9d6a6__read_file_content",
     "mcp__workspace__web_fetch"
@@ -58,7 +58,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #
 .fut-table td:first-child { text-align: left; font-weight: 600; }
 .fut-table tr:hover td { background: #f7fbff; }
 .fut-table tr.ref-row td { background: #fffbe6; font-weight: 700; }
-.fut-table tr.ref-row td:first-child::after { content: ' â'; color: #f5a623; font-size: 0.7rem; }
+.fut-table tr.ref-row td:first-child::after { content: ' ★'; color: #f5a623; font-size: 0.7rem; }
 .fut-table tr.disp-row td { background: #f1f5f9; border-bottom: 2px solid #cbd5e1; }
 .chain-hide-xtra .xtra-col { display: none; }
 .pos { color: #22863a; font-weight: 600; }
@@ -133,7 +133,7 @@ canvas { max-height: 100%; }
 .strat-mode-btn { padding: 7px 18px; border: 2px solid #dde; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; background: white; color: #888; transition: all 0.15s; }
 .strat-mode-btn.active { background: #1a1a2e; color: white; border-color: #1a1a2e; }
 .preset-section-label { font-size: 0.68rem; font-weight: 700; color: #bbb; text-transform: uppercase; letter-spacing: 0.7px; margin: 14px 0 8px 2px; }
-/* ââ Spot card ââ */
+/* ── Spot card ── */
 .spot-card { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 12px; padding: 16px 22px; margin-bottom: 18px; color: white; display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
 .spot-card-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.5); margin-bottom: 3px; }
 .spot-card-fecha { font-size: 0.7rem; color: rgba(255,255,255,0.38); }
@@ -144,7 +144,7 @@ canvas { max-height: 100%; }
 .spot-divider { width: 1px; background: rgba(255,255,255,0.13); align-self: stretch; min-height: 36px; }
 .basis-pos { color: #4ecdc4; }
 .basis-neg { color: #ff6b6b; }
-/* ââ Splash de selecciÃ³n de dispositivo ââ */
+/* ── Splash de selección de dispositivo ── */
 #splash-overlay{position:fixed;inset:0;background:#ffffff;display:flex;align-items:center;justify-content:center;z-index:9999;}
 .splash-inner{text-align:center;padding:24px 16px;max-width:480px;width:100%;}
 .splash-logo{margin-bottom:18px;display:flex;justify-content:center;}
@@ -159,7 +159,7 @@ canvas { max-height: 100%; }
 .splash-btn .sb-desc{font-size:0.72rem;color:rgba(0,0,0,0.45);line-height:1.4;}
 .splash-note{margin-top:22px;font-size:0.68rem;color:rgba(0,0,0,0.35);}
 
-/* ââ Landing pÃºblica (previo al login) ââ */
+/* ── Landing pública (previo al login) ── */
 #landing-gate{position:fixed;inset:0;z-index:10000;background:#ffffff;overflow-y:auto;font-family:'Segoe UI',Arial,sans-serif;}
 #netlify-identity-widget{z-index:999999 !important;}
 .lg-wrap{max-width:760px;margin:0 auto;padding:36px 20px 60px;}
@@ -173,7 +173,7 @@ canvas { max-height: 100%; }
 .lg-services-intro{font-size:0.85rem;font-weight:700;color:#16213e;margin-bottom:10px;}
 .lg-services-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px;}
 .lg-services-list li{font-size:0.85rem;color:#333;padding-left:18px;position:relative;}
-.lg-services-list li::before{content:'â¢';position:absolute;left:2px;color:#22c55e;font-weight:800;}
+.lg-services-list li::before{content:'•';position:absolute;left:2px;color:#22c55e;font-weight:800;}
 .lg-actions{display:flex;flex-direction:column;gap:12px;margin-bottom:8px;}
 .lg-btn{display:flex;align-items:center;justify-content:center;gap:9px;padding:14px 20px;border-radius:10px;font-weight:700;font-size:0.92rem;text-decoration:none;cursor:pointer;border:none;font-family:inherit;transition:transform 0.12s,opacity 0.12s;}
 .lg-btn:hover{opacity:0.92;}
@@ -185,7 +185,7 @@ canvas { max-height: 100%; }
 .lg-row2 .lg-btn{flex:1;}
 @media (max-width:520px){.lg-row2{flex-direction:column;}}
 
-/* ââ Financiamiento ââ */
+/* ── Financiamiento ── */
 .fin-tab { color: rgba(100,220,200,0.65); }
 .fin-tab.active { color: #4ecdc4; border-bottom-color: #4ecdc4; }
 .fin-card { background: white; border-radius: 10px; padding: 18px 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
@@ -202,7 +202,7 @@ canvas { max-height: 100%; }
 .fin-section-title { font-size:0.68rem;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px; }
 .fin-total-row { display:flex;justify-content:space-between;align-items:center;background:#f7f8fa;border-radius:7px;padding:7px 10px;margin-top:2px; }
 
-/* ââ NOTICIAS PANEL ââ */
+/* ── NOTICIAS PANEL ── */
 #panel-noticias { padding: 0; }
 #panel-noticias .news-filter-bar {
   background: #16213e; padding: 10px 24px;
@@ -275,7 +275,7 @@ canvas { max-height: 100%; }
   content: ''; flex: 1; height: 1px; background: #e5e7eb;
 }
 </style>
-<!-- Landing pÃºblica (Gemini design) â Tailwind scope-limited a #landing-gate -->
+<!-- Landing pública (Gemini design) — Tailwind scope-limited a #landing-gate -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script>
@@ -299,36 +299,36 @@ canvas { max-height: 100%; }
 <div class="header">
   <div>
     <h1 style="display:flex;align-items:center;gap:14px;text-transform:uppercase;">Estrategias al grano<span style="display:inline-block;width:1px;height:22px;background:rgba(255,255,255,0.3);"></span><img src="logo-data-miazzo-white.png" alt="Data Miazzo" style="height:24px;"></h1>
-    <div class="fecha">Datos al 23-4-2026 &nbsp;Â·&nbsp; Fuente: A3 Info / MatbaRofex</div>
+    <div class="fecha">Datos al 23-4-2026 &nbsp;·&nbsp; Fuente: A3 Info / MatbaRofex</div>
   </div>
   <div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-      <button onclick="DOLLAR_RATES=null;a3DataLoaded=false;lecapData=null;lecapLoading=false;SPOT=null;loadAndInitA3();loadLecapPanel();" style="padding:8px 18px;border:1.5px solid rgba(255,255,255,0.25);border-radius:8px;background:transparent;color:white;font-size:0.82rem;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">ð Actualizar datos</button>
+      <button onclick="DOLLAR_RATES=null;a3DataLoaded=false;lecapData=null;lecapLoading=false;SPOT=null;loadAndInitA3();loadLecapPanel();" style="padding:8px 18px;border:1.5px solid rgba(255,255,255,0.25);border-radius:8px;background:transparent;color:white;font-size:0.82rem;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">🔄 Actualizar datos</button>
       <span id="chicago-status" style="font-size:0.68rem;opacity:0.6;color:white"></span>
-      <button onclick="localStorage.removeItem('a3_device_mode');window.a3DeviceMode=null;showSplash();" style="padding:4px 10px;border:1px solid rgba(255,255,255,0.15);border-radius:6px;background:transparent;color:rgba(255,255,255,0.35);font-size:0.65rem;cursor:pointer;" title="Cambiar tipo de dispositivo">ð±/ð» cambiar vista</button>
+      <button onclick="localStorage.removeItem('a3_device_mode');window.a3DeviceMode=null;showSplash();" style="padding:4px 10px;border:1px solid rgba(255,255,255,0.15);border-radius:6px;background:transparent;color:rgba(255,255,255,0.35);font-size:0.65rem;cursor:pointer;" title="Cambiar tipo de dispositivo">📱/💻 cambiar vista</button>
     </div>
   </div>
 </div>
 <div class="tabs">
   <div class="tab active" onclick="showTab('soj-fut')">Futuros Soja</div>
-  <div class="tab" onclick="showTab('mai-fut')">Futuros MaÃ­z</div>
+  <div class="tab" onclick="showTab('mai-fut')">Futuros Maíz</div>
   <div class="tab" onclick="showTab('tri-fut')">Futuros Trigo</div>
   <div class="tab" onclick="showTab('soj-opts')">Opciones Soja</div>
-  <div class="tab" onclick="showTab('mai-opts')">Opciones MaÃ­z</div>
+  <div class="tab" onclick="showTab('mai-opts')">Opciones Maíz</div>
   <div class="tab" onclick="showTab('tri-opts')">Opciones Trigo</div>
-  <div class="tab estrategia-tab" onclick="showTab('estrategia')">â Estrategia</div>
-  <div class="tab" onclick="showTab('dlr-fut')">Futuros DÃ³lar</div>
-  <div class="tab lecap-tab" onclick="showTab('lecaps')">ð LECAPs</div>
-  <div class="tab fin-tab" onclick="showTab('financiamiento')">ð° Matriz de decisiÃ³n</div>
-  <div class="tab" onclick="showTab('noticias')">ð° Noticias</div>
+  <div class="tab estrategia-tab" onclick="showTab('estrategia')">⚙ Estrategia</div>
+  <div class="tab" onclick="showTab('dlr-fut')">Futuros Dólar</div>
+  <div class="tab lecap-tab" onclick="showTab('lecaps')">📈 LECAPs</div>
+  <div class="tab fin-tab" onclick="showTab('financiamiento')">💰 Matriz de decisión</div>
+  <div class="tab" onclick="showTab('noticias')">📰 Noticias</div>
   </div>
 <div class="content">
   <div class="panel" id="panel-noticias">
     <div class="news-filter-bar">
-      <button class="filter-chip active"     onclick="newsSetFilter('todos')" id="nchip-todos">ð¿ Todos</button>
-      <button class="filter-chip chip-trigo" onclick="newsSetFilter('trigo')" id="nchip-trigo">ð¾ Trigo</button>
-      <button class="filter-chip chip-maiz"  onclick="newsSetFilter('maiz')"  id="nchip-maiz">ð½ MaÃ­z</button>
-      <button class="filter-chip chip-soja"  onclick="newsSetFilter('soja')"  id="nchip-soja">ð« Soja</button>
+      <button class="filter-chip active"     onclick="newsSetFilter('todos')" id="nchip-todos">🌿 Todos</button>
+      <button class="filter-chip chip-trigo" onclick="newsSetFilter('trigo')" id="nchip-trigo">🌾 Trigo</button>
+      <button class="filter-chip chip-maiz"  onclick="newsSetFilter('maiz')"  id="nchip-maiz">🌽 Maíz</button>
+      <button class="filter-chip chip-soja"  onclick="newsSetFilter('soja')"  id="nchip-soja">🫘 Soja</button>
       <span class="news-filter-count" id="news-filter-count"></span>
     </div>
     <div class="news-content">
@@ -347,7 +347,7 @@ canvas { max-height: 100%; }
   <div class="panel" id="panel-financiamiento"></div>
 </div>
 <script>
-// ââ A3 â Futuros y Opciones (datos dinÃ¡micos desde Google Sheet) âââââââââ
+// ── A3 – Futuros y Opciones (datos dinámicos desde Google Sheet) ─────────
 const A3_FILE_ID='1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI';
 const A3_AGRO_URL='https://docs.google.com/spreadsheets/d/'+A3_FILE_ID+'/export?format=csv&gid=527444289';
 const A3_FIN_URL='https://docs.google.com/spreadsheets/d/'+A3_FILE_ID+'/export?format=csv&gid=2027743157';
@@ -360,26 +360,26 @@ let DOLLAR_RATES=null;
 let a3DataLoaded=false;
 let SPOT=null;
 let FOB_FAS=null;
-/* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-   LANDING_LINKS â links de la landing pÃºblica. El informe y el audio se
-   actualizan aprox. cada 15 dÃ­as: reemplazar solo las URLs de abajo.
-   âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════
+   LANDING_LINKS — links de la landing pública. El informe y el audio se
+   actualizan aprox. cada 15 días: reemplazar solo las URLs de abajo.
+   ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 window.LANDING_LINKS = {
   informe: 'https://drive.google.com/file/d/1CbR9UDpVX0TiTbx1DIhe3svRRj1pE6vC/view?usp=drive_link',
   audio:   'https://drive.google.com/file/d/14zHDdj-563FTL4tX_0TYpsL51fSrBy_9/view?usp=drive_link',
   whatsapp:'https://api.whatsapp.com/send/?phone=5493584377218&text&type=phone_number&app_absent=0',
   whatsappGrupo:'https://chat.whatsapp.com/Dc9wsGCG3ob2wDJDIWYvC3?mode=gi_t'
 };
-/* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
-/* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-   BCRA_TC_OVERRIDE â tarea programada diaria pisa este valor con el dato
-   oficial del BCRA (ComunicaciÃ³n A 3500, dÃ³lar mayorista). El resto de los
-   valores (oficial, CCL, soja/maÃ­z/trigo, etc.) siguen viniendo de la sheet.
-   Ãltima actualizaciÃ³n: 2026-06-26
-   âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════
+   BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
+   oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
+   valores (oficial, CCL, soja/maíz/trigo, etc.) siguen viniendo de la sheet.
+   Última actualización: 2026-06-26
+   ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 const BCRA_TC_OVERRIDE = 1474.7207;
-/* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
-// Pizarra histÃ³rica Soja 2025 (USD/tn) â clave "DD/MM" con ceros
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
+// Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
 const PIZARRA_SOJ_2025={
   "05/05":256.6,"09/05":261,"12/05":273.8,"13/05":270,"14/05":269.4,"15/05":270.6,
   "16/05":282.77,"19/05":273.88,"20/05":275.7,"21/05":274.8,"22/05":276.6,"23/05":271.3,
@@ -415,7 +415,7 @@ function lookupPizarra2025(fecha){
   if(parts.length<2)return null;
   const key=parts[0].padStart(2,'0')+'/'+parts[1].padStart(2,'0');
   if(PIZARRA_SOJ_2025[key]!=null)return PIZARRA_SOJ_2025[key];
-  // Si no hay dato exacto, buscar el mÃ¡s cercano (hasta 3 dÃ­as hÃ¡biles antes)
+  // Si no hay dato exacto, buscar el más cercano (hasta 3 días hábiles antes)
   const [d,m]=parts;
   const base=new Date(2025,parseInt(m)-1,parseInt(d));
   for(let i=1;i<=7;i++){
@@ -425,7 +425,7 @@ function lookupPizarra2025(fecha){
   }
   return null;
 }
-// Futuros Soja 2025 â clave "DD/MM" â {jul, sept, nov} (null = contrato vencido/sin dato)
+// Futuros Soja 2025 — clave "DD/MM" → {jul, sept, nov} (null = contrato vencido/sin dato)
 const FUTUROS_SOJ_2025={
   "05/05":{jul:281,sept:287,nov:288.7},
   "09/05":{jul:289.8,sept:296,nov:298.9},
@@ -552,7 +552,7 @@ function lookupFuturos2025(fecha){
   }
   return null;
 }
-// ââ MaÃ­z 2025: pizarra y futuros (jul-25, sept-25, dic-25) ââââââââââââââ
+// ── Maíz 2025: pizarra y futuros (jul-25, sept-25, dic-25) ──────────────
 const PIZARRA_MAI_2025={
   "09/05":185,"12/05":182.8,"13/05":183,"14/05":183.75,"15/05":185.4,
   "16/05":186.5,"19/05":184,"20/05":185.5,"21/05":185.8,"22/05":184.9,
@@ -668,7 +668,7 @@ function lookupFuturosMai2025(fecha){
   const r={jul:_lookupByDate(FUTUROS_MAI_2025.jul,fecha),sept:_lookupByDate(FUTUROS_MAI_2025.sept,fecha),dic:_lookupByDate(FUTUROS_MAI_2025.dic,fecha)};
   return(r.jul||r.sept||r.dic)?r:null;
 }
-// â TRIGO 2025 â
+// — TRIGO 2025 —
 const PIZARRA_TRI_2025={
 "02/01":193.22,"03/01":188.31,"06/01":188.31,"07/01":188.22,"08/01":189.58,"10/01":189.51,"13/01":189.42,"14/01":188.28,"15/01":188.10,"16/01":190.98,"17/01":189.66,"20/01":189.20,"21/01":190.07,"22/01":190.84,"23/01":192.66,"28/01":199.33,"29/01":202.57,"30/01":202.47,"31/01":202.18,
 "03/02":199.19,"04/02":199.19,"05/02":202.94,"06/02":208.58,"07/02":208.38,"10/02":208.23,"11/02":208.23,"12/02":208.19,"13/02":207.04,"14/02":207.89,"17/02":207.69,"18/02":209.16,"19/02":210.53,"20/02":210.43,"21/02":213.06,"24/02":213.01,"25/02":211.96,"26/02":211.44,"27/02":208.24,
@@ -713,14 +713,14 @@ function lookupFuturosTri2025(fecha){
   const r={jul:_lookupByDate(FUTUROS_TRI_2025.jul,fecha),dic:_lookupByDate(FUTUROS_TRI_2025.dic,fecha)};
   return(r.jul||r.dic)?r:null;
 }
-// Precios Chicago/Kansas (BCR) â cargado dinÃ¡micamente desde Google Sheet
+// Precios Chicago/Kansas (BCR) — cargado dinámicamente desde Google Sheet
 let CHICAGO=null;
 let CHICAGO_ERROR=false;
 let CHICAGO_STATUS='';
 const BCR_CHICAGO_URL='https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1';
 const CHICAGO_SHEET_ID='1ZJhaQADjDzbQhtVemivVMv9dvIn9RkE1nmCpK8g1ZhY';
 const CHICAGO_SHEET_URL='https://docs.google.com/spreadsheets/d/'+CHICAGO_SHEET_ID+'/export?format=csv&gid=1438718704'; // Hoja 1: precios Chicago
-const CHICAGO_FOB_URL='https://docs.google.com/spreadsheets/d/'+CHICAGO_SHEET_ID+'/export?format=csv&gid=107418392'; // Hoja 2: FAS TeÃ³rico
+const CHICAGO_FOB_URL='https://docs.google.com/spreadsheets/d/'+CHICAGO_SHEET_ID+'/export?format=csv&gid=107418392'; // Hoja 2: FAS Teórico
 function normalizeNum(s){if(!s||s==='N/A')return'N/A';return String(s).replace(/\./g,'').replace(',','.');}
 function vencDisplay(c){const a=c.match(/\/([A-Z]{3}\d{2})/);if(a)return a[1];const d=c.match(/^DLR(\d{2})(\d{4})$/);if(d)return d[1]+'/'+d[2];return'';}
 function parseA3CSV(text){
@@ -869,9 +869,9 @@ function parseChicagoPrices(text){
   return Object.keys(res).length?res:null;
 }
 function parseChicagoMarkdown(text){
-  // Columnas fijas del BCR (precio | variaciÃ³n por par):
+  // Columnas fijas del BCR (precio | variación por par):
   // 0=mes, 1=Trigo/1, 2=var, 3=Trigo/2(Kansas), 4=var,
-  // 5=MaÃ­z, 6=var, 7=Soja, 8=var, 9=Aceite, 10=var, 11=Harina, 12=var
+  // 5=Maíz, 6=var, 7=Soja, 8=var, 9=Aceite, 10=var, 11=Harina, 12=var
   const COLS={1:'trigo',3:'trigo_kan',5:'maiz',7:'soja',9:'aceite',11:'harina'};
   const pN=s=>{if(!s)return null;s=s.replace(/[$\s"\\]/g,'').trim();if(!s||s==='N/A'||s==='-')return null;const ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');const norm=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');const n=parseFloat(norm);return isNaN(n)?null:n;};
   const mmap={ene:'ENE',feb:'FEB',mar:'MAR',abr:'ABR',may:'MAY',jun:'JUN',jul:'JUL',ago:'AGO',sep:'SEP',oct:'OCT',nov:'NOV',dic:'DIC'};
@@ -882,8 +882,8 @@ function parseChicagoMarkdown(text){
     if(/^[|:\s\-]+$/.test(l))continue;
     const cells=l.replace(/^\||\|$/g,'').split('|').map(s=>s.replace(/\\/g,'').trim());
     if(!cells[0])continue;
-    const mRaw=cells[0].toLowerCase().replace(/[^a-zÃ¡Ã©Ã­Ã³Ãº0-9]/g,' ').trim();
-    const mMatch=mRaw.match(/^([a-zÃ¡Ã©Ã­Ã³Ãº]+)\s*(\d{2})$/);
+    const mRaw=cells[0].toLowerCase().replace(/[^a-záéíóú0-9]/g,' ').trim();
+    const mMatch=mRaw.match(/^([a-záéíóú]+)\s*(\d{2})$/);
     if(!mMatch)continue;
     const mc=mmap[mMatch[1]];if(!mc)continue;
     const key=mc+mMatch[2];
@@ -894,9 +894,9 @@ function parseChicagoMarkdown(text){
   return Object.keys(res).length?res:null;
 }
 function parseChicagoSheetCSV(text){
-  // Columnas fijas del BCR (precio | variaciÃ³n por par):
+  // Columnas fijas del BCR (precio | variación por par):
   // 0=mes, 1=Trigo/1, 2=var, 3=Trigo/2(Kansas), 4=var,
-  // 5=MaÃ­z, 6=var, 7=Soja, 8=var, 9=Aceite, 10=var, 11=Harina, 12=var
+  // 5=Maíz, 6=var, 7=Soja, 8=var, 9=Aceite, 10=var, 11=Harina, 12=var
   const COLS={1:'trigo',3:'trigo_kan',5:'maiz',7:'soja',9:'aceite',11:'harina'};
   const pRow=row=>{const c=[];let cur='',q=false;for(const ch of row+','){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur.trim());cur='';}else cur+=ch;}return c;};
   const pN=s=>{if(!s)return null;s=s.replace(/[$\s"]/g,'').trim();if(!s||s==='N/A'||s==='-')return null;const ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');const norm=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');const n=parseFloat(norm);return isNaN(n)?null:n;};
@@ -908,8 +908,8 @@ function parseChicagoSheetCSV(text){
   for(let i=0;i<rows.length;i++){
     const p=pRow(rows[i]);
     if(!p[0])continue;
-    const mRaw=p[0].toLowerCase().replace(/[^a-zÃ¡Ã©Ã­Ã³Ãº0-9]/g,' ').trim();
-    const mMatch=mRaw.match(/^([a-zÃ¡Ã©Ã­Ã³Ãº]+)\s*(\d{2})$/);
+    const mRaw=p[0].toLowerCase().replace(/[^a-záéíóú0-9]/g,' ').trim();
+    const mMatch=mRaw.match(/^([a-záéíóú]+)\s*(\d{2})$/);
     if(!mMatch)continue;
     const mc=mmap[mMatch[1]];if(!mc)continue;
     const key=mc+mMatch[2];
@@ -932,7 +932,7 @@ function parseFobFas(text){
   for(const line of lines){
     const l=line.trim();
     if(!l)continue;
-    // Detectar secciÃ³n Aceitera antes de parsear celdas (funciona en texto plano y pipe-table)
+    // Detectar sección Aceitera antes de parsear celdas (funciona en texto plano y pipe-table)
     if(/aceitera/i.test(l))inAceitera=true;
     let cells,f;
     if(isMd){
@@ -946,16 +946,16 @@ function parseFobFas(text){
     if(/commodity/i.test(f)){
       const c1=cells[1]||'';
       if(/trigo|wheat/i.test(c1))cult='trigo';
-      else if(/ma[Ã­i]z|corn/i.test(c1))cult='maiz';
+      else if(/ma[íi]z|corn/i.test(c1))cult='maiz';
       else if(/soja|soybean/i.test(c1))cult='soja';
       else cult=null;
     }
     if(!cult)continue;
-    // Para soja en secciÃ³n Aceitera: permitir sobreescribir el FAS aunque ya estÃ© marcado como done
+    // Para soja en sección Aceitera: permitir sobreescribir el FAS aunque ya esté marcado como done
     const allowFasOverride=cult==='soja'&&inAceitera;
     if(done[cult]&&!allowFasOverride)continue;
     if(/fob.*(comprador|bid)/i.test(f)){const v=pN(cells[1]);if(v&&!done[cult])res[cult].fob=v;}
-    if(/fas.*te[oÃ³]rico/i.test(f)){const v=pN(cells[1]);if(v){res[cult].fas=v;if(res[cult].fob)done[cult]=true;}}
+    if(/fas.*te[oó]rico/i.test(f)){const v=pN(cells[1]);if(v){res[cult].fas=v;if(res[cult].fob)done[cult]=true;}}
   }
   return(res.soja.fob||res.maiz.fob||res.trigo.fob)?res:null;
 }
@@ -971,9 +971,9 @@ async function loadChicagoPrices(){
   CHICAGO_STATUS='';
   FOB_FAS=null; // resetear para que el step 3 siempre re-fetche el tab FOB/FAS
   let upgraded=false;
-  // Extrae la fecha de actualizaciÃ³n del texto crudo (celda I1 de la sheet: DD/MM/YYYY)
+  // Extrae la fecha de actualización del texto crudo (celda I1 de la sheet: DD/MM/YYYY)
   function extractChicagoDate(raw){
-    // Busca la fecha en la secciÃ³n CBOT primero, luego en todo el texto
+    // Busca la fecha en la sección CBOT primero, luego en todo el texto
     const cbot=raw.split(/Precios\s+de\s+cierre\s+de\s+GRANOS/i)[0];
     const m=cbot.match(/\b(\d{2}\/\d{2}\/\d{4})\b/);
     if(m)return m[1];
@@ -1000,7 +1000,7 @@ async function loadChicagoPrices(){
       }
     }catch(e){console.warn('[Chicago] MCP Drive error:',e.message);}
   }
-  // 2. Google Sheet CSV export (funciona en Netlify cuando la sheet es pÃºblica)
+  // 2. Google Sheet CSV export (funciona en Netlify cuando la sheet es pública)
   if(!upgraded){
     try{
       const r=await fetch(CHICAGO_SHEET_URL,{cache:'no-store'});
@@ -1020,7 +1020,7 @@ async function loadChicagoPrices(){
       }
     }catch(e){console.warn('[Chicago] CSV fetch error:',e.message);}
   }
-  // 3. Tab especÃ­fico de FOB/FAS (gid=1438718704)
+  // 3. Tab específico de FOB/FAS (gid=1438718704)
   if(!FOB_FAS){
     try{
       const r=await fetch(CHICAGO_FOB_URL,{cache:'no-store'});
@@ -1038,13 +1038,13 @@ async function loadChicagoPrices(){
   } else {
     CHICAGO=null;
     CHICAGO_ERROR=true;
-    CHICAGO_STATUS='â ï¸ Chicago: sin datos';
+    CHICAGO_STATUS='⚠️ Chicago: sin datos';
     setStatus(CHICAGO_STATUS,true);
   }
 }
 async function loadSpotData(){
   const prev=SPOT;
-  SPOT=null; // resetear para forzar fetch fresco en cada actualizaciÃ³n
+  SPOT=null; // resetear para forzar fetch fresco en cada actualización
   try{
     if(window.cowork&&typeof window.cowork.callMcpTool==='function'){
       const res=await window.cowork.callMcpTool('mcp__b5211e5b-bb8a-4302-ab9c-1a9da1d9d6a6__read_file_content',{fileId:DATA_FILE_ID});
@@ -1058,7 +1058,7 @@ async function loadSpotData(){
       if(r.ok){const t=await r.text();if(t&&t.length>10)SPOT=parseSpotDataCSV(t);}
     }catch(e){console.warn('Spot CSV error:',e);}
   }
-  if(!SPOT&&prev)SPOT=prev; // si todo falla, mantener el Ãºltimo valor conocido
+  if(!SPOT&&prev)SPOT=prev; // si todo falla, mantener el último valor conocido
   if(SPOT&&typeof BCRA_TC_OVERRIDE==='number'&&BCRA_TC_OVERRIDE>0)SPOT.tc=BCRA_TC_OVERRIDE; // pisar solo TC Mayorista con dato oficial BCRA
 }
 if(!window._customSpotArs)window._customSpotArs={};
@@ -1080,11 +1080,11 @@ function injectSpotCard(panelId,spot){
   const ars=spot[cult+'_ars'],tc=spot.tc,fecha=spot.fecha;
   if(!ars)return;
   const usdS=(tc&&ars)?ars/tc:spot[cult+'_usd'];
-  const tcDisplay=tc?tc.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'â';
+  const tcDisplay=tc?tc.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
   const arsDisplay=ars.toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0});
   const fobData=FOB_FAS?FOB_FAS[cult]:null;
-  const fobDisplay=fobData&&fobData.fob!=null?fobData.fob.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'â';
-  const fasDisplay=fobData&&fobData.fas!=null?fobData.fas.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'â';
+  const fobDisplay=fobData&&fobData.fob!=null?fobData.fob.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+  const fasDisplay=fobData&&fobData.fas!=null?fobData.fas.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
   let pizarraAnteriorHtml='';
   {
     const piz=cult==='soja'?lookupPizarra2025(fecha):cult==='maiz'?lookupPizarraMai2025(fecha):cult==='trigo'?lookupPizarraTri2025(fecha):null;
@@ -1092,26 +1092,26 @@ function injectSpotCard(panelId,spot){
   }
   const customArs=window._customSpotArs&&window._customSpotArs[panelId];
   const customUsd=customArs&&tc?customArs/tc:null;
-  const autoUsdDisplay=usdS?usdS.toFixed(2):(tc&&ars?(ars/tc).toFixed(2):'â');
+  const autoUsdDisplay=usdS?usdS.toFixed(2):(tc&&ars?(ars/tc).toFixed(2):'—');
   const effectiveUsdDisplay=customUsd?customUsd.toFixed(2):autoUsdDisplay;
   const isManual=!!customArs;
   const acopioArsInput=customArs?customArs.toLocaleString('es-AR',{maximumFractionDigits:0}):'';
   const html=`<div class="spot-card">
-    <div style="min-width:100px"><div class="spot-card-title">ð Precio Spot</div><div class="spot-card-fecha">Dato: ${fecha}</div></div>
+    <div style="min-width:100px"><div class="spot-card-title">📍 Precio Spot</div><div class="spot-card-fecha">Dato: ${fecha}</div></div>
     <div class="spot-metrics">
       <div class="spot-metric"><div class="spot-metric-label">ARS / tn${isManual?' (mercado)':''}</div><div class="spot-metric-value" style="${isManual?'text-decoration:line-through;opacity:0.45':''}">$${arsDisplay}</div></div>
       <div class="spot-divider"></div>
-      <div class="spot-metric"><div class="spot-metric-label">USD / tn${isManual?' âï¸':''}</div><div class="spot-metric-value" style="${isManual?'color:#ffc850;font-weight:800':''}">USD ${effectiveUsdDisplay}</div></div>
+      <div class="spot-metric"><div class="spot-metric-label">USD / tn${isManual?' ✏️':''}</div><div class="spot-metric-value" style="${isManual?'color:#ffc850;font-weight:800':''}">USD ${effectiveUsdDisplay}</div></div>
       <div class="spot-divider"></div>
       <div class="spot-metric"><div class="spot-metric-label">FOB</div><div class="spot-metric-value">${fobDisplay}</div></div>
       <div class="spot-divider"></div>
-      <div class="spot-metric"><div class="spot-metric-label">FAS TeÃ³rico</div><div class="spot-metric-value">${fasDisplay}</div></div>
+      <div class="spot-metric"><div class="spot-metric-label">FAS Teórico</div><div class="spot-metric-value">${fasDisplay}</div></div>
       <div class="spot-divider"></div>
       <div class="spot-metric"><div class="spot-metric-label">TC Mayorista</div><div class="spot-metric-value">$${tcDisplay}</div></div>
       ${pizarraAnteriorHtml}
       <div class="spot-divider"></div>
       <div class="spot-metric" style="flex-direction:column;gap:5px;min-width:160px">
-        <div class="spot-metric-label" style="display:flex;align-items:center;gap:5px">âï¸ Precio Acopio${isManual?` <span style="font-size:0.6rem;background:#f59e0b;color:#1a1a2e;padding:1px 6px;border-radius:3px;font-weight:800">MANUAL</span>`:''}</div>
+        <div class="spot-metric-label" style="display:flex;align-items:center;gap:5px">✏️ Precio Acopio${isManual?` <span style="font-size:0.6rem;background:#f59e0b;color:#1a1a2e;padding:1px 6px;border-radius:3px;font-weight:800">MANUAL</span>`:''}</div>
         <div style="display:flex;align-items:center;gap:5px">
           <span style="font-size:0.78rem;color:rgba(255,255,255,0.5)">$</span>
           <input type="text" id="acopio-ars-${panelId}" value="${acopioArsInput}" placeholder="${arsDisplay}"
@@ -1119,10 +1119,10 @@ function injectSpotCard(panelId,spot){
             onkeydown="if(event.key==='Enter'){window._setCustomSpotArs('${panelId}',this.value);this.blur();}"
             onblur="window._setCustomSpotArs('${panelId}',this.value)">
           <span style="font-size:0.65rem;color:rgba(255,255,255,0.35)">ARS/tn</span>
-          ${isManual?`<button onmousedown="event.preventDefault();window._setCustomSpotArs('${panelId}','')" style="background:none;border:none;color:rgba(255,110,110,0.85);cursor:pointer;font-size:0.9rem;padding:1px 4px" title="Volver al precio de mercado">â</button>`:''}
+          ${isManual?`<button onmousedown="event.preventDefault();window._setCustomSpotArs('${panelId}','')" style="background:none;border:none;color:rgba(255,110,110,0.85);cursor:pointer;font-size:0.9rem;padding:1px 4px" title="Volver al precio de mercado">✕</button>`:''}
         </div>
         <div style="font-size:0.61rem;color:${isManual?'rgba(255,200,80,0.75)':'rgba(255,255,255,0.25)'}">
-          ${isManual?`= USD ${customUsd?customUsd.toFixed(2):'â'}/tn Â· afecta curva de futuros`:'Enter para aplicar Â· afecta curva de futuros'}
+          ${isManual?`= USD ${customUsd?customUsd.toFixed(2):'—'}/tn · afecta curva de futuros`:'Enter para aplicar · afecta curva de futuros'}
         </div>
       </div>
     </div>
@@ -1161,7 +1161,7 @@ function injectSojSeasonalChart(){
   wrap.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
       <div>
-        <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8;">Estacionalidad HistÃ³rica Â· 2001â2025</div>
+        <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8;">Estacionalidad Histórica · 2001–2025</div>
         <div style="font-size:0.72rem;color:#64748b;margin-top:2px;">Frecuencia de picos mensuales por contrato</div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
@@ -1228,7 +1228,7 @@ function injectChicagoErrorBanner(panelId){
   const div=document.createElement('div');
   div.id='chicago-err-'+panelId;
   div.style.cssText='display:flex;align-items:center;gap:12px;background:#fff3cd;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 18px;margin-bottom:14px;';
-  div.innerHTML=`<span style="font-size:1.3rem">â ï¸</span><div style="flex:1"><div style="font-size:0.85rem;font-weight:700;color:#92400e">No se pudieron cargar los precios de Chicago (CBOT)</div><div style="font-size:0.75rem;color:#b45309;margin-top:2px">La columna de referencia internacional no estÃ¡ disponible. VerificÃ¡ la conexiÃ³n a Google Drive.</div></div><button onclick="loadChicagoPrices().then(()=>{if(!CHICAGO_ERROR){document.getElementById('chicago-err-${panelId}')?.remove();}})" style="padding:6px 14px;background:#f59e0b;color:#1a1a2e;border:none;border-radius:7px;font-size:0.78rem;font-weight:700;cursor:pointer">ð Reintentar</button>`;
+  div.innerHTML=`<span style="font-size:1.3rem">⚠️</span><div style="flex:1"><div style="font-size:0.85rem;font-weight:700;color:#92400e">No se pudieron cargar los precios de Chicago (CBOT)</div><div style="font-size:0.75rem;color:#b45309;margin-top:2px">La columna de referencia internacional no está disponible. Verificá la conexión a Google Drive.</div></div><button onclick="loadChicagoPrices().then(()=>{if(!CHICAGO_ERROR){document.getElementById('chicago-err-${panelId}')?.remove();}})" style="padding:6px 14px;background:#f59e0b;color:#1a1a2e;border:none;border-radius:7px;font-size:0.78rem;font-weight:700;cursor:pointer">🔄 Reintentar</button>`;
   const spotCard=panel.querySelector('.spot-card');
   if(spotCard)spotCard.insertAdjacentElement('afterend',div);
   else panel.insertAdjacentElement('afterbegin',div);
@@ -1254,7 +1254,7 @@ function applyA3(p){
 }
 async function loadAndInitA3(){
   const pids=['soj-fut','mai-fut','tri-fut','dlr-fut','soj-opts','mai-opts','tri-opts'];
-  pids.forEach(id=>{const p=document.getElementById('panel-'+id);if(p)p.innerHTML='<div style="padding:48px;text-align:center;color:#aaa;font-size:0.9rem">â³ Cargando datos de mercadoâ¦</div>';});
+  pids.forEach(id=>{const p=document.getElementById('panel-'+id);if(p)p.innerHTML='<div style="padding:48px;text-align:center;color:#aaa;font-size:0.9rem">⏳ Cargando datos de mercado…</div>';});
   const spotPromise=loadSpotData();
   const chicagoPromise=loadChicagoPrices();
   const dollarRatesPromise=loadDollarRates();
@@ -1274,7 +1274,7 @@ async function loadAndInitA3(){
       const r2=await fetch(A3_FIN_URL,{cache:'no-store'});
       if(r2.ok){const t=await r2.text();if(t&&t.trim().length>50)combined+=(combined?'\n':'')+t;}
       if(combined)parsed=parseA3CSV(combined);
-      if(!combined)errMsg+='CSV vacÃ­o; ';
+      if(!combined)errMsg+='CSV vacío; ';
     }catch(e2){errMsg+='fetch: '+e2.message+'; ';}
   }
   await spotPromise;
@@ -1287,7 +1287,7 @@ async function loadAndInitA3(){
   }
 }
 
-// ââ Tipos de Cambio (sheet DÃ³lares) âââââââââââââââââââââââââââââââââââââ
+// ── Tipos de Cambio (sheet Dólares) ─────────────────────────────────────
 function parseDollarRatesCSV(text){const fl=text.trim().split("\n")[0]||"";if(fl.includes("|"))return null;
   const pRow=row=>{const c=[];let cur='',q=false;for(const ch of row+','){if(ch==='"')q=!q;else if(ch===','&&!q){c.push(cur.trim());cur='';}else cur+=ch;}return c;};
   const lines=text.trim().split(/\r?\n/);if(lines.length<2)return null;
@@ -1342,7 +1342,7 @@ function injectDollarRatesCard(panelId){
   const panel=document.getElementById('panel-'+panelId);if(!panel)return;
   const firstFut=sortByVenc(DLR_FUT.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))))[0];
   const futPrice=firstFut?parseFloat(firstFut.ajuste):null;
-  const futLabel=firstFut?firstFut.venc_display:'â';
+  const futLabel=firstFut?firstFut.venc_display:'—';
   const TIPOS=[
     {key:'Oficial',      label:'Oficial',   color:'#1565c0', bg:'#dbeafe', field:'venta'},
     {key:'Bolsa',        label:'Bolsa/MEP', color:'#7c3aed', bg:'#ede9f7', field:'venta'},
@@ -1355,9 +1355,9 @@ function injectDollarRatesCard(panelId){
     let val=r?r[t.field]:null;
     if(t.key==='Mayorista'&&typeof BCRA_TC_OVERRIDE==='number'&&BCRA_TC_OVERRIDE>0)val=BCRA_TC_OVERRIDE; // pisar card Mayorista con dato oficial BCRA
     const brecha=(futPrice&&val)?((val/futPrice-1)*100):null;
-    const brechaStr=brecha!==null?`${brecha>=0?'+':''}${brecha.toFixed(1)}%`:'â';
+    const brechaStr=brecha!==null?`${brecha>=0?'+':''}${brecha.toFixed(1)}%`:'—';
     const brechaColor=brecha===null?'#888':brecha<0?'#9b1c1c':'#1e7e34';
-    const valStr=val?`$${val.toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1})}`:'â';
+    const valStr=val?`$${val.toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1})}`:'—';
     return`<div style="background:white;border-radius:10px;padding:12px 16px;flex:1;min-width:120px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid ${t.color}">
       <div style="font-size:0.68rem;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">${t.label}</div>
       <div style="font-size:1.4rem;font-weight:800;color:${t.color}">${valStr}</div>
@@ -1370,12 +1370,12 @@ function injectDollarRatesCard(panelId){
 
 const VENC_DATES = {'ABR26':new Date(2026,3,23),'MAY26':new Date(2026,4,21),'JUN26':new Date(2026,5,22),'JUL26':new Date(2026,6,24),'AGO26':new Date(2026,7,21),'SEP26':new Date(2026,8,23),'OCT26':new Date(2026,9,22),'NOV26':new Date(2026,10,20),'DIC26':new Date(2026,11,21),'ENE27':new Date(2027,0,21),'FEB27':new Date(2027,1,18),'MAR27':new Date(2027,2,22),'ABR27':new Date(2027,3,22),'MAY27':new Date(2027,4,21),'JUN27':new Date(2027,5,23),'JUL27':new Date(2027,6,23)};
 
-function fmt(v,dec=2){if(v===null||v===undefined||v==='N/A'||v==='')return'â';const n=parseFloat(v);if(isNaN(n))return v;return n.toLocaleString('es-AR',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
-function fmtVol(v){if(!v||v==='N/A')return'â';const n=parseInt(v);if(isNaN(n))return v;if(n>=1000000)return(n/1000000).toFixed(1)+'M';if(n>=1000)return(n/1000).toFixed(1)+'k';return n.toString();}
+function fmt(v,dec=2){if(v===null||v===undefined||v==='N/A'||v==='')return'—';const n=parseFloat(v);if(isNaN(n))return v;return n.toLocaleString('es-AR',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+function fmtVol(v){if(!v||v==='N/A')return'—';const n=parseInt(v);if(isNaN(n))return v;if(n>=1000000)return(n/1000000).toFixed(1)+'M';if(n>=1000)return(n/1000).toFixed(1)+'k';return n.toString();}
 function sortByVenc(rows){const mmap={ABR:4,MAY:5,JUN:6,JUL:7,AGO:8,SEP:9,OCT:10,NOV:11,DIC:12,ENE:1,FEB:2,MAR:3};return[...rows].sort((a,b)=>{const pa=(a.venc_display||'').match(/^(\d{2})\/(\d{4})$/),pb=(b.venc_display||'').match(/^(\d{2})\/(\d{4})$/);if(pa&&pb)return(pa[2]+pa[1]).localeCompare(pb[2]+pb[1]);const ma=(a.venc_display||'').match(/^([A-Z]{3})(\d{2})$/),mb=(b.venc_display||'').match(/^([A-Z]{3})(\d{2})$/);if(ma&&mb){const ya=parseInt(ma[2]),yb=parseInt(mb[2]);if(ya!==yb)return ya-yb;return(mmap[ma[1]]||0)-(mmap[mb[1]]||0);}return(a.venc_display||'').localeCompare(b.venc_display||'');});}
 function calcSpread(rows,refVenc){const sorted=sortByVenc(rows);const refRow=sorted.find(r=>r.venc_display===refVenc);if(!refRow)return sorted.map(r=>({...r,dif_pct:null,tna:null,tem:null,is_ref:false}));const pRef=parseFloat(refRow.ajuste),dRef=VENC_DATES[refVenc]||parseDlrDate(refVenc);return sorted.map(r=>{const isRef=r.venc_display===refVenc,p=parseFloat(r.ajuste),dVenc=VENC_DATES[r.venc_display]||parseDlrDate(r.venc_display);if(isRef||!dVenc||!dRef||isNaN(p)||isNaN(pRef)||pRef===0)return{...r,dif_pct:null,tna:null,tem:null,is_ref:isRef};const dias=(dVenc-dRef)/(1000*60*60*24);if(dias<=0){const d=Math.abs(dias),dif_pct=(p/pRef-1)*100,tna=d>0?(Math.pow(p/pRef,365/d)-1)*100:null,tem=d>0?(Math.pow(p/pRef,30/d)-1)*100:null;return{...r,dif_pct,tna,tem,is_ref:false};}const dif_pct=(p/pRef-1)*100,tna=dias>0?(Math.pow(p/pRef,365/dias)-1)*100:null,tem=dias>0?(Math.pow(p/pRef,30/dias)-1)*100:null;return{...r,dif_pct,tna,tem,is_ref:false};});}
-function fmtPct(v){if(v===null||v===undefined)return'â';return(v>=0?'+':'')+v.toFixed(2)+'%';}
-function fmtTNA(v){if(v===null||v===undefined)return'â';return(v>=0?'+':'')+v.toFixed(1)+'%';}
+function fmtPct(v){if(v===null||v===undefined)return'—';return(v>=0?'+':'')+v.toFixed(2)+'%';}
+function fmtTNA(v){if(v===null||v===undefined)return'—';return(v>=0?'+':'')+v.toFixed(1)+'%';}
 function pctClass(v){if(v===null||v===undefined)return'neutral';return v>0?'pos':v<0?'neg':'neutral';}
 
 if(!window._futState)window._futState={};
@@ -1425,7 +1425,7 @@ function _renderFutPanel(panelId){
   const prices=(_dispRow?[_spotUsd]:_oficialRow?[_oficialUsd]:[]).concat(sorted.filter(r=>!isNaN(parseFloat(r.ajuste))).map(r=>parseFloat(r.ajuste)));
   const hasChicago=!!(chicago&&cKey);
   const showChicago=hasChicago&&!!st.showChicago;
-  const chicagoToggleHtml=hasChicago?`<button class="venc-btn" onclick="_toggleChicagoChart('${panelId}')" style="margin-left:10px;${showChicago?'background:#1565c0;color:white;border-color:#1565c0':'color:#1565c0;border-color:#1565c0'}">ð Comparar con Chicago</button>`:'';
+  const chicagoToggleHtml=hasChicago?`<button class="venc-btn" onclick="_toggleChicagoChart('${panelId}')" style="margin-left:10px;${showChicago?'background:#1565c0;color:white;border-color:#1565c0':'color:#1565c0;border-color:#1565c0'}">📊 Comparar con Chicago</button>`:'';
   const chicagoStatus=cKey?`<div style="font-size:0.7rem;color:#888;margin-bottom:8px">${CHICAGO_STATUS||''}</div>`:'';
   const selectorHtml=validAdj.length>1?`<div class="chain-controls" style="margin-bottom:14px"><span style="font-size:0.78rem;color:#888;margin-right:4px">Referencia Dif%/TNA:</span>${_spotUsd?`<button class="venc-btn${_isDispRef?' active':''}" onclick="_setFutRef('${panelId}','Disp.')">Disp.</button> `:''}${_oficialRow?`<button class="venc-btn${_isOficialRef?' active':''}" onclick="_setFutRef('${panelId}','Oficial')" style="${_isOficialRef?'background:#1565c0;color:white;border-color:#1565c0':'color:#1565c0;border-color:#1565c0'}">Oficial A3500</button> `:''}${validAdj.map(r=>`<button class="venc-btn${r.venc_display===refVenc?' active':''}" onclick="_setFutRef('${panelId}','${r.venc_display}')">${r.venc_display}</button>`).join('')}</div>`:'';
   const isMob=window.a3DeviceMode==='mobile';
@@ -1433,7 +1433,7 @@ function _renderFutPanel(panelId){
   const chartCardStyle=isMob?'min-width:0;display:flex;flex-direction:column':'flex:1.3;min-width:0;display:flex;flex-direction:column';
   const tableCardStyle=isMob?'min-width:0;overflow-x:auto':'flex:1.1;min-width:0;overflow-x:auto';
   const chartH=isMob?(panelId==='dlr-fut'?'200px':'250px'):(panelId==='dlr-fut'?'160px':'210px');
-  panel.innerHTML=`<div style="${wrapStyle}"><div class="full-card" style="${chartCardStyle}"><h3 style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><span>Curva de Precios</span>${chicagoToggleHtml}</h3><div class="canvas-wrap" style="flex:1;height:auto;min-height:${chartH}"><canvas id="chart-${panelId}-price"></canvas></div></div><div class="full-card" style="${tableCardStyle}">${chicagoStatus}${selectorHtml}<h3>Contratos${hasSpread?` <span style="font-size:0.8rem;font-weight:400;color:#888;text-transform:none">Â· diferencial vs ${refVenc} â</span>`:''}</h3><table class="fut-table"><thead><tr><th>Contrato</th><th>Ajuste (${currency})</th>${hasSpread?'<th>Dif. %</th><th>TNA</th>':''}${_isDlr&&hasSpread?'<th>TEM</th>':''}${hasChicago?'<th>Chicago</th><th>Dif. Local</th>':''}</tr></thead><tbody>${tableRows.map(r=>{const isRef=r.is_ref;const isDisp=!!r.is_disp;const chic=hasChicago&&!isDisp?(chicago[r.venc_display]?.[cKey]||null):null;const difLocal=chic&&!isNaN(parseFloat(r.ajuste))?(((parseFloat(r.ajuste)-chic)/chic)*100):null;return`<tr class="${isRef?'ref-row':isDisp?'disp-row':''}"><td>${isDisp?'<strong style="color:#64748b">'+r.contrato+'</strong>':r.contrato}</td><td>${fmt(r.ajuste)}</td>${hasSpread?`<td>${isRef?'<span class="tna-ref tna-badge">ref</span>':`<span class="${pctClass(r.dif_pct)}">${fmtPct(r.dif_pct)}</span>`}</td><td>${isRef?'<span class="tna-ref tna-badge">ref</span>':(r.tna!==null?`<span class="tna-badge ${r.tna>=0?'tna-pos':'tna-neg'}">${fmtTNA(r.tna)}</span>`:'â')}</td>`:''}${(_isDlr&&hasSpread)?`<td>${isRef?'<span class="tna-ref tna-badge">ref</span>':(r.tem!==null?(r.tem>=0?'<span style="font-weight:700;color:#1e7e34">+'+r.tem.toFixed(2)+'%</span>':'<span style="font-weight:700;color:#9b1c1c">'+r.tem.toFixed(2)+'%</span>'):'â')}</td>`:''}${hasChicago?`<td style="color:#555">${chic?chic.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'â'}</td><td>${difLocal!==null?`<span class="${pctClass(difLocal)}">${fmtPct(difLocal)}</span>`:'â'}</td>`:''}</tr>`;}).join('')}</tbody></table></div></div>`;
+  panel.innerHTML=`<div style="${wrapStyle}"><div class="full-card" style="${chartCardStyle}"><h3 style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><span>Curva de Precios</span>${chicagoToggleHtml}</h3><div class="canvas-wrap" style="flex:1;height:auto;min-height:${chartH}"><canvas id="chart-${panelId}-price"></canvas></div></div><div class="full-card" style="${tableCardStyle}">${chicagoStatus}${selectorHtml}<h3>Contratos${hasSpread?` <span style="font-size:0.8rem;font-weight:400;color:#888;text-transform:none">· diferencial vs ${refVenc} ★</span>`:''}</h3><table class="fut-table"><thead><tr><th>Contrato</th><th>Ajuste (${currency})</th>${hasSpread?'<th>Dif. %</th><th>TNA</th>':''}${_isDlr&&hasSpread?'<th>TEM</th>':''}${hasChicago?'<th>Chicago</th><th>Dif. Local</th>':''}</tr></thead><tbody>${tableRows.map(r=>{const isRef=r.is_ref;const isDisp=!!r.is_disp;const chic=hasChicago&&!isDisp?(chicago[r.venc_display]?.[cKey]||null):null;const difLocal=chic&&!isNaN(parseFloat(r.ajuste))?(((parseFloat(r.ajuste)-chic)/chic)*100):null;return`<tr class="${isRef?'ref-row':isDisp?'disp-row':''}"><td>${isDisp?'<strong style="color:#64748b">'+r.contrato+'</strong>':r.contrato}</td><td>${fmt(r.ajuste)}</td>${hasSpread?`<td>${isRef?'<span class="tna-ref tna-badge">ref</span>':`<span class="${pctClass(r.dif_pct)}">${fmtPct(r.dif_pct)}</span>`}</td><td>${isRef?'<span class="tna-ref tna-badge">ref</span>':(r.tna!==null?`<span class="tna-badge ${r.tna>=0?'tna-pos':'tna-neg'}">${fmtTNA(r.tna)}</span>`:'—')}</td>`:''}${(_isDlr&&hasSpread)?`<td>${isRef?'<span class="tna-ref tna-badge">ref</span>':(r.tem!==null?(r.tem>=0?'<span style="font-weight:700;color:#1e7e34">+'+r.tem.toFixed(2)+'%</span>':'<span style="font-weight:700;color:#9b1c1c">'+r.tem.toFixed(2)+'%</span>'):'—')}</td>`:''}${hasChicago?`<td style="color:#555">${chic?chic.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}</td><td>${difLocal!==null?`<span class="${pctClass(difLocal)}">${fmtPct(difLocal)}</span>`:'—'}</td>`:''}</tr>`;}).join('')}</tbody></table></div></div>`;
   const chicagoPrices=showChicago?labels.map(l=>{if(l==='Disp.'||l==='Oficial')return null;return(chicago[l]&&chicago[l][cKey]!=null)?chicago[l][cKey]:null;}):null;
   const hasChicagoSeries=!!(chicagoPrices&&chicagoPrices.some(v=>v!=null));
   const _isSoj=(panelId==='soj-fut');
@@ -1463,12 +1463,12 @@ function buildChain(panelId,opts,vencs){
       const activeStrikes=strikes.filter(s=>{const c=callMap[s]||{},p=putMap[s]||{};return toN(c.interes_abierto)>0||toN(c.volumen)>0||toN(p.interes_abierto)>0||toN(p.volumen)>0;});
       if(futPrice!==null&&atmStrike!==null){const base=activeStrikes.length?activeStrikes:strikes;const below=base.filter(s=>s<atmStrike).slice(-3);const above=base.filter(s=>s>atmStrike).slice(0,3);strikes=[...below,atmStrike,...above];}else{strikes=(activeStrikes.length?activeStrikes:strikes).slice(0,7);}
       if(!strikes.length)return '';
-      const futTag=futPrice!==null?`<span style="background:#e8f5e9;color:#2e7d32;font-size:0.78rem;font-weight:700;padding:3px 10px;border-radius:6px;margin-left:10px">â¶ Futuro: ${futPrice.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})} USD/tn</span>`:'';
-      const rows=strikes.map(s=>{const c=callMap[s]||{},p=putMap[s]||{};const isAtm=s===atmStrike;const cPrima=c.ajuste&&c.ajuste!=='N/A'?parseFloat(c.ajuste):null;const piso=(futPrice!==null&&cPrima!==null)?(futPrice-cPrima).toFixed(2):'â';const techo=cPrima!==null?(s+cPrima).toFixed(2):'â';const pctPrima=(futPrice!==null&&cPrima!==null&&futPrice>0)?((cPrima/futPrice)*100).toFixed(1)+'%':'â';return`<tr class="${isAtm?'ref-row':''}"><td class="call-td xtra-col">${fmtVol(c.volumen)}</td><td class="call-td xtra-col">${fmtVol(c.interes_abierto)}</td><td class="call-td"><b>${fmt(c.ajuste,4)}</b></td><td class="call-td" style="color:#0d6e56;font-size:0.79rem">${piso}</td><td class="call-td" style="color:#7c3aed;font-size:0.79rem">${techo}</td><td class="call-td" style="color:#b45309;font-size:0.79rem;font-weight:600">${pctPrima}</td><td class="strike-td" style="${isAtm?'font-weight:800;color:#1565c0':''}">${s}${isAtm?'<span style="font-size:0.65rem;color:#2e7d32;margin-left:4px">ATM</span>':''}</td><td class="put-td"><b>${fmt(p.ajuste,4)}</b></td><td class="put-td xtra-col">${fmtVol(p.interes_abierto)}</td><td class="put-td xtra-col">${fmtVol(p.volumen)}</td></tr>`;}).join('');
+      const futTag=futPrice!==null?`<span style="background:#e8f5e9;color:#2e7d32;font-size:0.78rem;font-weight:700;padding:3px 10px;border-radius:6px;margin-left:10px">▶ Futuro: ${futPrice.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})} USD/tn</span>`:'';
+      const rows=strikes.map(s=>{const c=callMap[s]||{},p=putMap[s]||{};const isAtm=s===atmStrike;const cPrima=c.ajuste&&c.ajuste!=='N/A'?parseFloat(c.ajuste):null;const piso=(futPrice!==null&&cPrima!==null)?(futPrice-cPrima).toFixed(2):'—';const techo=cPrima!==null?(s+cPrima).toFixed(2):'—';const pctPrima=(futPrice!==null&&cPrima!==null&&futPrice>0)?((cPrima/futPrice)*100).toFixed(1)+'%':'—';return`<tr class="${isAtm?'ref-row':''}"><td class="call-td xtra-col">${fmtVol(c.volumen)}</td><td class="call-td xtra-col">${fmtVol(c.interes_abierto)}</td><td class="call-td"><b>${fmt(c.ajuste,4)}</b></td><td class="call-td" style="color:#0d6e56;font-size:0.79rem">${piso}</td><td class="call-td" style="color:#7c3aed;font-size:0.79rem">${techo}</td><td class="call-td" style="color:#b45309;font-size:0.79rem;font-weight:600">${pctPrima}</td><td class="strike-td" style="${isAtm?'font-weight:800;color:#1565c0':''}">${s}${isAtm?'<span style="font-size:0.65rem;color:#2e7d32;margin-left:4px">ATM</span>':''}</td><td class="put-td"><b>${fmt(p.ajuste,4)}</b></td><td class="put-td xtra-col">${fmtVol(p.interes_abierto)}</td><td class="put-td xtra-col">${fmtVol(p.volumen)}</td></tr>`;}).join('');
       return `<div class="full-card" style="margin-bottom:12px"><div style="display:flex;align-items:center;margin-bottom:10px"><h3 style="margin:0">${venc}</h3>${futTag}</div><div class="chain-wrap"><table class="chain-table"><thead><tr><th class="call-hdr xtra-col" style="font-size:0.68rem">Vol.</th><th class="call-hdr xtra-col" style="font-size:0.68rem">I.A.</th><th class="call-hdr" style="font-size:0.75rem">CALL Prima</th><th class="call-hdr" style="font-size:0.68rem;background:#0a4a3a">Piso</th><th class="call-hdr" style="font-size:0.68rem;background:#3b1f7a">Techo</th><th class="call-hdr" style="font-size:0.68rem;background:#7a3800">% Prima</th><th class="strike-hdr" style="font-size:0.68rem">STRIKE (USD)</th><th class="put-hdr" style="font-size:0.75rem">PUT Prima</th><th class="put-hdr xtra-col" style="font-size:0.68rem">I.A.</th><th class="put-hdr xtra-col" style="font-size:0.68rem">Vol.</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
     }).join('');
     const hidden=panel.classList.contains('chain-hide-xtra');
-    const btnTxt=hidden?'ð Mostrar Vol. / I.A.':'ð Ocultar Vol. / I.A.';
+    const btnTxt=hidden?'👁 Mostrar Vol. / I.A.':'👁 Ocultar Vol. / I.A.';
     panel.innerHTML=`<div style="text-align:right;margin-bottom:8px"><button class="venc-btn" onclick="toggleChainXtra('${panelId}')">${btnTxt}</button></div>`+(sections||'<div style="color:#aaa;padding:20px">Sin datos disponibles</div>');
   }
   panel.classList.add('chain-hide-xtra');
@@ -1482,33 +1482,33 @@ window.setVenc=(panelId,v)=>window['_venc_'+panelId].render(v);
 
 let stratLegs=[], stratChart=null, selectedPreset=null, stratMode='preset';
 const PRESET_STRATEGIES = [
-  {id:'bull_call_spread',nombre:'Bull Call Spread',mercado:'ð Alcista',mercadoColor:'#1e7e34',mercadoBg:'#e6f4ea',descripcion:'Compra 1 call ATM + vende 1 call OTM. Apuesta alcista con costo y ganancia acotados.',riesgo:'â  PÃ©rdida mÃ¡x: prima neta pagada',legs:(opts,venc)=>{const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(calls.length<2)return null;const mid=Math.floor(calls.length/2),atm=calls[mid],otm=calls[mid+1]||calls[calls.length-1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'C',tipo:'C',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
-  {id:'ratio_call_spread',nombre:'Ratio Call Spread 1Ã2',mercado:'ð Alcista Moderado',mercadoColor:'#1e7e34',mercadoBg:'#e6f4ea',descripcion:'Compra 1 call ATM + vende 2 calls OTM. Prima reducida o cobrada.',riesgo:'â  Riesgo si el precio sube mucho mÃ¡s allÃ¡ del strike OTM',legs:(opts,venc)=>{const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(calls.length<2)return null;const mid=Math.floor(calls.length/2),atm=calls[mid],otm=calls[mid+1]||calls[calls.length-1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'C',tipo:'C',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
-  {id:'bear_put_spread',nombre:'Bear Put Spread',mercado:'ð Bajista',mercadoColor:'#9b1c1c',mercadoBg:'#fce8e8',descripcion:'Compra 1 put ATM + vende 1 put OTM mÃ¡s bajo. Apuesta bajista de bajo costo.',riesgo:'â  PÃ©rdida mÃ¡x: prima neta pagada',legs:(opts,venc)=>{const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>b.strike-a.strike);if(puts.length<2)return null;const atm=puts[0],otm=puts[1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'C',tipo:'P',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'V',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
-  {id:'ratio_put_spread',nombre:'Ratio Put Spread 1Ã2',mercado:'ð Bajista Moderado',mercadoColor:'#9b1c1c',mercadoBg:'#fce8e8',descripcion:'Compra 1 put ATM + vende 2 puts OTM. Capta caÃ­das moderadas con prima reducida.',riesgo:'â  Riesgo si el precio cae mucho mÃ¡s allÃ¡ del strike OTM',legs:(opts,venc)=>{const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>b.strike-a.strike);if(puts.length<2)return null;const atm=puts[0],otm=puts[1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'C',tipo:'P',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'V',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie},{accion:'V',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
-  {id:'covered_call',nombre:'Lanzamiento Cubierto SintÃ©tico',mercado:'ð Conservador',mercadoColor:'#b45309',mercadoBg:'#fef3c7',descripcion:'Futuro sintÃ©tico largo (compra call ATM + venta put ATM mismo strike) + venta call OTM.',riesgo:'â  Ganancia limitada al alza Â· PÃ©rdida ilimitada a la baja',legs:(opts,venc)=>{const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(calls.length<2||puts.length<1)return null;const mid=Math.floor(calls.length/2);const atmCall=calls[mid];const atmPut=puts.reduce((best,p)=>Math.abs(p.strike-atmCall.strike)<Math.abs(best.strike-atmCall.strike)?p:best,puts[0]);const otmCall=calls[Math.min(mid+1,calls.length-1)];if(!otmCall||otmCall.strike===atmCall.strike)return null;return[{accion:'C',tipo:'C',strike:atmCall.strike,prima:parseFloat(atmCall.ajuste),contrato:atmCall.contrato,venc:atmCall.venc_serie},{accion:'V',tipo:'P',strike:atmPut.strike,prima:parseFloat(atmPut.ajuste),contrato:atmPut.contrato,venc:atmPut.venc_serie},{accion:'V',tipo:'C',strike:otmCall.strike,prima:parseFloat(otmCall.ajuste),contrato:otmCall.contrato,venc:otmCall.venc_serie}];}},
-  {id:'bull_put_spread',nombre:'Bull Put Spread',mercado:'ð Conservador / Alcista',mercadoColor:'#1565c0',mercadoBg:'#dbeafe',descripcion:'Vende 1 put ATM + compra 1 put OTM mÃ¡s bajo. Cobra prima neta apostando a que el precio se mantiene o sube.',riesgo:'â  PÃ©rdida mÃ¡x: diferencia de strikes â prima cobrada',legs:(opts,venc)=>{const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>b.strike-a.strike);if(puts.length<2)return null;const atm=puts[0],otm=puts[1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'V',tipo:'P',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'C',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
-  {id:'fut_buy_sell_call',nombre:'Futuro Long + Call Cubierto',mercado:'ð Alcista c/ Futuro',mercadoColor:'#1e7e34',mercadoBg:'#e6f4ea',descripcion:'Compra un futuro (long directo) + vende un call OTM. Alternativa lÃ­quida al Bull Call Spread: el futuro reemplaza la compra del call ATM.',riesgo:'â  Upside capped por el call vendido Â· PÃ©rdida ilimitada a la baja',legs:(opts,venc,futs)=>{if(!futs||!futs.length)return null;const vf=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));const mf=vf.find(r=>r.venc_display===venc)||vf[0];if(!mf)return null;const fp=parseFloat(mf.ajuste);const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(!calls.length)return null;const otm=calls.find(c=>c.strike>fp)||calls[calls.length-1];return[{accion:'C',tipo:'F',strike:fp,prima:0,contrato:mf.contrato,venc:mf.venc_display},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
-  {id:'fut_sell_buy_put',nombre:'Futuro Short + Put Protector',mercado:'ð Bajista c/ Futuro',mercadoColor:'#9b1c1c',mercadoBg:'#fce8e8',descripcion:'Vende un futuro (short directo) + compra un put OTM como seguro contra rebotes. Alternativa lÃ­quida al Bear Put Spread.',riesgo:'â  El costo del put reduce la ganancia Â· PÃ©rdida acotada al alza por el put',legs:(opts,venc,futs)=>{if(!futs||!futs.length)return null;const vf=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));const mf=vf.find(r=>r.venc_display===venc)||vf[0];if(!mf)return null;const fp=parseFloat(mf.ajuste);const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>b.strike-a.strike);if(!puts.length)return null;const otm=puts.find(p=>p.strike<fp)||puts[puts.length-1];return[{accion:'V',tipo:'F',strike:fp,prima:0,contrato:mf.contrato,venc:mf.venc_display},{accion:'C',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
-  {id:'covered_call_fut',nombre:'Lanzamiento Cubierto c/ Futuro',mercado:'ð Conservador c/ Futuro',mercadoColor:'#b45309',mercadoBg:'#fef3c7',descripcion:'Compra un futuro (long directo) + vende un call OTM. Similar al lanzamiento cubierto sintÃ©tico pero mÃ¡s lÃ­quido al usar el futuro como base.',riesgo:'â  Ganancia limitada al alza Â· PÃ©rdida ilimitada a la baja',legs:(opts,venc,futs)=>{if(!futs||!futs.length)return null;const vf=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));const mf=vf.find(r=>r.venc_display===venc)||vf[0];if(!mf)return null;const fp=parseFloat(mf.ajuste);const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(!calls.length)return null;const otm=calls.find(c=>c.strike>fp)||calls[calls.length-1];return[{accion:'C',tipo:'F',strike:fp,prima:0,contrato:mf.contrato,venc:mf.venc_display},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}}
+  {id:'bull_call_spread',nombre:'Bull Call Spread',mercado:'📈 Alcista',mercadoColor:'#1e7e34',mercadoBg:'#e6f4ea',descripcion:'Compra 1 call ATM + vende 1 call OTM. Apuesta alcista con costo y ganancia acotados.',riesgo:'⚠ Pérdida máx: prima neta pagada',legs:(opts,venc)=>{const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(calls.length<2)return null;const mid=Math.floor(calls.length/2),atm=calls[mid],otm=calls[mid+1]||calls[calls.length-1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'C',tipo:'C',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'ratio_call_spread',nombre:'Ratio Call Spread 1×2',mercado:'📈 Alcista Moderado',mercadoColor:'#1e7e34',mercadoBg:'#e6f4ea',descripcion:'Compra 1 call ATM + vende 2 calls OTM. Prima reducida o cobrada.',riesgo:'⚠ Riesgo si el precio sube mucho más allá del strike OTM',legs:(opts,venc)=>{const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(calls.length<2)return null;const mid=Math.floor(calls.length/2),atm=calls[mid],otm=calls[mid+1]||calls[calls.length-1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'C',tipo:'C',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'bear_put_spread',nombre:'Bear Put Spread',mercado:'📉 Bajista',mercadoColor:'#9b1c1c',mercadoBg:'#fce8e8',descripcion:'Compra 1 put ATM + vende 1 put OTM más bajo. Apuesta bajista de bajo costo.',riesgo:'⚠ Pérdida máx: prima neta pagada',legs:(opts,venc)=>{const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>b.strike-a.strike);if(puts.length<2)return null;const atm=puts[0],otm=puts[1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'C',tipo:'P',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'V',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'ratio_put_spread',nombre:'Ratio Put Spread 1×2',mercado:'📉 Bajista Moderado',mercadoColor:'#9b1c1c',mercadoBg:'#fce8e8',descripcion:'Compra 1 put ATM + vende 2 puts OTM. Capta caídas moderadas con prima reducida.',riesgo:'⚠ Riesgo si el precio cae mucho más allá del strike OTM',legs:(opts,venc)=>{const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>b.strike-a.strike);if(puts.length<2)return null;const atm=puts[0],otm=puts[1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'C',tipo:'P',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'V',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie},{accion:'V',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'covered_call',nombre:'Lanzamiento Cubierto Sintético',mercado:'🔒 Conservador',mercadoColor:'#b45309',mercadoBg:'#fef3c7',descripcion:'Futuro sintético largo (compra call ATM + venta put ATM mismo strike) + venta call OTM.',riesgo:'⚠ Ganancia limitada al alza · Pérdida ilimitada a la baja',legs:(opts,venc)=>{const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(calls.length<2||puts.length<1)return null;const mid=Math.floor(calls.length/2);const atmCall=calls[mid];const atmPut=puts.reduce((best,p)=>Math.abs(p.strike-atmCall.strike)<Math.abs(best.strike-atmCall.strike)?p:best,puts[0]);const otmCall=calls[Math.min(mid+1,calls.length-1)];if(!otmCall||otmCall.strike===atmCall.strike)return null;return[{accion:'C',tipo:'C',strike:atmCall.strike,prima:parseFloat(atmCall.ajuste),contrato:atmCall.contrato,venc:atmCall.venc_serie},{accion:'V',tipo:'P',strike:atmPut.strike,prima:parseFloat(atmPut.ajuste),contrato:atmPut.contrato,venc:atmPut.venc_serie},{accion:'V',tipo:'C',strike:otmCall.strike,prima:parseFloat(otmCall.ajuste),contrato:otmCall.contrato,venc:otmCall.venc_serie}];}},
+  {id:'bull_put_spread',nombre:'Bull Put Spread',mercado:'🔒 Conservador / Alcista',mercadoColor:'#1565c0',mercadoBg:'#dbeafe',descripcion:'Vende 1 put ATM + compra 1 put OTM más bajo. Cobra prima neta apostando a que el precio se mantiene o sube.',riesgo:'⚠ Pérdida máx: diferencia de strikes – prima cobrada',legs:(opts,venc)=>{const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>b.strike-a.strike);if(puts.length<2)return null;const atm=puts[0],otm=puts[1];if(!otm||otm.strike===atm.strike)return null;return[{accion:'V',tipo:'P',strike:atm.strike,prima:parseFloat(atm.ajuste),contrato:atm.contrato,venc:atm.venc_serie},{accion:'C',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'fut_buy_sell_call',nombre:'Futuro Long + Call Cubierto',mercado:'📈 Alcista c/ Futuro',mercadoColor:'#1e7e34',mercadoBg:'#e6f4ea',descripcion:'Compra un futuro (long directo) + vende un call OTM. Alternativa líquida al Bull Call Spread: el futuro reemplaza la compra del call ATM.',riesgo:'⚠ Upside capped por el call vendido · Pérdida ilimitada a la baja',legs:(opts,venc,futs)=>{if(!futs||!futs.length)return null;const vf=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));const mf=vf.find(r=>r.venc_display===venc)||vf[0];if(!mf)return null;const fp=parseFloat(mf.ajuste);const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(!calls.length)return null;const otm=calls.find(c=>c.strike>fp)||calls[calls.length-1];return[{accion:'C',tipo:'F',strike:fp,prima:0,contrato:mf.contrato,venc:mf.venc_display},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'fut_sell_buy_put',nombre:'Futuro Short + Put Protector',mercado:'📉 Bajista c/ Futuro',mercadoColor:'#9b1c1c',mercadoBg:'#fce8e8',descripcion:'Vende un futuro (short directo) + compra un put OTM como seguro contra rebotes. Alternativa líquida al Bear Put Spread.',riesgo:'⚠ El costo del put reduce la ganancia · Pérdida acotada al alza por el put',legs:(opts,venc,futs)=>{if(!futs||!futs.length)return null;const vf=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));const mf=vf.find(r=>r.venc_display===venc)||vf[0];if(!mf)return null;const fp=parseFloat(mf.ajuste);const puts=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='P'&&parseFloat(r.ajuste)>0).sort((a,b)=>b.strike-a.strike);if(!puts.length)return null;const otm=puts.find(p=>p.strike<fp)||puts[puts.length-1];return[{accion:'V',tipo:'F',strike:fp,prima:0,contrato:mf.contrato,venc:mf.venc_display},{accion:'C',tipo:'P',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}},
+  {id:'covered_call_fut',nombre:'Lanzamiento Cubierto c/ Futuro',mercado:'🔒 Conservador c/ Futuro',mercadoColor:'#b45309',mercadoBg:'#fef3c7',descripcion:'Compra un futuro (long directo) + vende un call OTM. Similar al lanzamiento cubierto sintético pero más líquido al usar el futuro como base.',riesgo:'⚠ Ganancia limitada al alza · Pérdida ilimitada a la baja',legs:(opts,venc,futs)=>{if(!futs||!futs.length)return null;const vf=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));const mf=vf.find(r=>r.venc_display===venc)||vf[0];if(!mf)return null;const fp=parseFloat(mf.ajuste);const calls=opts.filter(r=>r.venc_serie===venc&&r.tipo_op==='C'&&parseFloat(r.ajuste)>0).sort((a,b)=>a.strike-b.strike);if(!calls.length)return null;const otm=calls.find(c=>c.strike>fp)||calls[calls.length-1];return[{accion:'C',tipo:'F',strike:fp,prima:0,contrato:mf.contrato,venc:mf.venc_display},{accion:'V',tipo:'C',strike:otm.strike,prima:parseFloat(otm.ajuste),contrato:otm.contrato,venc:otm.venc_serie}];}}
 ];
 function getStratOpts(){return document.getElementById('strat-cultivo').value==='SOJ'?SOJ_OPTS:MAI_OPTS;}
 function getStratFuts(){return document.getElementById('strat-cultivo').value==='SOJ'?SOJ_FUT:MAI_FUT;}
 function setStratMode(mode){stratMode=mode;document.querySelectorAll('.strat-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));document.getElementById('preset-section').style.display=mode==='preset'?'block':'none';document.getElementById('manual-section').style.display=mode==='manual'?'block':'none';}
-function selectPreset(id){selectedPreset=id;document.querySelectorAll('.preset-card').forEach(c=>c.classList.toggle('selected',c.dataset.id===id));const p=PRESET_STRATEGIES.find(p=>p.id===id);const info=document.getElementById('preset-selected-info');if(p)info.innerHTML=`Seleccionada: <strong>${p.nombre}</strong> â elegÃ­ vencimiento y aplicÃ¡`;document.getElementById('btn-apply-preset').disabled=false;}
+function selectPreset(id){selectedPreset=id;document.querySelectorAll('.preset-card').forEach(c=>c.classList.toggle('selected',c.dataset.id===id));const p=PRESET_STRATEGIES.find(p=>p.id===id);const info=document.getElementById('preset-selected-info');if(p)info.innerHTML=`Seleccionada: <strong>${p.nombre}</strong> — elegí vencimiento y aplicá`;document.getElementById('btn-apply-preset').disabled=false;}
 function applyPreset(){if(!selectedPreset)return;const p=PRESET_STRATEGIES.find(p=>p.id===selectedPreset);if(!p)return;const legs=p.legs(getStratOpts(),document.getElementById('preset-venc').value,getStratFuts());if(!legs){alert('No hay suficientes contratos disponibles para este vencimiento.');return;}stratLegs=legs.map((l,i)=>({...l,id:Date.now()+i}));renderStratLegs();renderStratResults();setTimeout(()=>document.getElementById('strat-results')?.scrollIntoView({behavior:'smooth',block:'start'}),100);}
 function stratCultivoChange(){stratLegs=[];updatePresetVencOpts();updateStratVencOpts();updateStratContractOpts();renderStratLegs();renderStratResults();}
 function updatePresetVencOpts(){const vencs=[...new Set(getStratOpts().map(r=>r.venc_serie))].sort();const sel=document.getElementById('preset-venc');if(sel)sel.innerHTML=vencs.map(v=>`<option value="${v}">${v}</option>`).join('');}
 function updateStratVencOpts(){const vencs=[...new Set(getStratOpts().map(r=>r.venc_serie))].sort();const sel=document.getElementById('strat-venc');if(sel)sel.innerHTML=vencs.map(v=>`<option value="${v}">${v}</option>`).join('');updateStratContractOpts();}
-function updateStratContractOpts(){const opts=getStratOpts(),futs=getStratFuts(),venc=document.getElementById('strat-venc')?.value,tipo=document.getElementById('strat-tipo')?.value;const sel=document.getElementById('strat-contrato');if(!sel)return;if(tipo==='F'){const vf=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));sel.innerHTML=vf.length===0?'<option value="">Sin futuros disponibles</option>':vf.map(r=>`<option value="${r.contrato}" data-strike="${parseFloat(r.ajuste).toFixed(2)}" data-prima="0" data-tipo="F" data-venc="${r.venc_display}">${r.contrato} â precio: ${parseFloat(r.ajuste).toFixed(2)} USD/tn</option>`).join('');}else{const filtered=opts.filter(r=>r.venc_serie===venc&&r.tipo_op===tipo&&parseFloat(r.ajuste)>0);sel.innerHTML=filtered.length===0?'<option value="">Sin contratos disponibles</option>':filtered.sort((a,b)=>a.strike-b.strike).map(r=>`<option value="${r.contrato}" data-strike="${r.strike}" data-prima="${r.ajuste}" data-tipo="${r.tipo_op}" data-venc="${r.venc_serie}">${r.contrato} â prima: ${parseFloat(r.ajuste).toFixed(4)} USD/tn</option>`).join('');}}
+function updateStratContractOpts(){const opts=getStratOpts(),futs=getStratFuts(),venc=document.getElementById('strat-venc')?.value,tipo=document.getElementById('strat-tipo')?.value;const sel=document.getElementById('strat-contrato');if(!sel)return;if(tipo==='F'){const vf=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));sel.innerHTML=vf.length===0?'<option value="">Sin futuros disponibles</option>':vf.map(r=>`<option value="${r.contrato}" data-strike="${parseFloat(r.ajuste).toFixed(2)}" data-prima="0" data-tipo="F" data-venc="${r.venc_display}">${r.contrato} — precio: ${parseFloat(r.ajuste).toFixed(2)} USD/tn</option>`).join('');}else{const filtered=opts.filter(r=>r.venc_serie===venc&&r.tipo_op===tipo&&parseFloat(r.ajuste)>0);sel.innerHTML=filtered.length===0?'<option value="">Sin contratos disponibles</option>':filtered.sort((a,b)=>a.strike-b.strike).map(r=>`<option value="${r.contrato}" data-strike="${r.strike}" data-prima="${r.ajuste}" data-tipo="${r.tipo_op}" data-venc="${r.venc_serie}">${r.contrato} — prima: ${parseFloat(r.ajuste).toFixed(4)} USD/tn</option>`).join('');}}
 function addStratLeg(){const sel=document.getElementById('strat-contrato'),opt=sel.options[sel.selectedIndex];if(!opt||!opt.dataset.strike)return;stratLegs.push({accion:document.getElementById('strat-accion').value,tipo:opt.dataset.tipo,strike:parseFloat(opt.dataset.strike),prima:parseFloat(opt.dataset.prima),contrato:opt.value,venc:opt.dataset.venc,id:Date.now()});renderStratLegs();renderStratResults();}
 function removeStratLeg(id){stratLegs=stratLegs.filter(l=>l.id!==id);renderStratLegs();renderStratResults();}
 function clearStratLegs(){stratLegs=[];renderStratLegs();renderStratResults();}
 function legPayoff(leg,S){if(leg.tipo==='F'){const sign=leg.accion==='C'?1:-1;return sign*(S-leg.strike);}const sign=leg.accion==='C'?1:-1;const intrinsic=leg.tipo==='C'?Math.max(0,S-leg.strike):Math.max(0,leg.strike-S);return sign*intrinsic+(leg.accion==='C'?-leg.prima:leg.prima);}
 function totalPayoff(S){return stratLegs.reduce((sum,leg)=>sum+legPayoff(leg,S),0);}
-function renderStratLegs(){const tbody=document.getElementById('strat-legs-tbody');if(stratLegs.length===0){tbody.innerHTML='<tr><td colspan="6" class="empty-legs">SeleccionÃ¡ una estrategia y aplicala, o usÃ¡ el constructor manual</td></tr>';return;}tbody.innerHTML=stratLegs.map(l=>`<tr><td><span class="${l.accion==='C'?'compra-badge':'venta-badge'}">${l.accion==='C'?'COMPRA':'VENTA'}</span></td><td><span class="${l.tipo==='C'?'call-badge':l.tipo==='P'?'put-badge':'futuro-badge'}">${l.tipo==='C'?'CALL':l.tipo==='P'?'PUT':'FUTURO'}</span></td><td style="text-align:center;font-weight:700">${l.tipo==='F'?l.strike.toFixed(2):l.strike}</td><td style="text-align:right">${l.tipo==='F'?'<span style="color:#aaa;font-size:0.75rem">sin prima</span>':l.prima.toFixed(4)}</td><td style="text-align:center;font-size:0.75rem;color:#888">${l.venc}</td><td style="text-align:center"><button class="btn-del" onclick="removeStratLeg(${l.id})">â</button></td></tr>`).join('');}
-function renderStratResults(){const container=document.getElementById('strat-results');if(stratLegs.length===0){container.innerHTML='<div style="color:#aaa;font-size:0.85rem;font-style:italic;padding:20px 0">AplicÃ¡ una estrategia para ver el anÃ¡lisis</div>';if(stratChart){stratChart.destroy();stratChart=null;}return;}const strikes=stratLegs.map(l=>l.strike);const midStrike=strikes.reduce((a,b)=>a+b,0)/strikes.length;const minS=Math.round(midStrike*0.65),maxS=Math.round(midStrike*1.35),step=(maxS-minS)/200;const prices=[];for(let s=minS;s<=maxS;s+=step)prices.push(parseFloat(s.toFixed(2)));const payoffs=prices.map(s=>parseFloat(totalPayoff(s).toFixed(4)));const primaNeta=stratLegs.reduce((sum,l)=>sum+(l.accion==='C'?-l.prima:l.prima),0);const maxGain=Math.max(...payoffs),maxLoss=Math.min(...payoffs);const breakevens=[];for(let i=0;i<payoffs.length-1;i++){if((payoffs[i]<=0&&payoffs[i+1]>0)||(payoffs[i]>=0&&payoffs[i+1]<0))breakevens.push((prices[i]+(prices[i+1]-prices[i])*(-payoffs[i])/(payoffs[i+1]-payoffs[i])).toFixed(2));}const isGainInfinite=maxGain>midStrike*2,isLossInfinite=maxLoss<-midStrike;const presetName=selectedPreset?(PRESET_STRATEGIES.find(p=>p.id===selectedPreset)?.nombre||''):'';container.innerHTML=`<div class="full-card" style="margin-bottom:12px;padding:14px 18px"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">${presetName||'Estrategia personalizada'}</h3><button class="btn-clear" onclick="clearStratLegs()">â Limpiar</button></div><div class="kpi-row" style="margin-bottom:0"><div class="kpi ${primaNeta>=0?'green':'red'}"><div class="label">Prima Neta</div><div class="value">${primaNeta>=0?'+':''}${primaNeta.toFixed(4)}</div><div class="sub">USD/tn Â· ${primaNeta>=0?'cobrada':'pagada'}</div></div><div class="kpi ${isGainInfinite?'':'green'}"><div class="label">Ganancia MÃ¡x.</div><div class="value">${isGainInfinite?'â':(maxGain>=0?'+':'')+maxGain.toFixed(4)}</div><div class="sub">USD/tn al vencimiento</div></div><div class="kpi ${isLossInfinite?'':'red'}"><div class="label">PÃ©rdida MÃ¡x.</div><div class="value">${isLossInfinite?'-â':maxLoss.toFixed(4)}</div><div class="sub">USD/tn al vencimiento</div></div><div class="kpi yellow"><div class="label">Breakeven${breakevens.length!==1?'s':''}</div><div class="value" style="font-size:1rem">${breakevens.length>0?breakevens.join(' / '):'â'}</div><div class="sub">USD/tn</div></div></div></div><div class="full-card"><h3>Payoff al Vencimiento <span style="font-size:0.78rem;font-weight:400;text-transform:none;color:#888">USD/tn</span></h3><div class="canvas-wrap-lg"><canvas id="strat-payoff-chart"></canvas></div></div>`;if(stratChart){stratChart.destroy();stratChart=null;}setTimeout(()=>{const ctx=document.getElementById('strat-payoff-chart');if(!ctx)return;stratChart=new Chart(ctx,{type:'line',data:{labels:prices.map(p=>p.toFixed(0)),datasets:[{label:'Resultado (USD/tn)',data:payoffs,borderWidth:2,pointRadius:0,tension:0.1,fill:false,segment:{borderColor:ctx2=>ctx2.p0.parsed.y>=0&&ctx2.p1.parsed.y>=0?'rgba(34,134,58,0.9)':ctx2.p0.parsed.y<0&&ctx2.p1.parsed.y<0?'rgba(203,36,49,0.9)':'rgba(150,150,150,0.7)'}}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>`Precio subyacente: USD ${items[0].label}`,label:item=>`Resultado: ${item.raw>=0?'+':''}${item.raw.toFixed(4)} USD/tn`}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{size:11}},title:{display:true,text:'Precio subyacente (USD/tn)',font:{size:11}}},y:{grid:{color:'#f0f2f5'},ticks:{font:{size:11}},title:{display:true,text:'Resultado (USD/tn)',font:{size:11}},afterDataLimits:scale=>{const r=scale.max-scale.min;scale.max+=r*0.1;scale.min-=r*0.1;}}}}});},50);}
-function buildStratPanel(){const panel=document.getElementById('panel-estrategia');const groupLabels=['ð Alcistas','ð Bajistas','ð Conservadoras'];const groups=[['bull_call_spread','ratio_call_spread','fut_buy_sell_call'],['bear_put_spread','ratio_put_spread','fut_sell_buy_put'],['covered_call','bull_put_spread','covered_call_fut']].map(ids=>ids.map(id=>PRESET_STRATEGIES.find(p=>p.id===id)).filter(Boolean));const presetsHTML=groups.map((grp,gi)=>`<div class="preset-section-label">${groupLabels[gi]}</div><div class="preset-grid">${grp.map(p=>`<div class="preset-card" data-id="${p.id}" onclick="selectPreset('${p.id}')"><div class="pc-check">â</div><div class="pc-name">${p.nombre}</div><div class="pc-market" style="background:${p.mercadoBg};color:${p.mercadoColor}">${p.mercado}</div><div class="pc-desc">${p.descripcion}</div><div class="pc-risk">${p.riesgo}</div></div>`).join('')}</div>`).join('');panel.innerHTML=`<div class="full-card"><h3>Estrategias</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px"><div class="strat-field"><label>Cultivo</label><select id="strat-cultivo" class="strat-select" onchange="stratCultivoChange()"><option value="SOJ">ð± Soja</option><option value="MAI">ð½ MaÃ­z</option></select></div></div><div class="strat-mode-tabs"><button class="strat-mode-btn active" data-mode="preset" onclick="setStratMode('preset')">â¡ Estrategias predeterminadas</button><button class="strat-mode-btn" data-mode="manual" onclick="setStratMode('manual')">ð§ Constructor manual</button></div><div id="preset-section">${presetsHTML}<div class="preset-controls"><div class="strat-field"><label>Vencimiento</label><select id="preset-venc" class="strat-select"></select></div><button class="btn-apply-preset" id="btn-apply-preset" onclick="applyPreset()" disabled>â¡ Aplicar estrategia</button><span id="preset-selected-info" style="color:#888;font-size:0.8rem">SeleccionÃ¡ una estrategia arriba</span></div></div><div id="manual-section" style="display:none"><div class="add-leg-row"><div class="strat-field"><label>AcciÃ³n</label><select id="strat-accion" class="strat-select"><option value="C">Compra</option><option value="V">Venta</option></select></div><div class="strat-field"><label>Tipo</label><select id="strat-tipo" class="strat-select" onchange="updateStratContractOpts()"><option value="C">Call</option><option value="P">Put</option><option value="F">Futuro</option></select></div><div class="strat-field"><label>Vencimiento</label><select id="strat-venc" class="strat-select" onchange="updateStratContractOpts()"></select></div><div class="strat-field" style="flex:2;min-width:240px"><label>Contrato (Strike Â· Prima)</label><select id="strat-contrato" class="strat-select"></select></div><button class="btn-add" onclick="addStratLeg()">+ Agregar pata</button><button class="btn-clear" onclick="clearStratLegs()">Limpiar</button></div></div><div class="full-card" style="margin-bottom:0;box-shadow:none;padding:0 0 4px 0"><table class="legs-table"><thead><tr><th>AcciÃ³n</th><th>Tipo</th><th>Strike</th><th style="text-align:right">Prima</th><th>Venc.</th><th></th></tr></thead><tbody id="strat-legs-tbody"><tr><td colspan="6" class="empty-legs">SeleccionÃ¡ una estrategia y aplicala, o usÃ¡ el constructor manual</td></tr></tbody></table></div></div><div id="strat-results" style="margin-top:4px"><div style="color:#aaa;font-size:0.85rem;font-style:italic;padding:20px 0">AplicÃ¡ una estrategia para ver el anÃ¡lisis</div></div>`;updatePresetVencOpts();updateStratVencOpts();}
+function renderStratLegs(){const tbody=document.getElementById('strat-legs-tbody');if(stratLegs.length===0){tbody.innerHTML='<tr><td colspan="6" class="empty-legs">Seleccioná una estrategia y aplicala, o usá el constructor manual</td></tr>';return;}tbody.innerHTML=stratLegs.map(l=>`<tr><td><span class="${l.accion==='C'?'compra-badge':'venta-badge'}">${l.accion==='C'?'COMPRA':'VENTA'}</span></td><td><span class="${l.tipo==='C'?'call-badge':l.tipo==='P'?'put-badge':'futuro-badge'}">${l.tipo==='C'?'CALL':l.tipo==='P'?'PUT':'FUTURO'}</span></td><td style="text-align:center;font-weight:700">${l.tipo==='F'?l.strike.toFixed(2):l.strike}</td><td style="text-align:right">${l.tipo==='F'?'<span style="color:#aaa;font-size:0.75rem">sin prima</span>':l.prima.toFixed(4)}</td><td style="text-align:center;font-size:0.75rem;color:#888">${l.venc}</td><td style="text-align:center"><button class="btn-del" onclick="removeStratLeg(${l.id})">✕</button></td></tr>`).join('');}
+function renderStratResults(){const container=document.getElementById('strat-results');if(stratLegs.length===0){container.innerHTML='<div style="color:#aaa;font-size:0.85rem;font-style:italic;padding:20px 0">Aplicá una estrategia para ver el análisis</div>';if(stratChart){stratChart.destroy();stratChart=null;}return;}const strikes=stratLegs.map(l=>l.strike);const midStrike=strikes.reduce((a,b)=>a+b,0)/strikes.length;const minS=Math.round(midStrike*0.65),maxS=Math.round(midStrike*1.35),step=(maxS-minS)/200;const prices=[];for(let s=minS;s<=maxS;s+=step)prices.push(parseFloat(s.toFixed(2)));const payoffs=prices.map(s=>parseFloat(totalPayoff(s).toFixed(4)));const primaNeta=stratLegs.reduce((sum,l)=>sum+(l.accion==='C'?-l.prima:l.prima),0);const maxGain=Math.max(...payoffs),maxLoss=Math.min(...payoffs);const breakevens=[];for(let i=0;i<payoffs.length-1;i++){if((payoffs[i]<=0&&payoffs[i+1]>0)||(payoffs[i]>=0&&payoffs[i+1]<0))breakevens.push((prices[i]+(prices[i+1]-prices[i])*(-payoffs[i])/(payoffs[i+1]-payoffs[i])).toFixed(2));}const isGainInfinite=maxGain>midStrike*2,isLossInfinite=maxLoss<-midStrike;const presetName=selectedPreset?(PRESET_STRATEGIES.find(p=>p.id===selectedPreset)?.nombre||''):'';container.innerHTML=`<div class="full-card" style="margin-bottom:12px;padding:14px 18px"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">${presetName||'Estrategia personalizada'}</h3><button class="btn-clear" onclick="clearStratLegs()">✕ Limpiar</button></div><div class="kpi-row" style="margin-bottom:0"><div class="kpi ${primaNeta>=0?'green':'red'}"><div class="label">Prima Neta</div><div class="value">${primaNeta>=0?'+':''}${primaNeta.toFixed(4)}</div><div class="sub">USD/tn · ${primaNeta>=0?'cobrada':'pagada'}</div></div><div class="kpi ${isGainInfinite?'':'green'}"><div class="label">Ganancia Máx.</div><div class="value">${isGainInfinite?'∞':(maxGain>=0?'+':'')+maxGain.toFixed(4)}</div><div class="sub">USD/tn al vencimiento</div></div><div class="kpi ${isLossInfinite?'':'red'}"><div class="label">Pérdida Máx.</div><div class="value">${isLossInfinite?'-∞':maxLoss.toFixed(4)}</div><div class="sub">USD/tn al vencimiento</div></div><div class="kpi yellow"><div class="label">Breakeven${breakevens.length!==1?'s':''}</div><div class="value" style="font-size:1rem">${breakevens.length>0?breakevens.join(' / '):'—'}</div><div class="sub">USD/tn</div></div></div></div><div class="full-card"><h3>Payoff al Vencimiento <span style="font-size:0.78rem;font-weight:400;text-transform:none;color:#888">USD/tn</span></h3><div class="canvas-wrap-lg"><canvas id="strat-payoff-chart"></canvas></div></div>`;if(stratChart){stratChart.destroy();stratChart=null;}setTimeout(()=>{const ctx=document.getElementById('strat-payoff-chart');if(!ctx)return;stratChart=new Chart(ctx,{type:'line',data:{labels:prices.map(p=>p.toFixed(0)),datasets:[{label:'Resultado (USD/tn)',data:payoffs,borderWidth:2,pointRadius:0,tension:0.1,fill:false,segment:{borderColor:ctx2=>ctx2.p0.parsed.y>=0&&ctx2.p1.parsed.y>=0?'rgba(34,134,58,0.9)':ctx2.p0.parsed.y<0&&ctx2.p1.parsed.y<0?'rgba(203,36,49,0.9)':'rgba(150,150,150,0.7)'}}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>`Precio subyacente: USD ${items[0].label}`,label:item=>`Resultado: ${item.raw>=0?'+':''}${item.raw.toFixed(4)} USD/tn`}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{size:11}},title:{display:true,text:'Precio subyacente (USD/tn)',font:{size:11}}},y:{grid:{color:'#f0f2f5'},ticks:{font:{size:11}},title:{display:true,text:'Resultado (USD/tn)',font:{size:11}},afterDataLimits:scale=>{const r=scale.max-scale.min;scale.max+=r*0.1;scale.min-=r*0.1;}}}}});},50);}
+function buildStratPanel(){const panel=document.getElementById('panel-estrategia');const groupLabels=['📈 Alcistas','📉 Bajistas','🔒 Conservadoras'];const groups=[['bull_call_spread','ratio_call_spread','fut_buy_sell_call'],['bear_put_spread','ratio_put_spread','fut_sell_buy_put'],['covered_call','bull_put_spread','covered_call_fut']].map(ids=>ids.map(id=>PRESET_STRATEGIES.find(p=>p.id===id)).filter(Boolean));const presetsHTML=groups.map((grp,gi)=>`<div class="preset-section-label">${groupLabels[gi]}</div><div class="preset-grid">${grp.map(p=>`<div class="preset-card" data-id="${p.id}" onclick="selectPreset('${p.id}')"><div class="pc-check">✔</div><div class="pc-name">${p.nombre}</div><div class="pc-market" style="background:${p.mercadoBg};color:${p.mercadoColor}">${p.mercado}</div><div class="pc-desc">${p.descripcion}</div><div class="pc-risk">${p.riesgo}</div></div>`).join('')}</div>`).join('');panel.innerHTML=`<div class="full-card"><h3>Estrategias</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px"><div class="strat-field"><label>Cultivo</label><select id="strat-cultivo" class="strat-select" onchange="stratCultivoChange()"><option value="SOJ">🌱 Soja</option><option value="MAI">🌽 Maíz</option></select></div></div><div class="strat-mode-tabs"><button class="strat-mode-btn active" data-mode="preset" onclick="setStratMode('preset')">⚡ Estrategias predeterminadas</button><button class="strat-mode-btn" data-mode="manual" onclick="setStratMode('manual')">🔧 Constructor manual</button></div><div id="preset-section">${presetsHTML}<div class="preset-controls"><div class="strat-field"><label>Vencimiento</label><select id="preset-venc" class="strat-select"></select></div><button class="btn-apply-preset" id="btn-apply-preset" onclick="applyPreset()" disabled>⚡ Aplicar estrategia</button><span id="preset-selected-info" style="color:#888;font-size:0.8rem">Seleccioná una estrategia arriba</span></div></div><div id="manual-section" style="display:none"><div class="add-leg-row"><div class="strat-field"><label>Acción</label><select id="strat-accion" class="strat-select"><option value="C">Compra</option><option value="V">Venta</option></select></div><div class="strat-field"><label>Tipo</label><select id="strat-tipo" class="strat-select" onchange="updateStratContractOpts()"><option value="C">Call</option><option value="P">Put</option><option value="F">Futuro</option></select></div><div class="strat-field"><label>Vencimiento</label><select id="strat-venc" class="strat-select" onchange="updateStratContractOpts()"></select></div><div class="strat-field" style="flex:2;min-width:240px"><label>Contrato (Strike · Prima)</label><select id="strat-contrato" class="strat-select"></select></div><button class="btn-add" onclick="addStratLeg()">+ Agregar pata</button><button class="btn-clear" onclick="clearStratLegs()">Limpiar</button></div></div><div class="full-card" style="margin-bottom:0;box-shadow:none;padding:0 0 4px 0"><table class="legs-table"><thead><tr><th>Acción</th><th>Tipo</th><th>Strike</th><th style="text-align:right">Prima</th><th>Venc.</th><th></th></tr></thead><tbody id="strat-legs-tbody"><tr><td colspan="6" class="empty-legs">Seleccioná una estrategia y aplicala, o usá el constructor manual</td></tr></tbody></table></div></div><div id="strat-results" style="margin-top:4px"><div style="color:#aaa;font-size:0.85rem;font-style:italic;padding:20px 0">Aplicá una estrategia para ver el análisis</div></div>`;updatePresetVencOpts();updateStratVencOpts();}
 
 function showTab(id){
   const ids=['soj-fut','mai-fut','tri-fut','soj-opts','mai-opts','tri-opts','estrategia','dlr-fut','lecaps','financiamiento','noticias'];
@@ -1520,11 +1520,11 @@ function showTab(id){
   if(id==='financiamiento') buildFinanciamientoPanel();
 }
 
-// ââ LECAPs ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── LECAPs ────────────────────────────────────────────────────────
 const LECAP_MONTH = {E:1,F:2,M:3,A:4,Y:5,J:6,L:7,G:8,S:9,O:10,N:11,D:12};
 const LECAP_MES   = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
-// Precio final por cada 100 VN al vencimiento (estÃ¡tico, provisto por analista)
+// Precio final por cada 100 VN al vencimiento (estático, provisto por analista)
 const PRECIO_FINAL = {
   'S15Y6': 105.18,
   'S29Y6': 132.04,
@@ -1614,14 +1614,14 @@ async function loadLecapPanel(){
   if(lecapLoading)return;
   const panel=document.getElementById('panel-lecaps');
   if(!lecapData){
-    panel.innerHTML=`<div style="padding:40px;text-align:center;color:#888"><div style="font-size:2rem;margin-bottom:12px">â³</div><div>Cargando cotizaciones LECAPs...</div></div>`;
+    panel.innerHTML=`<div style="padding:40px;text-align:center;color:#888"><div style="font-size:2rem;margin-bottom:12px">⏳</div><div>Cargando cotizaciones LECAPs...</div></div>`;
     lecapLoading=true;
     const FILE_ID=DATA_FILE_ID;
     const SHEET_URL='https://docs.google.com/spreadsheets/d/'+FILE_ID+'/export?format=csv&gid=870011159';
     let parsed=null;
     let errMsg='';
     try{
-      // Intento 1: Drive MCP â fuente principal (tabla 2 cols TICKER|PRECIO de la hoja LECAP)
+      // Intento 1: Drive MCP — fuente principal (tabla 2 cols TICKER|PRECIO de la hoja LECAP)
       if(window.cowork&&typeof window.cowork.callMcpTool==='function'){
         try{
           const res=await window.cowork.callMcpTool(
@@ -1651,11 +1651,11 @@ async function loadLecapPanel(){
       lecapData={_parsed:parsed};
     }catch(e){
       panel.innerHTML=`<div style="padding:40px;text-align:center;color:#cb2431">
-        <div style="font-size:2rem;margin-bottom:12px">â ï¸</div>
+        <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
         <div style="font-weight:700;margin-bottom:8px">No se pudo leer el Google Sheet</div>
         <div style="font-size:0.8rem;color:#888;margin-top:8px;max-width:440px;margin-left:auto;margin-right:auto">${e.message}</div>
-        <div style="font-size:0.73rem;color:#bbb;margin-top:6px">VerificÃ¡ que la hoja estÃ© publicada: Archivo â Compartir â Publicar en la web â CSV</div>
-        <button onclick="lecapData=null;lecapLoading=false;loadLecapPanel()" style="margin-top:16px;padding:8px 20px;border:none;border-radius:8px;background:#1a1a2e;color:white;cursor:pointer;font-size:0.85rem">ð Reintentar</button>
+        <div style="font-size:0.73rem;color:#bbb;margin-top:6px">Verificá que la hoja esté publicada: Archivo → Compartir → Publicar en la web → CSV</div>
+        <button onclick="lecapData=null;lecapLoading=false;loadLecapPanel()" style="margin-top:16px;padding:8px 20px;border:none;border-radius:8px;background:#1a1a2e;color:white;cursor:pointer;font-size:0.85rem">🔄 Reintentar</button>
       </div>`;
       lecapLoading=false;return;
     }
@@ -1700,9 +1700,9 @@ function renderLecapPanel(){
 
   if(iTicker<0||iPrecio<0){
     panel.innerHTML=`<div style="padding:24px;background:white;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.07)">
-      <div style="font-size:0.9rem;font-weight:700;color:#cb2431;margin-bottom:12px">â ï¸ No se detectaron columnas automÃ¡ticamente</div>
+      <div style="font-size:0.9rem;font-weight:700;color:#cb2431;margin-bottom:12px">⚠️ No se detectaron columnas automáticamente</div>
       <div style="font-family:monospace;font-size:0.78rem;background:#f7f8fa;padding:10px;border-radius:6px;color:#333">${headers.map((h,i)=>`[${i}] ${h}`).join('<br>')}</div>
-      <button onclick="lecapData=null;lecapLoading=false;loadLecapPanel()" style="margin-top:14px;padding:7px 18px;border:none;border-radius:8px;background:#1a1a2e;color:white;cursor:pointer;font-size:0.82rem">ð Reintentar</button>
+      <button onclick="lecapData=null;lecapLoading=false;loadLecapPanel()" style="margin-top:14px;padding:7px 18px;border:none;border-radius:8px;background:#1a1a2e;color:white;cursor:pointer;font-size:0.82rem">🔄 Reintentar</button>
     </div>`;
     return;
   }
@@ -1722,7 +1722,7 @@ function renderLecapPanel(){
     return{ticker,...info,price,pf,...yields,dolar_eq,tc};
   }).filter(Boolean);
 
-  // Deduplicar por ticker, quedÃ¡ndose con el primero de cada uno
+  // Deduplicar por ticker, quedándose con el primero de cada uno
   const seen=new Set();
   const unique=items.filter(d=>{if(seen.has(d.ticker))return false;seen.add(d.ticker);return true;});
   const withYield=unique.filter(d=>d.tna!==null);
@@ -1811,24 +1811,24 @@ function renderLecapPanel(){
   </style>
   <div class="lc-wrap">
   <div class="lc-refresh">
-    <div class="lc-ts">Precio actual: ${ts} Â· ${items.length} instrumentos Â· Precio final: estÃ¡tico al vencimiento</div>
-    <button class="lc-refresh-btn" onclick="lecapData=null;lecapLoading=false;loadLecapPanel()">ð Actualizar precios</button>
+    <div class="lc-ts">Precio actual: ${ts} · ${items.length} instrumentos · Precio final: estático al vencimiento</div>
+    <button class="lc-refresh-btn" onclick="lecapData=null;lecapLoading=false;loadLecapPanel()">🔄 Actualizar precios</button>
   </div>
 
   <div class="lc-kpis">
     <div class="lc-kpi kpi-green">
       <div class="kl">Mejor TNA</div>
-      <div class="kv">${bestTNA!==null?bestTNA.toFixed(1)+'%':'â'}</div>
-      <div class="ks">${bestTicker?bestTicker.ticker+' Â· '+bestTicker.dias+'d':''}</div>
+      <div class="kv">${bestTNA!==null?bestTNA.toFixed(1)+'%':'—'}</div>
+      <div class="ks">${bestTicker?bestTicker.ticker+' · '+bestTicker.dias+'d':''}</div>
     </div>
     <div class="lc-kpi kpi-amber">
-      <div class="kl">PrÃ³x. Vencimiento</div>
-      <div class="kv">${proxVenc?proxVenc.dias+'d':'â'}</div>
-      <div class="ks">${proxVenc?proxVenc.ticker+' Â· '+proxVenc.display:''}</div>
+      <div class="kl">Próx. Vencimiento</div>
+      <div class="kv">${proxVenc?proxVenc.dias+'d':'—'}</div>
+      <div class="ks">${proxVenc?proxVenc.ticker+' · '+proxVenc.display:''}</div>
     </div>
     <div class="lc-kpi" style="border-left:3px solid #1565c0">
       <div class="kl">TC Mayorista</div>
-      <div class="kv" style="color:#1565c0">${tcActual?'$'+tcActual.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'â'}</div>
+      <div class="kv" style="color:#1565c0">${tcActual?'$'+tcActual.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}</div>
       <div class="ks">${SPOT?.fecha||'sin dato'}</div>
     </div>
   </div>
@@ -1847,15 +1847,15 @@ function renderLecapPanel(){
     <table class="lc-table">
       <thead><tr>
         <th style="text-align:left">Ticker</th>
-        <th onclick="lecapSort='venc';renderLecapPanel()" class="${lecapSort==='venc'?'sort-active':''}">Vencimiento â</th>
-        <th>DÃ­as</th>
-        <th onclick="lecapSort='precio';renderLecapPanel()" class="${lecapSort==='precio'?'sort-active':''}">P. Actual â</th>
+        <th onclick="lecapSort='venc';renderLecapPanel()" class="${lecapSort==='venc'?'sort-active':''}">Vencimiento ↕</th>
+        <th>Días</th>
+        <th onclick="lecapSort='precio';renderLecapPanel()" class="${lecapSort==='precio'?'sort-active':''}">P. Actual ↕</th>
         <th>P. Final</th>
         <th>Rend. Total</th>
-        <th onclick="lecapSort='tna';renderLecapPanel()" class="${lecapSort==='tna'?'sort-active':''}">TNA â</th>
-        <th onclick="lecapSort='tem';renderLecapPanel()" class="${lecapSort==='tem'?'sort-active':''}">TEM â</th>
+        <th onclick="lecapSort='tna';renderLecapPanel()" class="${lecapSort==='tna'?'sort-active':''}">TNA ↕</th>
+        <th onclick="lecapSort='tem';renderLecapPanel()" class="${lecapSort==='tem'?'sort-active':''}">TEM ↕</th>
         <th>TEA</th>
-        <th onclick="lecapSort='deq';renderLecapPanel()" class="${lecapSort==='deq'?'sort-active':''}" style="color:#7c3aed">$ Equilibrio â</th>
+        <th onclick="lecapSort='deq';renderLecapPanel()" class="${lecapSort==='deq'?'sort-active':''}" style="color:#7c3aed">$ Equilibrio ↕</th>
       </tr></thead>
       <tbody>${sorted.map(d=>{
         const isBest=bestTNA!==null&&d.tna===bestTNA;
@@ -1864,31 +1864,31 @@ function renderLecapPanel(){
         const tnaBgVal=tnaBg(d.tna);
         const tnaClr=tnaColor(d.tna);
         return`<tr class="${isBest?'lc-best':''}">
-          <td><span class="lc-ticker">${d.ticker}</span>${isBest?' <span style="color:#f59e0b;font-size:0.7rem">â mejor</span>':''}</td>
+          <td><span class="lc-ticker">${d.ticker}</span>${isBest?' <span style="color:#f59e0b;font-size:0.7rem">★ mejor</span>':''}</td>
           <td style="text-align:left;color:#555;font-size:0.8rem">${d.display}</td>
           <td><span class="lc-dias ${diasCls}">${d.dias}d</span></td>
           <td><strong>${d.price.toFixed(2)}</strong></td>
-          <td class="lc-pf">${d.pf?d.pf.toFixed(2):'<span class="lc-na">â</span>'}</td>
-          <td class="lc-rend">${hasYield?'+'+d.rend.toFixed(2)+'%':'<span class="lc-na">â</span>'}</td>
-          <td>${hasYield?`<span class="lc-tna" style="background:${tnaBgVal};color:${tnaClr}">${d.tna.toFixed(1)}%</span>`:'<span class="lc-na">â</span>'}</td>
-          <td class="lc-tem">${hasYield?d.tem.toFixed(2)+'%':'<span class="lc-na">â</span>'}</td>
-          <td class="lc-tea">${hasYield?d.tea.toFixed(1)+'%':'<span class="lc-na">â</span>'}</td>
-          <td style="font-weight:700;color:#7c3aed">${d.dolar_eq?'$'+d.dolar_eq.toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0}):'<span class="lc-na">â</span>'}</td>
+          <td class="lc-pf">${d.pf?d.pf.toFixed(2):'<span class="lc-na">—</span>'}</td>
+          <td class="lc-rend">${hasYield?'+'+d.rend.toFixed(2)+'%':'<span class="lc-na">—</span>'}</td>
+          <td>${hasYield?`<span class="lc-tna" style="background:${tnaBgVal};color:${tnaClr}">${d.tna.toFixed(1)}%</span>`:'<span class="lc-na">—</span>'}</td>
+          <td class="lc-tem">${hasYield?d.tem.toFixed(2)+'%':'<span class="lc-na">—</span>'}</td>
+          <td class="lc-tea">${hasYield?d.tea.toFixed(1)+'%':'<span class="lc-na">—</span>'}</td>
+          <td style="font-weight:700;color:#7c3aed">${d.dolar_eq?'$'+d.dolar_eq.toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0}):'<span class="lc-na">—</span>'}</td>
         </tr>`;
       }).join('')}</tbody>
     </table>
     </div>
-    <div class="lc-note" style="padding:8px 14px">TNA = tasa nominal anual (interÃ©s simple) Â· TEM = tasa efectiva mensual Â· TEA = tasa efectiva anual Â· P. Final = valor al vencimiento cada 100 VN</div>
+    <div class="lc-note" style="padding:8px 14px">TNA = tasa nominal anual (interés simple) · TEM = tasa efectiva mensual · TEA = tasa efectiva anual · P. Final = valor al vencimiento cada 100 VN</div>
   </div>
 
   <div class="lc-chart-card">
-    <h3>Curva de Rendimientos â TNA por Plazo</h3>
+    <h3>Curva de Rendimientos — TNA por Plazo</h3>
     <p>Cada punto representa una letra. Un punto por encima de la curva indica mayor rendimiento relativo a su plazo.</p>
     <div class="canvas-wrap" style="height:260px"><canvas id="lecap-chart"></canvas></div>
   </div>
   </div>`;
 
-  // Chart: TNA vs dÃ­as, usando precio final real
+  // Chart: TNA vs días, usando precio final real
   const chartItems=sorted.filter(d=>d.dias>0&&d.tna!==null);
   if(lecapChart){lecapChart.destroy();lecapChart=null;}
   setTimeout(()=>{
@@ -1918,7 +1918,7 @@ function renderLecapPanel(){
           }}
         },
         scales:{
-          x:{title:{display:true,text:'DÃ­as al vencimiento',font:{size:11}},grid:{color:'#f0f2f5'},ticks:{font:{size:11}}},
+          x:{title:{display:true,text:'Días al vencimiento',font:{size:11}},grid:{color:'#f0f2f5'},ticks:{font:{size:11}}},
           y:{title:{display:true,text:'TNA (%)',font:{size:11}},grid:{color:'#f0f2f5'},ticks:{font:{size:11},callback:v=>v.toFixed(0)+'%'}}
         }
       }
@@ -1931,7 +1931,7 @@ function renderLecapPanel(){
 }
 
 
-// ââ Financiamiento ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Financiamiento ────────────────────────────────────────────────────
 let _finCultivo='soj';
 let _finTNA=32;
 let _finVA={soj:null,mai:null,tri:null};
@@ -1965,7 +1965,7 @@ function _finGetVAUsd(cult){
   return SPOT[cultKey+'_usd']||(SPOT.tc&&SPOT[cultKey+'_ars']?SPOT[cultKey+'_ars']/SPOT.tc:null);
 }
 function _finFindDollarFut(vencDisplay){
-  // Match exacto por mes/aÃ±o: JUL26 â 07/2026, SEP26 â 09/2026, etc.
+  // Match exacto por mes/año: JUL26 → 07/2026, SEP26 → 09/2026, etc.
   if(!DLR_FUT||!DLR_FUT.length)return null;
   const mmap={ENE:'01',FEB:'02',MAR:'03',ABR:'04',MAY:'05',JUN:'06',JUL:'07',AGO:'08',SEP:'09',OCT:'10',NOV:'11',DIC:'12'};
   const m=vencDisplay.match(/^([A-Z]{3})(\d{2})$/);
@@ -2069,19 +2069,19 @@ function buildFinanciamientoDolar(panel,modoBtnsHtml){
 
 function buildFinanciamientoPesos(panel,modoBtnsHtml){
   const cult=_finCultivo;
-  const cultLabel=cult==='soj'?'Soja':cult==='mai'?'MaÃ­z':'Trigo';
+  const cultLabel=cult==='soj'?'Soja':cult==='mai'?'Maíz':'Trigo';
   const cultColor=cult==='soj'?'#2e7d32':cult==='mai'?'#e65100':'#1565c0';
   const futs=cult==='soj'?SOJ_FUT:cult==='mai'?MAI_FUT:TRI_FUT;
-  if(!futs||!futs.length){panel.innerHTML='<div style="padding:48px;text-align:center;color:#aaa;font-size:0.9rem">Sin datos de futuros. ActualizÃ¡ los datos primero.</div>';return;}
+  if(!futs||!futs.length){panel.innerHTML='<div style="padding:48px;text-align:center;color:#aaa;font-size:0.9rem">Sin datos de futuros. Actualizá los datos primero.</div>';return;}
   const va=_finGetVA(cult);
   const isVAManual=!!_finVA[cult];
   const isVAFromAcopio=!isVAManual&&!!(window._customSpotArs&&window._customSpotArs[cult+'-fut']);
   const vaDisplay=va?va.toLocaleString('es-AR',{maximumFractionDigits:0}):'';
   const tna=_finTNA/100;
   const today=new Date();
-  const fmtARS=n=>n!=null?n.toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0}):'â';
-  const fmtUSD=n=>n!=null?n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'â';
-  // 3 prÃ³ximos vencimientos vÃ¡lidos
+  const fmtARS=n=>n!=null?n.toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0}):'—';
+  const fmtUSD=n=>n!=null?n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+  // 3 próximos vencimientos válidos
   const validFuts=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste)))).slice(0,3);
   const cards=validFuts.map(f=>{
     const vencDate=VENC_DATES[f.venc_display];
@@ -2097,33 +2097,33 @@ function buildFinanciamientoPesos(panel,modoBtnsHtml){
     const ratio=(resultado!=null&&vn!=null)?(resultado/vn*100):null;
     const cardClass=conviene===null?'fin-venc-card':conviene?'fin-venc-card conviene':'fin-venc-card no-conviene';
     const badge=conviene===null?'<span style="color:#aaa;font-size:0.82rem">Sin datos suficientes</span>':
-      conviene?'<span class="fin-badge-conv">ð¦ Conviene retener y financiarse</span>':
-               '<span class="fin-badge-noconv">ð¤ Conviene vender</span>';
+      conviene?'<span class="fin-badge-conv">🏦 Conviene retener y financiarse</span>':
+               '<span class="fin-badge-noconv">📤 Conviene vender</span>';
     const difHtml=diferencia!=null?`<div style="display:flex;justify-content:space-between;margin-top:4px">
       <span style="font-size:0.85rem;font-weight:800;color:${conviene?'#166534':'#991b1b'}">${diferencia>=0?'+':''}$${fmtARS(diferencia)}/tn</span>
       <span style="font-size:0.82rem;font-weight:700;color:${conviene?'#166534':'#991b1b'}">${ratio?(ratio-100>=0?'+':'')+(ratio-100).toFixed(1)+'%':''}</span>
     </div>`:'';
-    const fechaStr=vencDate?vencDate.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}):'â';
+    const fechaStr=vencDate?vencDate.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
     return `<div class="${cardClass}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div style="font-size:1.15rem;font-weight:900;color:${cultColor}">${f.venc_display}</div>
-        <div style="text-align:right"><div style="font-size:0.7rem;color:#aaa">Vto: ${fechaStr}</div><div style="font-size:0.7rem;color:#aaa">${dias!=null?dias+' dÃ­as':''}</div></div>
+        <div style="text-align:right"><div style="font-size:0.7rem;color:#aaa">Vto: ${fechaStr}</div><div style="font-size:0.7rem;color:#aaa">${dias!=null?dias+' días':''}</div></div>
       </div>
-      <div class="fin-section-title">ð Costo de financiamiento</div>
-      <div class="fin-row"><span class="fin-label">Precio disponible (VA)</span><span class="fin-val">${va?'$'+fmtARS(va):'â'}</span></div>
-      <div class="fin-row"><span class="fin-label">TNA Â· dÃ­as Â· aÃ±os</span><span class="fin-val">${_finTNA}% Â· ${dias!=null?dias:'â'}d Â· ${vtoAnios!=null?vtoAnios.toFixed(3):'â'}</span></div>
-      <div class="fin-total-row"><span style="font-size:0.8rem;font-weight:700;color:#555">VN del cheque</span><span style="font-size:1rem;font-weight:800;color:#1a1a2e">${vn?'$'+fmtARS(vn):'â'}</span></div>
-      <div class="fin-section-title" style="margin-top:6px">ð Futuro ${cultLabel} Ã Futuro DÃ³lar</div>
+      <div class="fin-section-title">📄 Costo de financiamiento</div>
+      <div class="fin-row"><span class="fin-label">Precio disponible (VA)</span><span class="fin-val">${va?'$'+fmtARS(va):'—'}</span></div>
+      <div class="fin-row"><span class="fin-label">TNA · días · años</span><span class="fin-val">${_finTNA}% · ${dias!=null?dias:'—'}d · ${vtoAnios!=null?vtoAnios.toFixed(3):'—'}</span></div>
+      <div class="fin-total-row"><span style="font-size:0.8rem;font-weight:700;color:#555">VN del cheque</span><span style="font-size:1rem;font-weight:800;color:#1a1a2e">${vn?'$'+fmtARS(vn):'—'}</span></div>
+      <div class="fin-section-title" style="margin-top:6px">📈 Futuro ${cultLabel} × Futuro Dólar</div>
       <div class="fin-row"><span class="fin-label">Futuro ${cultLabel}</span><span class="fin-val">USD ${fmtUSD(futPriceUsd)}/tn</span></div>
-      <div class="fin-row"><span class="fin-label">Futuro DÃ³lar ${dlrFut?'('+dlrFut.venc_display+')':''}</span><span class="fin-val">${dlrPrice?'$'+fmtARS(dlrPrice)+'/USD':'â'}</span></div>
-      <div class="fin-total-row" style="background:#eff6ff;"><span style="font-size:0.8rem;font-weight:700;color:#1e40af">Resultado futuros</span><span style="font-size:1rem;font-weight:800;color:#1e40af">${resultado?'$'+fmtARS(resultado):'â'}</span></div>
+      <div class="fin-row"><span class="fin-label">Futuro Dólar ${dlrFut?'('+dlrFut.venc_display+')':''}</span><span class="fin-val">${dlrPrice?'$'+fmtARS(dlrPrice)+'/USD':'—'}</span></div>
+      <div class="fin-total-row" style="background:#eff6ff;"><span style="font-size:0.8rem;font-weight:700;color:#1e40af">Resultado futuros</span><span style="font-size:1rem;font-weight:800;color:#1e40af">${resultado?'$'+fmtARS(resultado):'—'}</span></div>
       <div style="border-top:1px solid #f0f2f5;margin-top:4px;padding-top:10px">
         ${badge}${difHtml}
       </div>
     </div>`;
   });
   const cultBtns=['soj','mai','tri'].map(c=>{
-    const lbl=c==='soj'?'ð± Soja':c==='mai'?'ð½ MaÃ­z':'ð¾ Trigo';
+    const lbl=c==='soj'?'🌱 Soja':c==='mai'?'🌽 Maíz':'🌾 Trigo';
     const act=c===cult;
     const cc=c==='soj'?'#2e7d32':c==='mai'?'#e65100':'#1565c0';
     return `<button onclick="_finSetCultivo('${c}')" style="padding:8px 22px;border:2px solid ${act?cc:'#dde'};border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;background:${act?cc:'white'};color:${act?'white':'#555'};transition:all 0.15s">${lbl}</button>`;
@@ -2131,15 +2131,15 @@ function buildFinanciamientoPesos(panel,modoBtnsHtml){
   const vaBadge=isVAManual?'<span style="font-size:0.65rem;background:#f59e0b;color:#1a1a2e;padding:1px 7px;border-radius:3px;font-weight:800;margin-left:6px">MANUAL</span>':
     isVAFromAcopio?'<span style="font-size:0.65rem;background:#6366f1;color:white;padding:1px 7px;border-radius:3px;font-weight:700;margin-left:6px">desde acopio</span>':
     '<span style="font-size:0.65rem;color:#aaa;margin-left:5px">mercado</span>';
-  const vaClearBtn=isVAManual?`<button onclick="_finVA['${cult}']=null;buildFinanciamientoPanel()" style="background:none;border:none;color:#f59e0b;cursor:pointer;font-size:0.78rem;font-weight:700;padding:0 4px">â auto</button>`:'';
+  const vaClearBtn=isVAManual?`<button onclick="_finVA['${cult}']=null;buildFinanciamientoPanel()" style="background:none;border:none;color:#f59e0b;cursor:pointer;font-size:0.78rem;font-weight:700;padding:0 4px">✕ auto</button>`:'';
   panel.innerHTML=`
     <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">${modoBtnsHtml}</div>
     <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">${cultBtns}</div>
     <div class="fin-card" style="margin-bottom:4px">
-      <div style="font-size:0.8rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">âï¸ ParÃ¡metros</div>
+      <div style="font-size:0.8rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">⚙️ Parámetros</div>
       <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end">
         <div style="display:flex;flex-direction:column;gap:6px">
-          <label style="font-size:0.7rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.4px">VA â Precio disponible ARS/tn ${vaBadge}</label>
+          <label style="font-size:0.7rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.4px">VA – Precio disponible ARS/tn ${vaBadge}</label>
           <div style="display:flex;align-items:center;gap:6px">
             <span style="color:#888;font-size:0.9rem">$</span>
             <input type="text" id="fin-va-${cult}" value="${vaDisplay}" placeholder="ej: 465.000"
@@ -2159,12 +2159,12 @@ function buildFinanciamientoPesos(panel,modoBtnsHtml){
             <span style="color:#888;font-size:0.85rem">% TNA</span>
           </div>
         </div>
-        <div style="font-size:0.72rem;color:#bbb;padding-bottom:8px;font-style:italic">VN = VA Ã (1 + TNA Ã dÃ­as/365)</div>
+        <div style="font-size:0.72rem;color:#bbb;padding-bottom:8px;font-style:italic">VN = VA × (1 + TNA × días/365)</div>
       </div>
     </div>
     <div class="fin-venc-grid">${cards.join('')}</div>
     <div class="fin-card" style="margin-top:18px">
-      <div class="fin-section-title" style="margin-bottom:10px">ð Comparativo por mes: VN del cheque vs. Resultado futuros</div>
+      <div class="fin-section-title" style="margin-bottom:10px">📊 Comparativo por mes: VN del cheque vs. Resultado futuros</div>
       <div class="canvas-wrap" style="height:280px"><canvas id="fin-comparison-chart"></canvas></div>
     </div>`;
 
@@ -2198,7 +2198,7 @@ function buildFinanciamientoPesos(panel,modoBtnsHtml){
         plugins:{
           legend:{display:true,position:'top',labels:{font:{size:11}}},
           tooltip:{callbacks:{
-            label:item=>`${item.dataset.label}: ${item.raw?item.raw.toLocaleString('es-AR',{maximumFractionDigits:0}):'â'}`
+            label:item=>`${item.dataset.label}: ${item.raw?item.raw.toLocaleString('es-AR',{maximumFractionDigits:0}):'—'}`
           }}
         },
         scales:{
@@ -2210,27 +2210,27 @@ function buildFinanciamientoPesos(panel,modoBtnsHtml){
   },50);
 }
 
-// ââ SelecciÃ³n de dispositivo ââââââââââââââââââââââââââââââââââââââ
+// ── Selección de dispositivo ──────────────────────────────────────
 function showSplash(){
   const el=document.createElement('div');
   el.id='splash-overlay';
   el.innerHTML=`<div class="splash-inner">
     <div class="splash-logo"><img src="logo-data-miazzo.png" alt="Data Miazzo"></div>
     <div class="splash-title">Estrategias al grano</div>
-    <div class="splash-sub">Â¿Desde quÃ© dispositivo estÃ¡s ingresando?</div>
+    <div class="splash-sub">¿Desde qué dispositivo estás ingresando?</div>
     <div class="splash-options">
       <div class="splash-btn" onclick="chooseDevice('mobile')">
-        <div class="sb-icon">ð±</div>
+        <div class="sb-icon">📱</div>
         <div class="sb-label">Celular</div>
         <div class="sb-desc"></div>
       </div>
       <div class="splash-btn" onclick="chooseDevice('desktop')">
-        <div class="sb-icon">ð»</div>
+        <div class="sb-icon">💻</div>
         <div class="sb-label">Computadora</div>
         <div class="sb-desc"></div>
       </div>
     </div>
-    <div class="splash-note">Tu preferencia se recordarÃ¡ para la prÃ³xima vez Â· <span style="cursor:pointer;text-decoration:underline;color:rgba(0,0,0,0.4)" onclick="localStorage.removeItem('a3_device_mode')">olvidar preferencia</span></div>
+    <div class="splash-note">Tu preferencia se recordará para la próxima vez · <span style="cursor:pointer;text-decoration:underline;color:rgba(0,0,0,0.4)" onclick="localStorage.removeItem('a3_device_mode')">olvidar preferencia</span></div>
   </div>`;
   document.body.appendChild(el);
 }
@@ -2245,23 +2245,23 @@ window._initDeviceFlow=function(){
   if(window.a3DeviceMode){loadAndInitA3();}else{showSplash();}
 };
 
-// ââ NOTICIAS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-/* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-   NEWS_DATA â Claude actualiza este bloque cada vez que corre el scraping.
-   Las noticias con mÃ¡s de 7 dÃ­as son eliminadas automÃ¡ticamente del array.
-   Ãltima actualizaciÃ³n: 2026-06-28
-   âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+// ── NOTICIAS ─────────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════════
+   NEWS_DATA — Claude actualiza este bloque cada vez que corre el scraping.
+   Las noticias con más de 7 días son eliminadas automáticamente del array.
+   Última actualización: 2026-06-28
+   ═══════════════════════════════════════════════════════════════════════ */
 const NEWS_DATA = [
-  {fecha:'2026-06-27',fuente:'LA NACION',cultivo:'Trigo / MaÃ­z / Soja',titulo:'La NOAA confirma la instalaciÃ³n oficial de El NiÃ±o y prevÃ© 63% de probabilidad de que sea muy fuerte entre noviembre y enero',resumen:'La NOAA declarÃ³ que ya se cumplen las condiciones de un evento El NiÃ±o en el PacÃ­fico ecuatorial y proyectÃ³ un 63% de probabilidad de que se intensifique a categorÃ­a Â«muy fuerteÂ» entre noviembre y enero, lo que lo posicionarÃ­a entre los mÃ¡s importantes desde 1950. En la Argentina el impacto fuerte llegarÃ­a a partir de la primavera: el NEA empezarÃ­a a sentir mayores lluvias desde septiembre, mientras que en Buenos Aires, La Pampa y CÃ³rdoba el efecto se notarÃ­a reciÃ©n entre octubre y noviembre, segÃºn el meteorÃ³logo Leonardo de Benedictis.',link:'https://www.lanacion.com.ar/economia/campo/la-temperatura-del-oceano-pacifico-ya-alcanzo-un-nivel-compatible-con-el-nino-nid27062026/'},
-  {fecha:'2026-06-27',fuente:'LA NACION',cultivo:'Trigo / MaÃ­z / Soja',titulo:'La soja se consolida como reserva de valor mientras se acelera la comercializaciÃ³n de trigo, maÃ­z y cebada',resumen:'SegÃºn el informe de compras y ventas de la SecretarÃ­a de Agricultura, los productores ya vendieron 19,2 Mt de trigo (exportaciÃ³n y molinerÃ­a), 27,4 Mt de maÃ­z y 4,5 Mt entre cebada forrajera y cervecera, un total cercano a 52 Mt equivalente a unos US$20.000 millones de divisas. En soja, la industria aceitera acumula compras por 17,4 Mt (7,6 Mt a precio y 9,9 Mt a fijar), mientras los exportadores estÃ¡n cerca de cubrir sus DJVE; al 17 de junio ya se registraron 1,9 Mt de compras de trigo nuevo 2026/27, con el mercado forward en Â«carryÂ» entre la cosecha vieja y la nueva.',link:'https://www.lanacion.com.ar/economia/campo/agricultura/la-soja-se-consolida-como-reserva-de-valor-y-se-empieza-a-mover-el-trigo-202627-nid27062026/'},
-  {fecha:'2026-06-26',fuente:'Bolsa de Comercio de Rosario (BCR)',cultivo:'Trigo / Soja / MaÃ­z',titulo:'La siembra de trigo en la zona nÃºcleo entra en la recta final con 100.000 hectÃ¡reas fuera de la fecha Ã³ptima',resumen:'El Informe Semanal Zona NÃºcleo de la BCR ubicÃ³ la siembra de trigo en 87% del Ã¡rea, 2 p.p. por delante del aÃ±o pasado, con el sudeste de CÃ³rdoba y centro-sur de Santa Fe casi completos (97% y 95%). Las lluvias de la semana pasada demoraron el ingreso de maquinaria en el este de la regiÃ³n, dejando unas 100.000 ha que se sembrarÃ­an fuera de fecha Ã³ptima, mientras la relaciÃ³n soja/gramÃ­neas subirÃ­a a 1,14 en el ciclo 2026/27 desde 1,07 el aÃ±o anterior.',link:'https://www.bcr.com.ar/es/mercados/gea/seguimiento-de-cultivos/informe-semanal-zona-nucleo/por-cada-hectarea-de-soja-habra'},
-  {fecha:'2026-06-26',fuente:'Grassi Markets (Grassi S.A.)',cultivo:'Soja / MaÃ­z / Trigo',titulo:'USDA: el mercado espera mÃ¡s soja, menos maÃ­z y stocks mÃ¡s holgados en el informe de Ã¡rea sembrada y stocks trimestrales',resumen:'De cara al informe de Ãrea Sembrada y Stocks Trimestrales del USDA, los analistas proyectan para 2026/27 una superficie de soja de 34,5 millones de hectÃ¡reas (vs. 32,9 Mha en 2025/26) y stocks al 1 de junio en 28,5 Mt. En maÃ­z se espera una caÃ­da de Ã¡rea a 38,4 Mha pero stocks de 137,4 Mt (vs. 117,9 Mt el aÃ±o previo) por la cosecha rÃ©cord 2025/26, mientras el trigo mantendrÃ­a 17,7 Mha de Ã¡rea, 3% menos que el ciclo anterior, con stocks proyectados en 25,4 Mt.',link:'https://grassimarkets.grassisa.com.ar/2026/06/26/usda-el-mercado-espera-mas-soja-menos-maiz-y-stocks-mas-holgados/'},
-  {fecha:'2026-06-25',fuente:'Agrositio',cultivo:'Trigo / MaÃ­z / Soja',titulo:'Las labores de siembra y cosecha continÃºan demoradas por elevada humedad',resumen:'SegÃºn el Panorama AgrÃ­cola Semanal de la Bolsa de Cereales de Buenos Aires, la siembra de trigo 2026/27 avanzÃ³ 8,2 p.p. en la semana y cubre 65,8% de las 6,5 Mha proyectadas, con 99,5% del Ã¡rea en condiciÃ³n Normal a Excelente. La cosecha de soja llegÃ³ al 98% del Ã¡rea apta con rinde medio de 31,6 qq/ha, sosteniendo la proyecciÃ³n en 50,1 Mt, mientras la cosecha de maÃ­z alcanzÃ³ 51,2% del Ã¡rea apta (rinde 81,4 qq/ha), manteniÃ©ndose la estimaciÃ³n de producciÃ³n en 64 Mt pese a la demora por alta humedad en grano.',link:'https://www.agrositio.com.ar/noticia/247015-las-labores-de-siembra-y-cosecha-continuan-demoradas-por-elevada-humedad.html'},
-  {fecha:'2026-06-23',fuente:'Bichos de Campo',cultivo:'MaÃ­z',titulo:'MaÃ­z: las DJVE llegan a 20,1 millones de toneladas y los fondos agrÃ­colas giran a posiciones bajistas',resumen:'Las registraciones de exportaciÃ³n (DJVE) de maÃ­z argentino alcanzan 20,1 Mt sobre un total previsto de 44 Mt para el ciclo 2025/26, segÃºn la SecretarÃ­a de Agricultura. A nivel global, el USDA proyecta la oferta exportable de maÃ­z de Brasil en 43 Mt para 2025/26, por debajo de los 46,5 Mt estimados por Conab, mientras los fondos de inversiÃ³n agrÃ­cola comenzaron a tomar posiciones bajistas en Chicago tras el freno al proyecto de corte de bioetanol E15 en EE.UU.',link:'https://bichosdecampo.com/alerta-comercial-los-fondos-agricolas-comenzaron-a-realizar-apuestas-bajistas-en-maiz/'},
-  {fecha:'2026-06-23',fuente:'Bichos de Campo',cultivo:'MaÃ­z',titulo:'MaÃ­z: la UE-27 enfrenta una ola de calor que amenaza la cosecha y podrÃ­a forzar mayores importaciones',resumen:'El USDA estima las reservas de maÃ­z de la UniÃ³n Europea en 5,0 Mt para 2025/26, con una cosecha prevista de 57,5 Mt que dejarÃ­a un stock final de apenas 5,3 Mt en 2026/27. Una ola de calor extremo en Francia, principal productor del bloque, amenaza ese volumen y podrÃ­a llevar a la UE-27 -segundo importador mundial de maÃ­z tras MÃ©xico- a ampliar sus compras externas.',link:'https://bichosdecampo.com/el-maiz-se-derrumba-en-ee-uu-pero-esta-muy-firme-en-europa-por-que/'},
-  {fecha:'2026-06-22',fuente:'deCampoNoticias',cultivo:'Soja',titulo:'Soja: SudamÃ©rica logra una cosecha rÃ©cord y mira a Estados Unidos',resumen:'SegÃºn la Bolsa de Cereales de CÃ³rdoba, Brasil cerrÃ³ la cosecha 2025/26 de soja en 180,2 Mt (CONAB), un rÃ©cord que supera en 8,7 Mt al ciclo anterior; sumando a Argentina (cerca de 50 Mt) y el resto de la regiÃ³n, SudamÃ©rica alcanzarÃ­a una producciÃ³n conjunta rÃ©cord de 248,8 Mt, 9,7 Mt mÃ¡s que el ciclo previo. El USDA proyecta 34,3 Mha de soja en EE.UU. para 2026/27 (+4,5%), con el 95% ya sembrado al 15 de junio y una producciÃ³n estimada de 120,7 Mt, aunque el 25% del Ã¡rea presentaba sequÃ­a al 9 de junio, frente al 13% del aÃ±o anterior.',link:'https://www.decamponoticias.com/soja-sudamerica-y-estados-unidos/'}
+  {fecha:'2026-06-27',fuente:'LA NACION',cultivo:'Trigo / Maíz / Soja',titulo:'La NOAA confirma la instalación oficial de El Niño y prevé 63% de probabilidad de que sea muy fuerte entre noviembre y enero',resumen:'La NOAA declaró que ya se cumplen las condiciones de un evento El Niño en el Pacífico ecuatorial y proyectó un 63% de probabilidad de que se intensifique a categoría «muy fuerte» entre noviembre y enero, lo que lo posicionaría entre los más importantes desde 1950. En la Argentina el impacto fuerte llegaría a partir de la primavera: el NEA empezaría a sentir mayores lluvias desde septiembre, mientras que en Buenos Aires, La Pampa y Córdoba el efecto se notaría recién entre octubre y noviembre, según el meteorólogo Leonardo de Benedictis.',link:'https://www.lanacion.com.ar/economia/campo/la-temperatura-del-oceano-pacifico-ya-alcanzo-un-nivel-compatible-con-el-nino-nid27062026/'},
+  {fecha:'2026-06-27',fuente:'LA NACION',cultivo:'Trigo / Maíz / Soja',titulo:'La soja se consolida como reserva de valor mientras se acelera la comercialización de trigo, maíz y cebada',resumen:'Según el informe de compras y ventas de la Secretaría de Agricultura, los productores ya vendieron 19,2 Mt de trigo (exportación y molinería), 27,4 Mt de maíz y 4,5 Mt entre cebada forrajera y cervecera, un total cercano a 52 Mt equivalente a unos US$20.000 millones de divisas. En soja, la industria aceitera acumula compras por 17,4 Mt (7,6 Mt a precio y 9,9 Mt a fijar), mientras los exportadores están cerca de cubrir sus DJVE; al 17 de junio ya se registraron 1,9 Mt de compras de trigo nuevo 2026/27, con el mercado forward en «carry» entre la cosecha vieja y la nueva.',link:'https://www.lanacion.com.ar/economia/campo/agricultura/la-soja-se-consolida-como-reserva-de-valor-y-se-empieza-a-mover-el-trigo-202627-nid27062026/'},
+  {fecha:'2026-06-26',fuente:'Bolsa de Comercio de Rosario (BCR)',cultivo:'Trigo / Soja / Maíz',titulo:'La siembra de trigo en la zona núcleo entra en la recta final con 100.000 hectáreas fuera de la fecha óptima',resumen:'El Informe Semanal Zona Núcleo de la BCR ubicó la siembra de trigo en 87% del área, 2 p.p. por delante del año pasado, con el sudeste de Córdoba y centro-sur de Santa Fe casi completos (97% y 95%). Las lluvias de la semana pasada demoraron el ingreso de maquinaria en el este de la región, dejando unas 100.000 ha que se sembrarían fuera de fecha óptima, mientras la relación soja/gramíneas subiría a 1,14 en el ciclo 2026/27 desde 1,07 el año anterior.',link:'https://www.bcr.com.ar/es/mercados/gea/seguimiento-de-cultivos/informe-semanal-zona-nucleo/por-cada-hectarea-de-soja-habra'},
+  {fecha:'2026-06-26',fuente:'Grassi Markets (Grassi S.A.)',cultivo:'Soja / Maíz / Trigo',titulo:'USDA: el mercado espera más soja, menos maíz y stocks más holgados en el informe de área sembrada y stocks trimestrales',resumen:'De cara al informe de Área Sembrada y Stocks Trimestrales del USDA, los analistas proyectan para 2026/27 una superficie de soja de 34,5 millones de hectáreas (vs. 32,9 Mha en 2025/26) y stocks al 1 de junio en 28,5 Mt. En maíz se espera una caída de área a 38,4 Mha pero stocks de 137,4 Mt (vs. 117,9 Mt el año previo) por la cosecha récord 2025/26, mientras el trigo mantendría 17,7 Mha de área, 3% menos que el ciclo anterior, con stocks proyectados en 25,4 Mt.',link:'https://grassimarkets.grassisa.com.ar/2026/06/26/usda-el-mercado-espera-mas-soja-menos-maiz-y-stocks-mas-holgados/'},
+  {fecha:'2026-06-25',fuente:'Agrositio',cultivo:'Trigo / Maíz / Soja',titulo:'Las labores de siembra y cosecha continúan demoradas por elevada humedad',resumen:'Según el Panorama Agrícola Semanal de la Bolsa de Cereales de Buenos Aires, la siembra de trigo 2026/27 avanzó 8,2 p.p. en la semana y cubre 65,8% de las 6,5 Mha proyectadas, con 99,5% del área en condición Normal a Excelente. La cosecha de soja llegó al 98% del área apta con rinde medio de 31,6 qq/ha, sosteniendo la proyección en 50,1 Mt, mientras la cosecha de maíz alcanzó 51,2% del área apta (rinde 81,4 qq/ha), manteniéndose la estimación de producción en 64 Mt pese a la demora por alta humedad en grano.',link:'https://www.agrositio.com.ar/noticia/247015-las-labores-de-siembra-y-cosecha-continuan-demoradas-por-elevada-humedad.html'},
+  {fecha:'2026-06-23',fuente:'Bichos de Campo',cultivo:'Maíz',titulo:'Maíz: las DJVE llegan a 20,1 millones de toneladas y los fondos agrícolas giran a posiciones bajistas',resumen:'Las registraciones de exportación (DJVE) de maíz argentino alcanzan 20,1 Mt sobre un total previsto de 44 Mt para el ciclo 2025/26, según la Secretaría de Agricultura. A nivel global, el USDA proyecta la oferta exportable de maíz de Brasil en 43 Mt para 2025/26, por debajo de los 46,5 Mt estimados por Conab, mientras los fondos de inversión agrícola comenzaron a tomar posiciones bajistas en Chicago tras el freno al proyecto de corte de bioetanol E15 en EE.UU.',link:'https://bichosdecampo.com/alerta-comercial-los-fondos-agricolas-comenzaron-a-realizar-apuestas-bajistas-en-maiz/'},
+  {fecha:'2026-06-23',fuente:'Bichos de Campo',cultivo:'Maíz',titulo:'Maíz: la UE-27 enfrenta una ola de calor que amenaza la cosecha y podría forzar mayores importaciones',resumen:'El USDA estima las reservas de maíz de la Unión Europea en 5,0 Mt para 2025/26, con una cosecha prevista de 57,5 Mt que dejaría un stock final de apenas 5,3 Mt en 2026/27. Una ola de calor extremo en Francia, principal productor del bloque, amenaza ese volumen y podría llevar a la UE-27 -segundo importador mundial de maíz tras México- a ampliar sus compras externas.',link:'https://bichosdecampo.com/el-maiz-se-derrumba-en-ee-uu-pero-esta-muy-firme-en-europa-por-que/'},
+  {fecha:'2026-06-22',fuente:'deCampoNoticias',cultivo:'Soja',titulo:'Soja: Sudamérica logra una cosecha récord y mira a Estados Unidos',resumen:'Según la Bolsa de Cereales de Córdoba, Brasil cerró la cosecha 2025/26 de soja en 180,2 Mt (CONAB), un récord que supera en 8,7 Mt al ciclo anterior; sumando a Argentina (cerca de 50 Mt) y el resto de la región, Sudamérica alcanzaría una producción conjunta récord de 248,8 Mt, 9,7 Mt más que el ciclo previo. El USDA proyecta 34,3 Mha de soja en EE.UU. para 2026/27 (+4,5%), con el 95% ya sembrado al 15 de junio y una producción estimada de 120,7 Mt, aunque el 25% del área presentaba sequía al 9 de junio, frente al 13% del año anterior.',link:'https://www.decamponoticias.com/soja-sudamerica-y-estados-unidos/'}
 ];
-/* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 let newsCurrentFilter = 'todos';
 
@@ -2291,7 +2291,7 @@ function newsRender() {
   if (countEl) countEl.textContent = items.length + ' nota' + (items.length !== 1 ? 's' : '');
 
   if (items.length === 0) {
-    container.innerHTML = '<div class="news-empty"><div class="icon">ð¿</div><p>No hay noticias para el filtro seleccionado.</p></div>';
+    container.innerHTML = '<div class="news-empty"><div class="icon">🌿</div><p>No hay noticias para el filtro seleccionado.</p></div>';
     return;
   }
 
@@ -2301,16 +2301,16 @@ function newsRender() {
   items.forEach(function(n) {
     var colorClass = n.cultivo.indexOf('/') >= 0 ? 'c-multi'
       : n.cultivo.toLowerCase().indexOf('trigo') >= 0 ? 'c-trigo'
-      : (n.cultivo.toLowerCase().indexOf('maÃ­z') >= 0 || n.cultivo.toLowerCase().indexOf('maiz') >= 0) ? 'c-maiz'
+      : (n.cultivo.toLowerCase().indexOf('maíz') >= 0 || n.cultivo.toLowerCase().indexOf('maiz') >= 0) ? 'c-maiz'
       : n.cultivo.toLowerCase().indexOf('soja') >= 0 ? 'c-soja' : '';
 
     var tagClass = n.cultivo.indexOf('/') >= 0 ? 'ntag-multi'
       : n.cultivo.toLowerCase().indexOf('trigo') >= 0 ? 'ntag-trigo'
-      : (n.cultivo.toLowerCase().indexOf('maÃ­z') >= 0 || n.cultivo.toLowerCase().indexOf('maiz') >= 0) ? 'ntag-maiz'
+      : (n.cultivo.toLowerCase().indexOf('maíz') >= 0 || n.cultivo.toLowerCase().indexOf('maiz') >= 0) ? 'ntag-maiz'
       : n.cultivo.toLowerCase().indexOf('soja') >= 0 ? 'ntag-soja' : 'ntag-gen';
 
     var daysAgo = Math.floor((new Date() - new Date(n.fecha)) / 86400000);
-    var age = daysAgo === 0 ? 'Hoy' : daysAgo === 1 ? 'Ayer' : 'Hace ' + daysAgo + ' dÃ­as';
+    var age = daysAgo === 0 ? 'Hoy' : daysAgo === 1 ? 'Ayer' : 'Hace ' + daysAgo + ' días';
     var isFresh = daysAgo <= 1;
 
     if (n.fecha !== lastDate) {
@@ -2320,7 +2320,7 @@ function newsRender() {
       lastDate = n.fecha;
     }
 
-    var resumen = n.resumen.length > 220 ? n.resumen.slice(0, 220).replace(/\s\S+$/, '') + 'â¦' : n.resumen;
+    var resumen = n.resumen.length > 220 ? n.resumen.slice(0, 220).replace(/\s\S+$/, '') + '…' : n.resumen;
 
     html += '<div class="news-card ' + colorClass + '">'
       + '<div class="card-meta">'
@@ -2331,7 +2331,7 @@ function newsRender() {
       + '</div>'
       + '<div class="card-titulo">' + n.titulo + '</div>'
       + '<div class="card-resumen">' + resumen + '</div>'
-      + '<div class="card-footer"><a class="btn-ver-nota" href="' + n.link + '" target="_blank" rel="noopener">Ver nota â</a></div>'
+      + '<div class="card-footer"><a class="btn-ver-nota" href="' + n.link + '" target="_blank" rel="noopener">Ver nota →</a></div>'
       + '</div>';
   });
 
@@ -2352,7 +2352,7 @@ function newsRender() {
     gate.id='landing-gate';
     gate.innerHTML=`<div class="lg-gemini bg-agro-light text-agro-text antialiased" style="font-family:'Inter',sans-serif;">
 
-      <!-- NAVEGACIÃN (HEADER) -->
+      <!-- NAVEGACIÓN (HEADER) -->
       <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between h-20 items-center">
@@ -2376,14 +2376,14 @@ function newsRender() {
             <i class="fa-solid fa-chart-line mr-2"></i> Inteligencia de Mercados y Finanzas
           </div>
           <h1 class="text-4xl md:text-6xl font-bold text-agro-dark leading-tight mb-6">
-            TomÃ¡ mejores decisiones comerciales para tu agroempresa.
+            Tomá mejores decisiones comerciales para tu agroempresa.
           </h1>
           <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-            AnÃ¡lisis de coyuntura, estrategias de comercializaciÃ³n de granos y finanzas aplicadas al sector agropecuario, directo al grano.
+            Análisis de coyuntura, estrategias de comercialización de granos y finanzas aplicadas al sector agropecuario, directo al grano.
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="#ultimo-informe" class="bg-agro-green hover:bg-green-600 text-white px-8 py-3.5 rounded-lg font-bold text-lg shadow-lg shadow-green-200 transition-all hover:-translate-y-1">
-              Ver Ãltimo Informe
+              Ver Último Informe
             </a>
             <a href="${L.whatsappGrupo||'#'}" target="_blank" rel="noopener" class="bg-white hover:bg-gray-50 border-2 border-gray-200 text-agro-dark px-8 py-3.5 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all hover:-translate-y-1">
               <i class="fa-brands fa-whatsapp text-green-500 text-xl"></i> Unirme al Grupo
@@ -2392,18 +2392,18 @@ function newsRender() {
         </div>
       </section>
 
-      <!-- SECCIÃN 1: ÃLTIMO INFORME -->
+      <!-- SECCIÓN 1: ÚLTIMO INFORME -->
       <section id="ultimo-informe" class="py-16 bg-white border-y border-gray-100">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 class="text-3xl font-bold text-agro-dark mb-4">AccedÃ© al Ãºltimo informe</h2>
-          <p class="text-gray-600 mb-10">DescargÃ¡ el anÃ¡lisis de esta semana o escuchÃ¡ el resumen en audio mientras viajÃ¡s.</p>
+          <h2 class="text-3xl font-bold text-agro-dark mb-4">Accedé al último informe</h2>
+          <p class="text-gray-600 mb-10">Descargá el análisis de esta semana o escuchá el resumen en audio mientras viajás.</p>
           <div class="grid sm:grid-cols-2 gap-6">
             <div class="bg-gray-50 rounded-xl p-8 border border-gray-200 hover:border-agro-green transition-colors group">
               <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-file-pdf text-2xl"></i>
               </div>
               <h3 class="text-xl font-bold text-agro-dark mb-2">Informe en PDF</h3>
-              <p class="text-sm text-gray-500 mb-6">GrÃ¡ficos, tendencias de soja, maÃ­z, trigo y matriz de decisiÃ³n financiera.</p>
+              <p class="text-sm text-gray-500 mb-6">Gráficos, tendencias de soja, maíz, trigo y matriz de decisión financiera.</p>
               <a href="${L.informe||'#'}" target="_blank" rel="noopener" class="block w-full bg-agro-dark text-white py-2.5 rounded-lg font-semibold hover:bg-slate-700 transition-colors">
                 Descargar PDF
               </a>
@@ -2413,7 +2413,7 @@ function newsRender() {
                 <i class="fa-solid fa-headphones text-2xl"></i>
               </div>
               <h3 class="text-xl font-bold text-agro-dark mb-2">Resumen en Audio</h3>
-              <p class="text-sm text-gray-500 mb-6">EscuchÃ¡ el anÃ¡lisis directo de David Miazzo. Ideal para la camioneta.</p>
+              <p class="text-sm text-gray-500 mb-6">Escuchá el análisis directo de David Miazzo. Ideal para la camioneta.</p>
               <a href="${L.audio||'#'}" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 w-full bg-white border-2 border-agro-dark text-agro-dark py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
                 <i class="fa-solid fa-play"></i> Reproducir Audio
               </a>
@@ -2422,21 +2422,21 @@ function newsRender() {
         </div>
       </section>
 
-      <!-- SECCIÃN 2: COMUNIDAD WHATSAPP -->
+      <!-- SECCIÓN 2: COMUNIDAD WHATSAPP -->
       <section id="comunidad" class="py-20 bg-agro-green">
         <div class="max-w-4xl mx-auto px-4 text-center">
           <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
             <i class="fa-brands fa-whatsapp text-4xl text-agro-green"></i>
           </div>
-          <h2 class="text-3xl font-bold text-white mb-6">RecibÃ­ el informe gratis en tu celular</h2>
-          <p class="text-green-100 text-lg mb-8 max-w-2xl mx-auto">Sumate a nuestra lista de difusiÃ³n en WhatsApp. Te enviamos el informe apenas sale, sin spam, directo al grano.</p>
+          <h2 class="text-3xl font-bold text-white mb-6">Recibí el informe gratis en tu celular</h2>
+          <p class="text-green-100 text-lg mb-8 max-w-2xl mx-auto">Sumate a nuestra lista de difusión en WhatsApp. Te enviamos el informe apenas sale, sin spam, directo al grano.</p>
           <a href="${L.whatsappGrupo||'#'}" target="_blank" rel="noopener" class="inline-block bg-white text-agro-green font-bold text-lg px-10 py-4 rounded-full shadow-lg hover:bg-gray-50 hover:scale-105 transition-all">
             Unirme al grupo ahora
           </a>
         </div>
       </section>
 
-      <!-- SECCIÃN 3: EL DASHBOARD -->
+      <!-- SECCIÓN 3: EL DASHBOARD -->
       <section class="py-20 bg-agro-dark relative overflow-hidden">
         <div class="absolute top-0 right-0 w-1/2 h-full bg-slate-800 skew-x-12 translate-x-32 opacity-20"></div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center gap-12">
@@ -2448,15 +2448,15 @@ function newsRender() {
             <ul class="space-y-4 mb-8 text-slate-300">
               <li class="flex items-start gap-3">
                 <i class="fa-solid fa-check text-agro-green mt-1"></i>
-                <span>Curvas de precios en tiempo real (Soja, MaÃ­z, Trigo).</span>
+                <span>Curvas de precios en tiempo real (Soja, Maíz, Trigo).</span>
               </li>
               <li class="flex items-start gap-3">
                 <i class="fa-solid fa-check text-agro-green mt-1"></i>
-                <span>Matriz de decisiÃ³n y comparativas de futuros.</span>
+                <span>Matriz de decisión y comparativas de futuros.</span>
               </li>
               <li class="flex items-start gap-3">
                 <i class="fa-solid fa-check text-agro-green mt-1"></i>
-                <span>Opciones financieras y estacionamiento histÃ³rico.</span>
+                <span>Opciones financieras y estacionamiento histórico.</span>
               </li>
             </ul>
             <div class="flex items-center gap-4">
@@ -2477,12 +2477,12 @@ function newsRender() {
               <div class="bg-slate-50 p-4">
                 <div class="flex gap-1.5 flex-wrap mb-3 text-xs">
                   <span class="text-slate-500 px-2.5 py-1.5">Futuros Soja</span>
-                  <span class="text-slate-500 px-2.5 py-1.5">Futuros MaÃ­z</span>
+                  <span class="text-slate-500 px-2.5 py-1.5">Futuros Maíz</span>
                   <span class="text-slate-500 px-2.5 py-1.5">Futuros Trigo</span>
                   <span class="bg-agro-green text-white px-2.5 py-1.5 rounded-md font-semibold">Estrategia</span>
-                  <span class="text-slate-500 px-2.5 py-1.5">Futuros DÃ³lar</span>
+                  <span class="text-slate-500 px-2.5 py-1.5">Futuros Dólar</span>
                   <span class="text-slate-500 px-2.5 py-1.5">LECAPs</span>
-                  <span class="text-slate-500 px-2.5 py-1.5">Matriz de decisiÃ³n</span>
+                  <span class="text-slate-500 px-2.5 py-1.5">Matriz de decisión</span>
                 </div>
                 <div class="flex gap-2 mb-3">
                   <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 flex-1">
@@ -2498,7 +2498,7 @@ function newsRender() {
                     <p class="text-sm font-semibold text-agro-dark">419,00</p>
                   </div>
                   <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 flex-1">
-                    <p class="text-[10px] text-slate-400 mb-0.5">FAS TEÃRICO</p>
+                    <p class="text-[10px] text-slate-400 mb-0.5">FAS TEÓRICO</p>
                     <p class="text-sm font-semibold text-agro-dark">326,50</p>
                   </div>
                 </div>
@@ -2529,12 +2529,12 @@ function newsRender() {
         </div>
       </section>
 
-      <!-- SECCIÃN 4: ASESORAMIENTO -->
+      <!-- SECCIÓN 4: ASESORAMIENTO -->
       <section id="asesoramiento" class="py-20 bg-gray-50 border-t border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="text-center max-w-3xl mx-auto mb-16">
             <h2 class="text-3xl font-bold text-agro-dark mb-4">Planes de Asesoramiento</h2>
-            <p class="text-gray-600">Llevamos la estrategia a los nÃºmeros reales de tu empresa. Trabajamos mediante reuniones mensuales y seguimiento al dÃ­a.</p>
+            <p class="text-gray-600">Llevamos la estrategia a los números reales de tu empresa. Trabajamos mediante reuniones mensuales y seguimiento al día.</p>
           </div>
           <div class="grid md:grid-cols-3 gap-8 mb-12">
             <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-xl shadow-gray-200/50 relative overflow-hidden">
@@ -2542,37 +2542,37 @@ function newsRender() {
               <h3 class="text-xl font-bold text-agro-dark mb-4 mt-2">Empresas Agro</h3>
               <p class="text-sm text-gray-500 mb-6 font-medium">Acopios, Industrias, Maquinaria.</p>
               <ul class="space-y-3 mb-8 text-sm text-gray-600">
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> PlanificaciÃ³n estratÃ©gica</li>
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Manejo de tesorerÃ­a</li>
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Planificación estratégica</li>
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Manejo de tesorería</li>
                 <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Alternativas de financiamiento</li>
               </ul>
             </div>
             <div class="bg-agro-dark rounded-2xl p-8 border border-slate-700 shadow-2xl relative transform md:-translate-y-4">
               <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-agro-green text-white text-xs font-bold uppercase tracking-wider py-1 px-4 rounded-full">
-                MÃ¡s Elegido
+                Más Elegido
               </div>
               <h3 class="text-xl font-bold text-white mb-4 mt-2">Productores</h3>
               <p class="text-sm text-slate-300 mb-6 font-medium">Productores agropecuarios directos.</p>
               <ul class="space-y-3 mb-8 text-sm text-slate-300">
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> DefiniciÃ³n de estrategia comercial</li>
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> AnÃ¡lisis de mÃ¡rgenes</li>
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> PlanificaciÃ³n de compra de insumos</li>
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Definición de estrategia comercial</li>
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Análisis de márgenes</li>
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Planificación de compra de insumos</li>
               </ul>
             </div>
             <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-xl shadow-gray-200/50 relative overflow-hidden">
               <div class="h-2 w-full bg-blue-500 absolute top-0 left-0"></div>
-              <h3 class="text-xl font-bold text-agro-dark mb-4 mt-2">DueÃ±os de Campo</h3>
+              <h3 class="text-xl font-bold text-agro-dark mb-4 mt-2">Dueños de Campo</h3>
               <p class="text-sm text-gray-500 mb-6 font-medium">Propietarios que alquilan su tierra.</p>
               <ul class="space-y-3 mb-8 text-sm text-gray-600">
                 <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Estrategias de cobro</li>
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> InversiÃ³n de liquidez</li>
+                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Inversión de liquidez</li>
                 <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Mejora de eficiencia financiera</li>
               </ul>
             </div>
           </div>
           <div class="text-center">
             <a href="${L.whatsapp||'#'}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-agro-dark text-white px-8 py-3.5 rounded-lg font-bold hover:bg-slate-700 transition-colors">
-              Consultar por planes vÃ­a WhatsApp <i class="fa-brands fa-whatsapp text-xl text-green-400"></i>
+              Consultar por planes vía WhatsApp <i class="fa-brands fa-whatsapp text-xl text-green-400"></i>
             </a>
           </div>
         </div>
@@ -2586,13 +2586,13 @@ function newsRender() {
             <img src="logo-depetris.jpg" alt="Grupo Depetris" class="h-12 w-auto">
           </div>
           <p class="text-sm text-gray-500 max-w-md mx-auto mb-12">
-            Grandes en servicio. Soluciones integradas. Relaciones sÃ³lidas.
-            <br>Acopio, insumos, financiaciÃ³n y logÃ­stica.
+            Grandes en servicio. Soluciones integradas. Relaciones sólidas.
+            <br>Acopio, insumos, financiación y logística.
           </p>
           <div class="border-t border-gray-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-2">
               <span class="font-bold text-agro-dark tracking-tighter">DATA MIAZZO</span>
-              <span class="text-xs text-gray-400">Â© 2026. Todos los derechos reservados.</span>
+              <span class="text-xs text-gray-400">© 2026. Todos los derechos reservados.</span>
             </div>
             <div class="flex gap-4">
               <a href="mailto:datamiazzo@gmail.com" class="text-gray-400 hover:text-agro-dark"><i class="fa-regular fa-envelope"></i> datamiazzo@gmail.com</a>
@@ -2621,7 +2621,7 @@ function newsRender() {
     });
     netlifyIdentity.init();
   } else {
-    // Netlify Identity no disponible (ej. entorno local) â no bloquear el acceso
+    // Netlify Identity no disponible (ej. entorno local) — no bloquear el acceso
     window._initDeviceFlow&&window._initDeviceFlow();
   }
 })();
