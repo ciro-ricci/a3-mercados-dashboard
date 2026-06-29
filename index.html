@@ -1428,7 +1428,7 @@ function _renderFutPanel(panelId){
   const hasSpread=!!refVenc;
   const cKey=panelId.startsWith('soj')?'soja':panelId.startsWith('mai')?'maiz':panelId.startsWith('tri')?'trigo':null;
   const _customArs=window._customSpotArs&&window._customSpotArs[panelId];
-  const _spotUsd=_customArs&&SPOT&&SPOT.tc?_customArs/SPOT.tc:(cKey&&SPOT)?(SPOT[cKey+'_usd']||(SPOT.tc&&SPOT[cKey+'_ars']?SPOT[cKey+'_ars']/SPOT.tc:null)):null;
+  const _spotUsd=_customArs&&SPOT&&SPOT.tc?_customArs/SPOT.tc:(cKey&&SPOT)?((SPOT.tc&&SPOT[cKey+'_ars'])?SPOT[cKey+'_ars']/SPOT.tc:SPOT[cKey+'_usd']):null;
   const _isDispRef=refVenc==='Disp.';
   const _isDlr=(panelId==='dlr-fut');
   const _oficialUsd=_isDlr&&DOLLAR_RATES?(()=>{const r=DOLLAR_RATES.find(d=>d.tipo.toLowerCase().includes('oficial'));return r&&r.venta?parseFloat(r.venta):null;})():null;
@@ -1983,7 +1983,7 @@ function _finGetVAUsd(cult){
   const customArs=window._customSpotArs&&window._customSpotArs[panelId];
   if(customArs&&SPOT&&SPOT.tc)return customArs/SPOT.tc;
   if(!SPOT)return null;
-  return SPOT[cultKey+'_usd']||(SPOT.tc&&SPOT[cultKey+'_ars']?SPOT[cultKey+'_ars']/SPOT.tc:null);
+  return (SPOT.tc&&SPOT[cultKey+'_ars'])?SPOT[cultKey+'_ars']/SPOT.tc:SPOT[cultKey+'_usd'];
 }
 function _finFindDollarFut(vencDisplay){
   // Match exacto por mes/año: JUL26 → 07/2026, SEP26 → 09/2026, etc.
