@@ -317,7 +317,7 @@ canvas { max-height: 100%; }
 <div class="header">
   <div>
     <h1 style="display:flex;align-items:center;gap:14px;text-transform:uppercase;">Estrategias al grano<span style="display:inline-block;width:1px;height:22px;background:rgba(255,255,255,0.3);"></span><img src="logo-data-miazzo-white.png" alt="Data Miazzo" style="height:24px;"></h1>
-    <div class="fecha">Datos al 23-4-2026 &nbsp;·&nbsp; Fuente: A3 Info / MatbaRofex</div>
+    <div class="fecha">Cargando datos…</div>
   </div>
   <div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
@@ -1080,6 +1080,7 @@ async function loadSpotData(){
   }
   if(!SPOT&&prev)SPOT=prev; // si todo falla, mantener el último valor conocido
   if(SPOT&&typeof BCRA_TC_OVERRIDE==='number'&&BCRA_TC_OVERRIDE>0)SPOT.tc=BCRA_TC_OVERRIDE; // pisar solo TC Mayorista con dato oficial BCRA
+  if(SPOT&&SPOT.fecha){const fechaEl=document.querySelector('.header .fecha');if(fechaEl)fechaEl.textContent='Datos al '+SPOT.fecha+' \u00b7 Fuente: A3 Info / MatbaRofex';}
 }
 if(!window._customSpotArs)window._customSpotArs={};
 window._setCustomSpotArs=function(panelId,val){
