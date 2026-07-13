@@ -321,7 +321,7 @@ canvas { max-height: 100%; }
   </div>
   <div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-      <button onclick="DOLLAR_RATES=null;a3DataLoaded=false;lecapData=null;lecapLoading=false;SPOT=null;loadAndInitA3();loadLecapPanel();" style="padding:8px 18px;border:1.5px solid rgba(255,255,255,0.25);border-radius:8px;background:transparent;color:white;font-size:0.82rem;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">🔄 Actualizar datos</button>
+      <button onclick="window.open('https://estrategiasfinancieras.com.ar','_blank')" style="padding:8px 18px;border:1.5px solid rgba(255,255,255,0.25);border-radius:8px;background:transparent;color:white;font-size:0.82rem;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='transparent'">📊 Estrategias Financieras</button>
       <span id="chicago-status" style="font-size:0.68rem;opacity:0.6;color:white"></span>
       <button onclick="localStorage.removeItem('a3_device_mode');window.a3DeviceMode=null;showSplash();" style="padding:4px 10px;border:1px solid rgba(255,255,255,0.15);border-radius:6px;background:transparent;color:rgba(255,255,255,0.35);font-size:0.65rem;cursor:pointer;" title="Cambiar tipo de dispositivo">📱/💻 cambiar vista</button>
     </div>
