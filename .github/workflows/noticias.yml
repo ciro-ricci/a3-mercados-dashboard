@@ -1,4 +1,4 @@
-name: Actualizar noticias agro (RSS)
+name: Actualizar noticias y dolar BCRA (RSS + API oficial)
 
 on:
   schedule:
@@ -21,19 +21,22 @@ jobs:
           python-version: '3.11'
 
       - name: Instalar dependencias
-        run: pip install feedparser
+        run: pip install feedparser requests
 
       - name: Actualizar noticias.html
         run: python scripts/update_noticias.py
+
+      - name: Actualizar dolar BCRA (Comunicacion A 3500)
+        run: python scripts/update_bcra.py
 
       - name: Commit y push si hay cambios
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet -- noticias.html; then
-            git add noticias.html
-            git commit -m "Actualizacion automatica de noticias (RSS) - $(date -u +%Y-%m-%d)"
+          if ! git diff --quiet -- noticias.html index.html; then
+            git add noticias.html index.html
+            git commit -m "Actualizacion automatica: noticias (RSS) + dolar BCRA A3500 - $(date -u +%Y-%m-%d)"
             git push
           else
-            echo "Sin cambios en noticias.html"
+            echo "Sin cambios"
           fi
