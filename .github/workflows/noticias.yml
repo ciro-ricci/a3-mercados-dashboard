@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   update-noticias:
@@ -29,6 +30,47 @@ jobs:
       - name: Actualizar dolar BCRA (Comunicacion A 3500)
         run: python scripts/update_bcra.py
 
+      - name: Verificar que los datos no quedaron viejos
+        run: |
+          python3 - <<'EOF'
+          import re, sys
+          from datetime import datetime, timezone
+
+          MAX_STALE_DAYS = 3
+          today = datetime.now(timezone.utc).date()
+          problemas = []
+
+          with open("noticias.html", encoding="utf-8") as f:
+              t = f.read()
+          m = re.search(r"Última actualización: (\d{4}-\d{2}-\d{2})", t)
+          if not m:
+              problemas.append("No se encontró la fecha de última actualización en noticias.html")
+          else:
+              fecha = datetime.strptime(m.group(1), "%Y-%m-%d").date()
+              dias = (today - fecha).days
+              if dias > MAX_STALE_DAYS:
+                  problemas.append(f"noticias.html no se actualiza hace {dias} dias (ultima fecha: {fecha})")
+
+          with open("index.html", encoding="utf-8") as f:
+              t = f.read()
+          m = re.search(r"Última actualización: (\d{4}-\d{2}-\d{2})", t)
+          if not m:
+              problemas.append("No se encontró la fecha de última actualización del BCRA en index.html")
+          else:
+              fecha = datetime.strptime(m.group(1), "%Y-%m-%d").date()
+              dias = (today - fecha).days
+              if dias > MAX_STALE_DAYS:
+                  problemas.append(f"BCRA_TC_OVERRIDE no se actualiza hace {dias} dias (ultima fecha: {fecha})")
+
+          if problemas:
+              print("PROBLEMAS DETECTADOS:")
+              for p in problemas:
+                  print(" -", p)
+              sys.exit(1)
+
+          print("OK: noticias y dolar BCRA estan al dia.")
+          EOF
+
       - name: Commit y push si hay cambios
         run: |
           git config user.name "github-actions[bot]"
@@ -40,3 +82,12 @@ jobs:
           else
             echo "Sin cambios"
           fi
+
+      - name: Crear issue si algo fallo
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "Fallo la actualizacion automatica (noticias/BCRA) - $(date -u +%Y-%m-%d)" \
+            --body "El workflow **${{ github.workflow }}** fallo. Ver el log completo aca: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
