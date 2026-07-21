@@ -1,0 +1,39 @@
+name: Actualizar noticias agro (RSS)
+
+on:
+  schedule:
+    - cron: '30 10 * * *'   # 07:30 Argentina (UTC-3)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update-noticias:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install feedparser
+
+      - name: Actualizar noticias.html
+        run: python scripts/update_noticias.py
+
+      - name: Commit y push si hay cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- noticias.html; then
+            git add noticias.html
+            git commit -m "Actualizacion automatica de noticias (RSS) - $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "Sin cambios en noticias.html"
+          fi
