@@ -395,9 +395,9 @@ window.LANDING_LINKS = {
    BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
    oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
    valores (oficial, CCL, soja/maíz/trigo, etc.) siguen viniendo de la sheet.
-   Última actualización: 2026-07-21
+   Última actualización: 2026-07-23
    ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
-const BCRA_TC_OVERRIDE = 1477.7;
+const BCRA_TC_OVERRIDE = 1480.8616;
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 // Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
 const PIZARRA_SOJ_2025={
@@ -2271,10 +2271,13 @@ window._initDeviceFlow=function(){
 /* ═══════════════════════════════════════════════════════════════════════
    NEWS_DATA — Claude actualiza este bloque cada vez que corre el scraping.
    Las noticias con más de 7 días son eliminadas automáticamente del array.
-   Última actualización: 2026-07-22
+   Última actualización: 2026-07-23
    ═══════════════════════════════════════════════════════════════════════ */
 const NEWS_DATA = [
+  {fecha:'2026-07-23',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Se está llevando a cabo una prueba piloto para armar el primer “mapa de calidad de soja” de la Argentina',resumen:'Las autoridades de la Secretaría de Agricultura comenzaron a instrumentar la metodología para armar un “mapa de calidad de soja” que permita identificar los valores promedio de humedad, proteína y materia grasa en cada una de las regiones productivas. En ese marco, se realizó este miércoles una reunión de trabajo en la Exposición Rural de […]',link:'https://bichosdecampo.com/se-esta-llevando-a-cabo-una-prueba-piloto-para-armar-el-primer-mapa-de-calidad-de-soja-de-la-argentina/'},
   {fecha:'2026-07-22',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Cambio de época: En lo que va del año el superávit comercial del sector energético equivalente al 75% del saldo generado por la soja',resumen:'El estancamiento del sector sojero argentino –producto de una elevada presión impositiva– contrasta cada vez más con el impulsdo que está tomando la producción de hidrocarburos. En el primer semestre de 2026 la balanza comercial de los principales productos derivados de la soja registró un superávit de 6706 millones de dólares, una cifra 2,1% inferior […]',link:'https://bichosdecampo.com/cambio-de-epoca-en-lo-que-va-del-ano-el-superavit-comercial-del-sector-energetico-equivalente-al-75-del-saldo-generado-por-la-soja/'},
+  {fecha:'2026-07-22',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Poroto devaluado: El precio de la soja volvió a superar los 500.000 $/tonelada ¡luego de seis meses!',resumen:'Luego de seis meses, el precio de la soja Rosario disponible volvió a superar los 500.000 $/tonelada de la mano de una recuperación del valor internacional de la oleaginosa. Este miércoles el precio de referencia de la Soja Rosario disponible en A3 Mercados terminó en un promedio de 510.000 $/tonelada, cifra equivalente a 345 u$s/tonelada. […]',link:'https://bichosdecampo.com/poroto-devaluado-el-precio-de-la-soja-volvio-a-superar-los-500-000-tonelada-luego-de-seis-meses/'},
+  {fecha:'2026-07-22',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Histórico: Buscando abastecer a la industria con materia prima de calidad, Argentina importó por primera vez trigo desde… Paraguay',resumen:'Por primera vez en la historia del comercio bilateral, Paraguay le vendió trigo a la Argentina. El dato podría pasar inadvertido en medio de una planilla de exportaciones, pero tiene un peso simbólico enorme, ya que la Argentina es uno de los grandes productores y exportadores de trigo del mundo, mientras que Paraguay, condicionado por […]',link:'https://bichosdecampo.com/historico-buscando-abastecer-a-la-industria-con-materia-prima-de-calidad-argentina-importo-por-primera-vez-trigo-desde-paraguay/'},
   {fecha:'2026-07-21',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 21 julio 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-21-julio-2026/'},
   {fecha:'2026-07-21',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 21 julio 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-21-julio-2026/'},
   {fecha:'2026-07-21',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 21 julio 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-21-julio-2026/'},
