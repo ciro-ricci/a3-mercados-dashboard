@@ -339,6 +339,7 @@ canvas { max-height: 100%; }
   <div class="tab lecap-tab" onclick="showTab('lecaps')">📈 LECAPs</div>
   <div class="tab fin-tab" onclick="showTab('financiamiento')">💰 Matriz de decisión</div>
   <div class="tab ip-tab" onclick="showTab('insumo-producto')">🌱 Insumo-Producto</div>
+  <div class="tab" onclick="showTab('comercializacion')">🌾 Comercialización</div>
   <div class="tab" onclick="showTab('noticias')">📰 Noticias</div>
   </div>
 <div class="content">
@@ -365,6 +366,7 @@ canvas { max-height: 100%; }
   <div class="panel" id="panel-lecaps"></div>
   <div class="panel" id="panel-financiamiento"></div>
   <div class="panel" id="panel-insumo-producto"></div>
+  <div class="panel" id="panel-comercializacion"></div>
 </div>
 <script>
 // ── A3 – Futuros y Opciones (datos dinámicos desde Google Sheet) ─────────
@@ -1532,7 +1534,7 @@ function renderStratResults(){const container=document.getElementById('strat-res
 function buildStratPanel(){const panel=document.getElementById('panel-estrategia');const groupLabels=['📈 Alcistas','📉 Bajistas','🔒 Conservadoras'];const groups=[['bull_call_spread','ratio_call_spread','fut_buy_sell_call'],['bear_put_spread','ratio_put_spread','fut_sell_buy_put'],['covered_call','bull_put_spread','covered_call_fut']].map(ids=>ids.map(id=>PRESET_STRATEGIES.find(p=>p.id===id)).filter(Boolean));const presetsHTML=groups.map((grp,gi)=>`<div class="preset-section-label">${groupLabels[gi]}</div><div class="preset-grid">${grp.map(p=>`<div class="preset-card" data-id="${p.id}" onclick="selectPreset('${p.id}')"><div class="pc-check">✔</div><div class="pc-name">${p.nombre}</div><div class="pc-market" style="background:${p.mercadoBg};color:${p.mercadoColor}">${p.mercado}</div><div class="pc-desc">${p.descripcion}</div><div class="pc-risk">${p.riesgo}</div></div>`).join('')}</div>`).join('');panel.innerHTML=`<div class="full-card"><h3>Estrategias</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px"><div class="strat-field"><label>Cultivo</label><select id="strat-cultivo" class="strat-select" onchange="stratCultivoChange()"><option value="SOJ">🌱 Soja</option><option value="MAI">🌽 Maíz</option></select></div></div><div class="strat-mode-tabs"><button class="strat-mode-btn active" data-mode="preset" onclick="setStratMode('preset')">⚡ Estrategias predeterminadas</button><button class="strat-mode-btn" data-mode="manual" onclick="setStratMode('manual')">🔧 Constructor manual</button></div><div id="preset-section">${presetsHTML}<div class="preset-controls"><div class="strat-field"><label>Vencimiento</label><select id="preset-venc" class="strat-select"></select></div><button class="btn-apply-preset" id="btn-apply-preset" onclick="applyPreset()" disabled>⚡ Aplicar estrategia</button><span id="preset-selected-info" style="color:#888;font-size:0.8rem">Seleccioná una estrategia arriba</span></div></div><div id="manual-section" style="display:none"><div class="add-leg-row"><div class="strat-field"><label>Acción</label><select id="strat-accion" class="strat-select"><option value="C">Compra</option><option value="V">Venta</option></select></div><div class="strat-field"><label>Tipo</label><select id="strat-tipo" class="strat-select" onchange="updateStratContractOpts()"><option value="C">Call</option><option value="P">Put</option><option value="F">Futuro</option></select></div><div class="strat-field"><label>Vencimiento</label><select id="strat-venc" class="strat-select" onchange="updateStratContractOpts()"></select></div><div class="strat-field" style="flex:2;min-width:240px"><label>Contrato (Strike · Prima)</label><select id="strat-contrato" class="strat-select"></select></div><button class="btn-add" onclick="addStratLeg()">+ Agregar pata</button><button class="btn-clear" onclick="clearStratLegs()">Limpiar</button></div></div><div class="full-card" style="margin-bottom:0;box-shadow:none;padding:0 0 4px 0"><table class="legs-table"><thead><tr><th>Acción</th><th>Tipo</th><th>Strike</th><th style="text-align:right">Prima</th><th>Venc.</th><th></th></tr></thead><tbody id="strat-legs-tbody"><tr><td colspan="6" class="empty-legs">Seleccioná una estrategia y aplicala, o usá el constructor manual</td></tr></tbody></table></div></div><div id="strat-results" style="margin-top:4px"><div style="color:#aaa;font-size:0.85rem;font-style:italic;padding:20px 0">Aplicá una estrategia para ver el análisis</div></div>`;updatePresetVencOpts();updateStratVencOpts();}
 
 function showTab(id){
-  const ids=['soj-fut','mai-fut','tri-fut','soj-opts','mai-opts','tri-opts','estrategia','dlr-fut','lecaps','financiamiento','insumo-producto','noticias'];
+  const ids=['soj-fut','mai-fut','tri-fut','soj-opts','mai-opts','tri-opts','estrategia','dlr-fut','lecaps','financiamiento','insumo-producto','comercializacion','noticias'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',ids[i]===id));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
@@ -1540,6 +1542,7 @@ function showTab(id){
   if(id==='lecaps') loadLecapPanel();
   if(id==='financiamiento') buildFinanciamientoPanel();
   if(id==='insumo-producto' && !document.getElementById('panel-insumo-producto').dataset.built){ buildInsumoProductoPanel(); document.getElementById('panel-insumo-producto').dataset.built='1'; }
+  if(id==='comercializacion' && !document.getElementById('panel-comercializacion').dataset.built){ buildComercializacionPanel(); document.getElementById('panel-comercializacion').dataset.built='1'; }
 }
 
 // ── LECAPs ────────────────────────────────────────────────────────
@@ -2273,6 +2276,24 @@ window._initDeviceFlow=function(){
    Las noticias con más de 7 días son eliminadas automáticamente del array.
    Última actualización: 2026-07-24
    ═══════════════════════════════════════════════════════════════════════ */
+const COMERCIALIZACION_DATA = {
+  fecha:'2026-07-15',
+  cultivos:{
+    trigo:{campaña:'26/27',actual:{comprado:2142,precio_hecho:1385.7,a_fijar:756.3,fijado:82.3,saldo_a_fijar:674,djve_acumulado:0},comparacion_anio_anterior:{comprado:2006.7,precio_hecho:367.7,a_fijar:1639,fijado:47.2,saldo_a_fijar:1591.8,djve_acumulado:0}},
+    maiz:{campaña:'26/27',actual:{comprado:668.6,precio_hecho:123.5,a_fijar:545.2,fijado:14.6,saldo_a_fijar:530.6,djve_acumulado:0},comparacion_anio_anterior:{comprado:2185.8,precio_hecho:42.7,a_fijar:2143.1,fijado:2.6,saldo_a_fijar:2140.5,djve_acumulado:0}},
+    soja:{campaña:'26/27',actual:{comprado:356.4,precio_hecho:72.2,a_fijar:284.2,fijado:6,saldo_a_fijar:278.2,djve_acumulado:0},comparacion_anio_anterior:{comprado:446.5,precio_hecho:14.2,a_fijar:432.3,fijado:1.4,saldo_a_fijar:430.9,djve_acumulado:0}}
+  }
+};
+
+const CARRYIN_DATA = {
+  fecha_consulta:'',
+  cultivos:{
+    trigo:{produccion:0,carry_in:0,oferta:0},
+    maiz:{produccion:0,carry_in:0,oferta:0},
+    soja:{produccion:49.5,carry_in:5.36,oferta:54.86}
+  }
+};
+
 const NEWS_DATA = [
   {fecha:'2026-07-24',fuente:'Infocampo',cultivo:'Trigo / Soja',titulo:'Más información para mejores decisiones: al igual que el trigo, la soja tendrá su Mapa de Calidad',resumen:'En el marco de La Rural, la Secretaría de Agricultura presentó avances de esta iniciativa que ya tuvo una prueba piloto en la última cosecha. "Permitirá incorporar mediciones de calidad comercial de soja, una herramienta fundamental", destacaron desde el Gobierno.',link:'https://www.infocampo.com.ar/mas-informacion-para-mejores-decisiones-al-igual-que-el-trigo-la-soja-tendra-su-mapa-de-calidad/'},
   {fecha:'2026-07-23',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Se está llevando a cabo una prueba piloto para armar el primer “mapa de calidad de soja” de la Argentina',resumen:'Las autoridades de la Secretaría de Agricultura comenzaron a instrumentar la metodología para armar un “mapa de calidad de soja” que permita identificar los valores promedio de humedad, proteína y materia grasa en cada una de las regiones productivas. En ese marco, se realizó este miércoles una reunión de trabajo en la Exposición Rural de […]',link:'https://bichosdecampo.com/se-esta-llevando-a-cabo-una-prueba-piloto-para-armar-el-primer-mapa-de-calidad-de-soja-de-la-argentina/'},
@@ -2376,6 +2397,94 @@ let ipCrop='soja', ipMode='1y', ipRange=5, ipSelIdx=null, ipChart=null;
 function ipEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function ipFmtNum(n,dec){if(n===null||n===undefined||isNaN(n))return'—';const neg=n<0;const parts=Math.abs(n).toFixed(dec).split('.');parts[0]=parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.');return(neg?'-':'')+parts.join(',');}
 function ipLastPeriodLabel(crop){const ins=IP_DATA[crop].insumos[0];const keys=Object.keys(ins.series||{}).sort();if(!keys.length)return'';const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];const [y,mo]=keys[keys.length-1].split('-');return months[parseInt(mo)-1]+' '+y;}
+
+// ── Comercialización ─────────────────────────────────────────────
+let comCultivo = 'soja';
+
+function buildComercializacionPanel(){
+  const panel=document.getElementById('panel-comercializacion');
+  panel.innerHTML = '<div class="full-card" style="margin-bottom:16px">'
+    + '<h3>Comercialización de granos</h3>'
+    + '<div class="ip-sub">Cuánto se compró, cuánto tiene precio fijado, cuánto falta fijar y cuánto se comprometió exportar (DJVE), comparado contra la campaña anterior. Fuente: Secretaría de Bioeconomía (MAGyP), tabla semanal "Compras y DJVE de Granos".</div>'
+    + '<div class="chain-controls" id="com-crop-bar"></div>'
+    + '</div>'
+    + '<div id="com-body"></div>';
+  renderComCropBar();
+  renderComCultivo(comCultivo);
+}
+
+function renderComCropBar(){
+  const crops=[['trigo','🌾 Trigo'],['maiz','🌽 Maíz'],['soja','🫘 Soja']];
+  document.getElementById('com-crop-bar').innerHTML = crops.map(function(c){
+    return '<button class="venc-btn '+(comCultivo===c[0]?'active':'')+'" onclick="selectComCultivo(\''+c[0]+'\')">'+c[1]+'</button>';
+  }).join('');
+}
+
+function selectComCultivo(crop){
+  comCultivo=crop;
+  renderComCropBar();
+  renderComCultivo(crop);
+}
+
+function comNum(n){
+  if(n===undefined||n===null) return '—';
+  return n.toLocaleString('es-AR',{maximumFractionDigits:1});
+}
+
+function renderComCultivo(crop){
+  const body=document.getElementById('com-body');
+  const com = (typeof COMERCIALIZACION_DATA!=='undefined') ? COMERCIALIZACION_DATA.cultivos[crop] : null;
+  const ci  = (typeof CARRYIN_DATA!=='undefined') ? CARRYIN_DATA.cultivos[crop] : null;
+
+  if(!com){
+    body.innerHTML = '<div class="full-card">Todavía no hay datos de comercialización para este cultivo.</div>';
+    return;
+  }
+
+  const a = com.actual, p = com.comparacion_anio_anterior;
+  const fechaCom = (typeof COMERCIALIZACION_DATA!=='undefined') ? COMERCIALIZACION_DATA.fecha : '';
+
+  let saldoHtml = '';
+  if(ci && (ci.produccion || ci.carry_in)){
+    const ofertaMiles = (ci.produccion + ci.carry_in) * 1000;
+    const saldoMiles = ofertaMiles - a.comprado;
+    saldoHtml = '<div class="full-card" style="margin-bottom:16px">'
+      + '<h3>Balance de oferta (aproximado)</h3>'
+      + '<div class="kpi-row">'
+      + '<div class="kpi"><div class="label">Producción</div><div class="value">'+comNum(ci.produccion)+' MT</div></div>'
+      + '<div class="kpi"><div class="label">Carry In (stock inicial)</div><div class="value">'+comNum(ci.carry_in)+' MT</div></div>'
+      + '<div class="kpi"><div class="label">Oferta total</div><div class="value">'+comNum(ci.produccion+ci.carry_in)+' MT</div></div>'
+      + '<div class="kpi"><div class="label">Saldo remanente</div><div class="value">'+comNum(saldoMiles/1000)+' MT</div><div class="sub">Oferta − Comprado</div></div>'
+      + '</div>'
+      + '<div class="ip-sub">Producción y stock inicial: Monitor SIO Granos (MAGyP). Es una foto aproximada — la campaña de referencia de producción puede no coincidir exactamente con la campaña de ventas mostrada abajo.</div>'
+      + '</div>';
+  }
+
+  body.innerHTML = saldoHtml
+    + '<div class="full-card">'
+    + '<h3>Compras y DJVE — campaña '+com.campaña+'</h3>'
+    + '<div class="ip-sub" style="margin-bottom:14px">Datos al '+fechaCom+' · en miles de toneladas · entre paréntesis, mismo período de la campaña anterior</div>'
+    + '<div class="kpi-row">'
+    + comKpi('Comprado', a.comprado, p.comprado)
+    + comKpi('Precio Hecho', a.precio_hecho, p.precio_hecho)
+    + comKpi('A Fijar', a.a_fijar, p.a_fijar)
+    + '</div>'
+    + '<div class="kpi-row">'
+    + comKpi('Fijado', a.fijado, p.fijado)
+    + comKpi('Saldo a Fijar', a.saldo_a_fijar, p.saldo_a_fijar)
+    + comKpi('DJVE Acumulado', a.djve_acumulado, p.djve_acumulado)
+    + '</div>'
+    + '</div>';
+}
+
+function comKpi(label, valor, comparacion){
+  const delta = (comparacion!==undefined && comparacion!==0) ? ((valor-comparacion)/comparacion*100) : null;
+  const deltaHtml = delta===null ? '' : '<div class="sub" style="color:'+(delta>=0?'#2e7d32':'#c62828')+'">'+(delta>=0?'▲':'▼')+' '+Math.abs(delta).toFixed(1)+'% vs campaña anterior</div>';
+  return '<div class="kpi"><div class="label">'+label+'</div><div class="value">'+comNum(valor)+'</div>'
+    + '<div class="sub">('+comNum(comparacion)+' mil tn)</div>'
+    + deltaHtml
+    + '</div>';
+}
 
 function buildInsumoProductoPanel(){
   const panel=document.getElementById('panel-insumo-producto');
