@@ -428,9 +428,9 @@ window.LANDING_LINKS = {
    BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
    oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
    valores (oficial, CCL, soja/maíz/trigo, etc.) siguen viniendo de la sheet.
-   Última actualización: 2026-07-24
+   Última actualización: 2026-07-28
    ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
-const BCRA_TC_OVERRIDE = 1494.3744;
+const BCRA_TC_OVERRIDE = 1498.5117;
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 // Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
 const PIZARRA_SOJ_2025={
@@ -2415,14 +2415,14 @@ window._initDeviceFlow=function(){
 /* ═══════════════════════════════════════════════════════════════════════
    NEWS_DATA — Claude actualiza este bloque cada vez que corre el scraping.
    Las noticias con más de 7 días son eliminadas automáticamente del array.
-   Última actualización: 2026-07-26
+   Última actualización: 2026-07-28
    ═══════════════════════════════════════════════════════════════════════ */
 const COMERCIALIZACION_DATA = {
-  fecha:'2026-07-15',
+  fecha:'2026-07-22',
   cultivos:{
-    trigo:{campaña:'26/27',actual:{comprado:2142,precio_hecho:1385.7,a_fijar:756.3,fijado:82.3,saldo_a_fijar:674,djve_acumulado:0},comparacion_anio_anterior:{comprado:2006.7,precio_hecho:367.7,a_fijar:1639,fijado:47.2,saldo_a_fijar:1591.8,djve_acumulado:0},campaña_previa_completa:{campaña:'25/26',actual:{comprado:20048.4,precio_hecho:14909.1,a_fijar:5139.3,fijado:3274.2,saldo_a_fijar:1865.3,djve_acumulado:14741}}},
-    maiz:{campaña:'26/27',actual:{comprado:668.6,precio_hecho:123.5,a_fijar:545.2,fijado:14.6,saldo_a_fijar:530.6,djve_acumulado:0},comparacion_anio_anterior:{comprado:2185.8,precio_hecho:42.7,a_fijar:2143.1,fijado:2.6,saldo_a_fijar:2140.5,djve_acumulado:0},campaña_previa_completa:{campaña:'25/26',actual:{comprado:32022.1,precio_hecho:22311,a_fijar:9711.1,fijado:3164.4,saldo_a_fijar:6546.7,djve_acumulado:27117}}},
-    soja:{campaña:'26/27',actual:{comprado:356.4,precio_hecho:72.2,a_fijar:284.2,fijado:6,saldo_a_fijar:278.2,djve_acumulado:0},comparacion_anio_anterior:{comprado:446.5,precio_hecho:14.2,a_fijar:432.3,fijado:1.4,saldo_a_fijar:430.9,djve_acumulado:0},campaña_previa_completa:{campaña:'25/26',actual:{comprado:22188.5,precio_hecho:11525.4,a_fijar:10663.1,fijado:3058.7,saldo_a_fijar:7604.4,djve_acumulado:3687}}}
+    trigo:{campaña:'26/27',actual:{comprado:2568.7,precio_hecho:1785.6,a_fijar:783.1,fijado:125,saldo_a_fijar:658.1,djve_acumulado:0},comparacion_anio_anterior:{comprado:2071.5,precio_hecho:395.5,a_fijar:1676,fijado:57.4,saldo_a_fijar:1618.6,djve_acumulado:0}},
+    maiz:{campaña:'26/27',actual:{comprado:823.4,precio_hecho:207.1,a_fijar:616.4,fijado:44.6,saldo_a_fijar:571.8,djve_acumulado:0},comparacion_anio_anterior:{comprado:2246.5,precio_hecho:49.1,a_fijar:2197.4,fijado:3,saldo_a_fijar:2194.4,djve_acumulado:0}},
+    soja:{campaña:'26/27',actual:{comprado:405.5,precio_hecho:77.9,a_fijar:327.6,fijado:6.2,saldo_a_fijar:321.4,djve_acumulado:0},comparacion_anio_anterior:{comprado:489.5,precio_hecho:14.4,a_fijar:475.1,fijado:1.7,saldo_a_fijar:473.4,djve_acumulado:0}}
   }
 };
 
@@ -2436,6 +2436,8 @@ const CARRYIN_DATA = {
 };
 
 const NEWS_DATA = [
+  {fecha:'2026-07-28',fuente:'Infocampo',cultivo:'Soja',titulo:'La polinización también define a la soja: un hallazgo del INTA y el Conicet cambia un paradigma agrícola',resumen:'Una investigación argentina demuestra que la soja no depende únicamente de la autopolinización para formar semillas. El estudio detectó un mecanismo reproductivo hasta ahora desconocido y reveló que los polinizadores silvestres cumplen un papel clave para sostener el rendimiento.',link:'https://www.infocampo.com.ar/la-polinizacion-tambien-define-a-la-soja-un-hallazgo-del-inta-y-el-conicet-cambia-un-paradigma-agricola/'},
+  {fecha:'2026-07-28',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Hagan sus apuestas: La oficina del USDA en Canberra estima que la cosecha australiana de trigo no caerá de manera tan dramática',resumen:'Mientras que el último informe oficial del USDA proyectó una cosecha australiana de trigo de 28,0 millones de toneladas para 2026/27 versus 35,9 millones en el ciclo previo, la oficina del organismo estadounidense en esa nación estima que la caída no será dramática y prevé una producción de 31,0 millones de toneladas. En ese marco, […]',link:'https://bichosdecampo.com/hagan-sus-apuestas-la-oficina-del-usda-en-canberra-estima-que-la-cosecha-australiana-de-trigo-no-caera-de-manera-tan-dramatica/'},
   {fecha:'2026-07-26',fuente:'Bichos de Campo',cultivo:'Trigo / Maíz / Soja',titulo:'Proximidad geográfica: Seis mapas para entender un factor de competitividad clave de la agroindustria argentina',resumen:'Al sumar la producción de los seis cultivos principales de Argentina –soja, maíz, trigo, girasol, cebada y sorgo– se observa que el 67% del total nacional se localiza a 300 kilómetros de complejos portuarios. Se trata de una ventaja logística estructural de la agroindustria argentina, ya que en EE.UU. y Brasil la producción de granos […]',link:'https://bichosdecampo.com/proximidad-geografica-seis-mapas-para-entender-un-factor-de-competitividad-clave-de-la-agroindustria-argentina/'},
   {fecha:'2026-07-25',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 25 julio 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-25-julio-2026/'},
   {fecha:'2026-07-25',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 25 julio 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-25-julio-2026/'},
