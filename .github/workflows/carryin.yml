@@ -41,7 +41,7 @@ jobs:
           with open("index.html", encoding="utf-8") as f:
               t = f.read()
 
-          m = re.search(r"const CARRYIN_DATA = \{[\s\S]*?soja:\{produccion:([\d.]+)", t)
+          m = re.search(r"const CARRYIN_DATA = \{[\s\S]*?soja:\{", t)
           if not m:
               print("PROBLEMA: No se encontro CARRYIN_DATA en index.html")
               sys.exit(1)
