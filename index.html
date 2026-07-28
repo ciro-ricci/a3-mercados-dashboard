@@ -2420,18 +2420,18 @@ window._initDeviceFlow=function(){
 const COMERCIALIZACION_DATA = {
   fecha:'2026-07-22',
   cultivos:{
-    trigo:{campaña:'26/27',actual:{comprado:2568.7,precio_hecho:1785.6,a_fijar:783.1,fijado:125,saldo_a_fijar:658.1,djve_acumulado:0},comparacion_anio_anterior:{comprado:2071.5,precio_hecho:395.5,a_fijar:1676,fijado:57.4,saldo_a_fijar:1618.6,djve_acumulado:0}},
-    maiz:{campaña:'26/27',actual:{comprado:823.4,precio_hecho:207.1,a_fijar:616.4,fijado:44.6,saldo_a_fijar:571.8,djve_acumulado:0},comparacion_anio_anterior:{comprado:2246.5,precio_hecho:49.1,a_fijar:2197.4,fijado:3,saldo_a_fijar:2194.4,djve_acumulado:0}},
-    soja:{campaña:'26/27',actual:{comprado:405.5,precio_hecho:77.9,a_fijar:327.6,fijado:6.2,saldo_a_fijar:321.4,djve_acumulado:0},comparacion_anio_anterior:{comprado:489.5,precio_hecho:14.4,a_fijar:475.1,fijado:1.7,saldo_a_fijar:473.4,djve_acumulado:0}}
+    trigo:{campañas:{'26/27':{actual:{comprado:2568.7,precio_hecho:1785.6,a_fijar:783.1,fijado:125,saldo_a_fijar:658.1,djve_acumulado:0},comparacion_anio_anterior:{comprado:2071.5,precio_hecho:395.5,a_fijar:1676,fijado:57.4,saldo_a_fijar:1618.6,djve_acumulado:0}},'25/26':{actual:{comprado:20323,precio_hecho:15169.9,a_fijar:5153.1,fijado:3382.1,saldo_a_fijar:1771.1,djve_acumulado:14899},comparacion_anio_anterior:{comprado:15229.6,precio_hecho:11722,a_fijar:3507.7,fijado:2677.3,saldo_a_fijar:830.4,djve_acumulado:9386}}}},
+    maiz:{campañas:{'26/27':{actual:{comprado:823.4,precio_hecho:207.1,a_fijar:616.4,fijado:44.6,saldo_a_fijar:571.8,djve_acumulado:0},comparacion_anio_anterior:{comprado:2246.5,precio_hecho:49.1,a_fijar:2197.4,fijado:3,saldo_a_fijar:2194.4,djve_acumulado:0}},'25/26':{actual:{comprado:33875.7,precio_hecho:23917,a_fijar:9958.7,fijado:3475.9,saldo_a_fijar:6482.8,djve_acumulado:27723},comparacion_anio_anterior:{comprado:23871,precio_hecho:16067.2,a_fijar:7803.8,fijado:2596.2,saldo_a_fijar:5207.6,djve_acumulado:21579}}}},
+    soja:{campañas:{'26/27':{actual:{comprado:405.5,precio_hecho:77.9,a_fijar:327.6,fijado:6.2,saldo_a_fijar:321.4,djve_acumulado:0},comparacion_anio_anterior:{comprado:489.5,precio_hecho:14.4,a_fijar:475.1,fijado:1.7,saldo_a_fijar:473.4,djve_acumulado:0}},'25/26':{actual:{comprado:23053.5,precio_hecho:12340.1,a_fijar:10713.4,fijado:3380.7,saldo_a_fijar:7332.8,djve_acumulado:4111},comparacion_anio_anterior:{comprado:27431.6,precio_hecho:17596.4,a_fijar:9835.2,fijado:4339.7,saldo_a_fijar:5495.5,djve_acumulado:7827}}}}
   }
 };
 
 const CARRYIN_DATA = {
   fecha_consulta:'',
   cultivos:{
-    trigo:{produccion:27.9,carry_in:2.49,oferta:30.39},
-    maiz:{produccion:71.5,carry_in:3.71,oferta:75.21},
-    soja:{produccion:49.5,carry_in:5.36,oferta:54.86}
+    trigo:{'25/26':{produccion:27.9,carry_in:2.49,oferta:30.39},'26/27':{produccion:0,carry_in:0,oferta:0}},
+    maiz:{'25/26':{produccion:71.5,carry_in:3.71,oferta:75.21},'26/27':{produccion:0,carry_in:0,oferta:0}},
+    soja:{'25/26':{produccion:49.5,carry_in:5.36,oferta:54.86},'26/27':{produccion:0,carry_in:0,oferta:0}}
   }
 };
 
@@ -2554,10 +2554,11 @@ function ipLastPeriodLabel(crop){const ins=IP_DATA[crop].insumos[0];const keys=O
 
 // ── Comercialización ─────────────────────────────────────────────
 let comCultivo = 'soja';
+const comCampañaSel = {}; // por cultivo, campaña elegida ('26/27' o '25/26'); se completa al renderizar
 
 function buildComercializacionPanel(){
   const panel=document.getElementById('panel-comercializacion');
-  panel.innerHTML = '<div id="com-crop-bar" style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap"></div><div id="com-body"></div>';
+  panel.innerHTML = '<div id="com-crop-bar" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap"></div><div id="com-campaign-bar" style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap"></div><div id="com-body"></div>';
   renderComCropBar();
   renderComCultivo(comCultivo);
 }
@@ -2576,9 +2577,35 @@ function renderComCropBar(){
   }).join('');
 }
 
+function comCampañasDisponibles(crop){
+  const com = (typeof COMERCIALIZACION_DATA!=='undefined') ? COMERCIALIZACION_DATA.cultivos[crop] : null;
+  if(!com || !com.campañas) return [];
+  return Object.keys(com.campañas).sort().reverse(); // ej. ['26/27','25/26'] (mas reciente primero)
+}
+
+function renderComCampaignBar(crop){
+  const disponibles = comCampañasDisponibles(crop);
+  const bar = document.getElementById('com-campaign-bar');
+  if(disponibles.length<2){ bar.innerHTML=''; return; }
+  if(!comCampañaSel[crop] || disponibles.indexOf(comCampañaSel[crop])===-1){
+    comCampañaSel[crop] = disponibles[0];
+  }
+  const g = COM_GRANO_STYLE[crop];
+  bar.innerHTML = '<span style="font-size:0.72rem;color:#94a3b8;align-self:center;margin-right:4px">Campaña:</span>' + disponibles.map(function(camp){
+    const active = comCampañaSel[crop]===camp;
+    return '<button onclick="selectComCampaña(\''+crop+'\',\''+camp+'\')" style="padding:5px 14px;border-radius:999px;font-size:0.76rem;font-weight:600;border:1px solid '+(active?g.accent:'#e2e8f0')+';background:'+(active?g.softer:'white')+';color:'+(active?g.accent:'#94a3b8')+';cursor:pointer;transition:all .15s;line-height:1.4">'+camp+'</button>';
+  }).join('');
+}
+
 function selectComCultivo(crop){
   comCultivo=crop;
   renderComCropBar();
+  renderComCultivo(crop);
+}
+
+function selectComCampaña(crop,campaña){
+  comCampañaSel[crop]=campaña;
+  renderComCampaignBar(crop);
   renderComCultivo(crop);
 }
 
@@ -2616,19 +2643,30 @@ function comPanelCard(innerHtml,extraStyle){
 }
 
 function renderComCultivo(crop){
+  renderComCampaignBar(crop);
   const body=document.getElementById('com-body');
-  const com = (typeof COMERCIALIZACION_DATA!=='undefined') ? COMERCIALIZACION_DATA.cultivos[crop] : null;
-  const ci  = (typeof CARRYIN_DATA!=='undefined') ? CARRYIN_DATA.cultivos[crop] : null;
+  const comCultivoData = (typeof COMERCIALIZACION_DATA!=='undefined') ? COMERCIALIZACION_DATA.cultivos[crop] : null;
   const g = COM_GRANO_STYLE[crop];
 
-  if(!com){
+  if(!comCultivoData || !comCultivoData.campañas){
     body.innerHTML = comPanelCard('<span style="color:#64748b">Todavía no hay datos de comercialización para este cultivo.</span>');
     return;
   }
 
-  const a = com.actual, p = com.comparacion_anio_anterior;
-  const previa = com.campaña_previa_completa;
+  const campañaSel = comCampañaSel[crop] || comCampañasDisponibles(crop)[0];
+  const com = comCultivoData.campañas[campañaSel];
+  if(!com){
+    body.innerHTML = comPanelCard('<span style="color:#64748b">No hay datos para la campaña seleccionada.</span>');
+    return;
+  }
+
+  const a = com.actual, p = com.comparacion_anio_anterior || {};
+  const otrasCampañas = Object.keys(comCultivoData.campañas).filter(function(k){return k!==campañaSel;});
+  const campañaRef = otrasCampañas.length ? otrasCampañas[0] : null;
+  const previa = campañaRef ? comCultivoData.campañas[campañaRef] : null;
   const fechaCom = (typeof COMERCIALIZACION_DATA!=='undefined') ? COMERCIALIZACION_DATA.fecha : '';
+
+  const ci = (typeof CARRYIN_DATA!=='undefined' && CARRYIN_DATA.cultivos[crop]) ? CARRYIN_DATA.cultivos[crop][campañaSel] : null;
 
   // ── Sección 1: Balance de oferta (ecuación + barra de avance) ──────────
   let ofertaHtml = '';
@@ -2638,7 +2676,7 @@ function renderComCultivo(crop){
     const pctVendido = ofertaMT>0 ? Math.min(100,(compradoMT/ofertaMT*100)) : 0;
     const pctSaldo = 100-pctVendido;
     ofertaHtml = comPanelCard(
-      comLabel('Balance de oferta')
+      comLabel('Balance de oferta · Campaña '+campañaSel)
       + '<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:14px 0 22px">'
         + '<div style="text-align:center">' + comValue(comNum(ci.produccion)+comUnit('MT')) + comSub('Producción') + '</div>'
         + '<div style="font-size:1.3rem;color:#cbd5e1;font-weight:300">+</div>'
@@ -2651,7 +2689,12 @@ function renderComCultivo(crop){
         + '<span>Saldo sin vender: '+comNum(ofertaMT-compradoMT,2)+' MT ('+pctSaldo.toFixed(1)+'%)</span>'
       + '</div>'
       + comBar([{pct:pctVendido,color:g.accent},{pct:pctSaldo,color:'#e2e8f0'}], 12)
-      + '<div style="font-size:0.72rem;color:#94a3b8;margin-top:12px">Producción y stock inicial: Monitor SIO Granos (MAGyP). Foto aproximada — la campaña de referencia de producción puede no coincidir exactamente con la de ventas mostrada abajo.</div>'
+      + '<div style="font-size:0.72rem;color:#94a3b8;margin-top:12px">Producción y stock inicial: Monitor SIO Granos (MAGyP), campaña '+campañaSel+'.</div>'
+    );
+  } else {
+    ofertaHtml = comPanelCard(
+      comLabel('Balance de oferta · Campaña '+campañaSel)
+      + '<div style="color:#64748b;font-size:0.85rem;margin-top:10px">MAGyP todavía no publicó una estimación oficial de producción para la campaña '+campañaSel+'. Este dato suele aparecer más avanzado el año, a medida que progresa la siembra/cosecha.</div>'
     );
   }
 
@@ -2663,12 +2706,12 @@ function renderComCultivo(crop){
   const pctSaldoAFijar = 100-pctFijado;
 
   const nivel1 = comPanelCard(
-    comLabel('Total comprado · Campaña '+com.campaña)
+    comLabel('Total comprado · Campaña '+campañaSel)
     + '<div style="display:flex;align-items:baseline;gap:12px;margin-top:6px;flex-wrap:wrap">'
       + comValue(comNum(a.comprado)+comUnit('mil tn'), '#1e293b', '1.9rem')
       + comChip(deltaComprado)
     + '</div>'
-    + comSub('vs '+comNum(p.comprado)+' mil tn en el mismo período de la campaña anterior · datos al '+fechaCom)
+    + comSub((p.comprado!==undefined ? ('vs '+comNum(p.comprado)+' mil tn en el mismo período de la campaña anterior · ') : '')+'datos al '+fechaCom)
   );
 
   const nivel2 = comPanelCard(
@@ -2691,8 +2734,8 @@ function renderComCultivo(crop){
   );
 
   const djveRef = (a.djve_acumulado===0 && previa)
-    ? ('la campaña '+previa.campaña+' ya acumula<br><strong style="color:#1e293b">'+comNum(previa.actual.djve_acumulado)+' mil tn</strong>')
-    : ('('+comNum(p.djve_acumulado)+' mil tn en la campaña anterior)');
+    ? ('la campaña '+campañaRef+' ya acumula<br><strong style="color:#1e293b">'+comNum(previa.actual.djve_acumulado)+' mil tn</strong>')
+    : (p.djve_acumulado!==undefined ? ('('+comNum(p.djve_acumulado)+' mil tn en la campaña anterior)') : '');
 
   const nivel3 = '<div style="background:'+g.softer+';border-radius:12px;padding:20px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">'
     + '<div>' + comLabel('Compromisos de exportación (DJVE acumulado)') + comValue(comNum(a.djve_acumulado)+comUnit('mil tn'), g.accent, '1.7rem') + '</div>'
