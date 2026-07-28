@@ -4,13 +4,22 @@ Actualiza CARRYIN_DATA en index.html: Produccion, Carry In (stock inicial) y
 Oferta total de la campania, para Trigo, Maiz y Soja.
 
 Fuente: Monitor del Comercio Granario (MAGyP / SIO Granos), una app
-GeneXus que arma estos valores via ajax al cambiar el selector "Producto".
-No hay URL/API directa por cultivo, asi que usamos un navegador headless
-(Playwright) para simular el cambio de selector y leer el valor ya
-renderizado. No requiere login ni token.
+GeneXus que arma estos valores via ajax al cambiar el selector "Producto"
+y el selector "Cosecha" (Actual / Proxima).
 
-Pensado para correr con poca frecuencia (mensual): estos valores son de
-campania y casi no cambian semana a semana.
+IMPORTANTE: el monitor tiene DOS campanias visibles por cultivo:
+- "Actual" (radio #vSCOSECHA1): la campania YA cosechada/en curso, con datos
+  reales de produccion (ej. hoy equivale a la campania 25/26).
+- "Proxima" (radio #vSCOSECHA2): la campania que recien arranca, sin
+  estimaciones oficiales todavia (suele estar en 0 hasta que avanza la
+  siembra, ej. hoy equivale a la campania 26/27).
+Guardamos AMBAS, indexadas por la etiqueta de campania que la propia pagina
+muestra (texto de #TXTCOSECHA, ej. "25/26", "26/27"), para poder cruzarlas
+correctamente con la campania de venta correspondiente en COMERCIALIZACION_DATA
+(que usa la misma nomenclatura de campania).
+
+No requiere login ni token. Pensado para correr con poca frecuencia (mensual):
+estos valores son de campania y casi no cambian semana a semana.
 """
 import re
 from playwright.sync_api import sync_playwright
@@ -23,6 +32,10 @@ CULTIVOS = {
     "2": "maiz",
     "18": "soja",
 }
+
+# id del radio de Cosecha -> no se usa como clave final (usamos la etiqueta
+# real que muestra la pagina), solo para saber que radio clickear.
+COSECHAS = ["vSCOSECHA1", "vSCOSECHA2"]  # 1=Actual, 2=Proxima
 
 TARGET_FILES = ["index.html"]
 
@@ -39,11 +52,30 @@ def leer_valores(page):
     produccion = page.text_content("#span_vVALUECARD4") or ""
     carry_in = page.text_content("#span_vCARRYIN") or ""
     oferta = page.text_content("#span_vOFERTA") or ""
-    return {
+    campaña = (page.text_content("#TXTCOSECHA") or "").strip()
+    return campaña, {
         "produccion": to_float(produccion),
         "carry_in": to_float(carry_in),
         "oferta": to_float(oferta),
     }
+
+
+def esperar_cambio(page, valor_anterior):
+    try:
+        page.wait_for_function(
+            """(prev) => {
+                const el = document.querySelector('#span_vVALUECARD4');
+                return el && el.textContent.trim() !== prev.trim();
+            }""",
+            arg=valor_anterior,
+            timeout=15000,
+        )
+    except Exception:
+        # Puede pasar que el valor nuevo coincida con el anterior (ej. dos
+        # cultivos con el mismo numero por casualidad, o cosecha "Proxima"
+        # en 0 dos veces seguidas); seguimos igual, ya vamos a leer el DOM.
+        page.wait_for_timeout(3000)
+    page.wait_for_load_state("networkidle", timeout=15000)
 
 
 def fetch_carryin():
@@ -56,7 +88,6 @@ def fetch_carryin():
         page.goto(URL, wait_until="networkidle", timeout=60000)
         page.wait_for_selector("#span_vVALUECARD4", timeout=30000)
 
-        # Fecha de referencia general de la pagina (arriba a la derecha)
         try:
             fecha_hoy = page.text_content("#span_vTODAY") or None
         except Exception:
@@ -64,26 +95,20 @@ def fetch_carryin():
 
         for valor_option, clave in CULTIVOS.items():
             valor_anterior = page.text_content("#span_vVALUECARD4")
-
             page.select_option("#vSIIA_GRANOID", value=valor_option)
+            esperar_cambio(page, valor_anterior)
 
-            # Esperar a que la llamada ajax de GeneXus actualice el valor.
-            try:
-                page.wait_for_function(
-                    """(prev) => {
-                        const el = document.querySelector('#span_vVALUECARD4');
-                        return el && el.textContent.trim() !== prev.trim();
-                    }""",
-                    arg=valor_anterior,
-                    timeout=15000,
-                )
-            except Exception:
-                # Si el valor no cambio (puede pasar si coincide con el anterior
-                # por casualidad) seguimos igual, ya vamos a leer el DOM actual.
-                page.wait_for_timeout(3000)
+            resultados[clave] = {}
+            for cosecha_id in COSECHAS:
+                valor_anterior = page.text_content("#span_vVALUECARD4")
+                page.click(f"#{cosecha_id}")
+                esperar_cambio(page, valor_anterior)
 
-            page.wait_for_load_state("networkidle", timeout=15000)
-            resultados[clave] = leer_valores(page)
+                campaña, valores = leer_valores(page)
+                if not campaña:
+                    print(f"[WARN] No se pudo leer la etiqueta de campania para {clave}/{cosecha_id}")
+                    continue
+                resultados[clave][campaña] = valores
 
         browser.close()
 
@@ -92,11 +117,13 @@ def fetch_carryin():
 
 def render_js_object(fecha_hoy, resultados):
     partes = []
-    for clave, v in resultados.items():
-        partes.append(
-            f"    {clave}:{{produccion:{v['produccion']:g},"
+    for clave, campañas in resultados.items():
+        campañas_js = ",".join(
+            f"'{camp}':{{produccion:{v['produccion']:g},"
             f"carry_in:{v['carry_in']:g},oferta:{v['oferta']:g}}}"
+            for camp, v in campañas.items()
         )
+        partes.append(f"    {clave}:{{{campañas_js}}}")
     body = ",\n".join(partes)
     fecha_js = fecha_hoy.strip() if fecha_hoy else ""
     return (
@@ -144,7 +171,7 @@ def update_file(path, new_js_text):
 
 def main():
     fecha_hoy, resultados = fetch_carryin()
-    if not resultados:
+    if not resultados or not any(resultados.values()):
         raise RuntimeError("No se pudo extraer ningun cultivo (trigo/maiz/soja)")
 
     js_text = render_js_object(fecha_hoy, resultados)

@@ -6,6 +6,18 @@ Fuente: pagina HTML publica, sin login ni API key.
 Se actualiza semanalmente en origen (la propia pagina lo indica como "Semanal").
 
 Solo procesamos Trigo, Maiz y Soja (se descartan Sorgo, Cebada y Girasol).
+
+La tabla "Total" de cada cultivo trae 4 filas relevantes:
+  1) campania actual (ej. 26/27): Comprado, Precio Hecho, A Fijar, Fijado,
+     Saldo a Fijar, DJVE Acumulado.
+  2) fila entre parentesis debajo: comparacion vs. el mismo periodo de la
+     campania anterior (26/27 vs 25/26).
+  3) campania anterior completa (ej. 25/26): mismos 6 campos, pero de la
+     campania ya finalizada/en cierre.
+  4) fila entre parentesis debajo: comparacion de ESA campania vs la suya
+     anterior (25/26 vs 24/25).
+Guardamos las dos campanias con su propia comparacion YoY, para poder
+elegir en el dashboard cual campania mostrar (toggle 26/27 / 25/26).
 """
 import re
 import requests
@@ -51,8 +63,9 @@ def parse_fecha(html_text):
 
 
 def parse_cultivo_table(table):
-    """Devuelve (campaña_actual, actual{}, comparacion_anio_anterior{}) leyendo
-    la seccion 'Total' de la tabla (Compras Exportador + Industria combinadas)."""
+    """Devuelve un dict {campaña: {actual:{...}, comparacion_anio_anterior:{...}}}
+    con las DOS campanias (actual y anterior completa) leyendo la seccion
+    'Total' de la tabla (Compras Exportador + Industria combinadas)."""
     rows = [
         [c.get_text(" ", strip=True) for c in r.find_all(["td", "th"])]
         for r in table.find_all("tr")
@@ -67,18 +80,41 @@ def parse_cultivo_table(table):
 
     # fila_actual: ['Total', 'Cosecha', 'Semanal', 'Comprado', 'PrecioHecho',
     #               'AFijar', 'Fijado', 'SaldoAFijar', 'DJVE']  (9 celdas)
-    # fila_comparacion: ['(Semanal)', '(Comprado)', '(PrecioHecho)', '(AFijar)',
-    #                    '(Fijado)', '(SaldoAFijar)', '(DJVE)']  (7 celdas, sin Cosecha)
     fila_actual = rows[total_idx]
-    fila_comparacion = rows[total_idx + 1]
-
-    campaña = fila_actual[1]
+    campaña_actual = fila_actual[1]
     valores_actual = fila_actual[3:9]   # salta Cosecha y Semanal
-    valores_comp = fila_comparacion[1:7]  # salta Semanal
-
     actual = {COLS[i]: to_float(valores_actual[i]) for i in range(6)}
-    comparacion = {COLS[i]: to_float(valores_comp[i]) for i in range(6)}
-    return campaña, actual, comparacion
+
+    # fila_comparacion: ['(Semanal)', '(Comprado)', ..., '(DJVE)']  (7 celdas)
+    comparacion = {}
+    if total_idx + 1 < len(rows) and len(rows[total_idx + 1]) >= 7:
+        fila_comparacion = rows[total_idx + 1]
+        valores_comp = fila_comparacion[1:7]  # salta Semanal
+        comparacion = {COLS[i]: to_float(valores_comp[i]) for i in range(6)}
+
+    campañas = {
+        campaña_actual: {"actual": actual, "comparacion_anio_anterior": comparacion}
+    }
+
+    # fila_previa: ['25/26', 'Semanal', Comprado, ..., DJVE]  (8 celdas, sin 'Total')
+    if total_idx + 2 < len(rows) and len(rows[total_idx + 2]) >= 8:
+        fila_previa = rows[total_idx + 2]
+        campaña_previa = fila_previa[0]
+        valores_previa = fila_previa[2:8]
+        actual_previa = {COLS[i]: to_float(valores_previa[i]) for i in range(6)}
+
+        comparacion_previa = {}
+        if total_idx + 3 < len(rows) and len(rows[total_idx + 3]) >= 7:
+            fila_comp_previa = rows[total_idx + 3]
+            valores_comp_previa = fila_comp_previa[1:7]
+            comparacion_previa = {COLS[i]: to_float(valores_comp_previa[i]) for i in range(6)}
+
+        campañas[campaña_previa] = {
+            "actual": actual_previa,
+            "comparacion_anio_anterior": comparacion_previa,
+        }
+
+    return campañas
 
 
 def fetch_comercializacion():
@@ -102,12 +138,8 @@ def fetch_comercializacion():
         if table is None:
             print(f"[WARN] No se encontro tabla para '{nombre_tab}'")
             continue
-        campaña, actual, comparacion = parse_cultivo_table(table)
-        data["cultivos"][clave] = {
-            "campaña": campaña,
-            "actual": actual,
-            "comparacion_anio_anterior": comparacion,
-        }
+        campañas = parse_cultivo_table(table)
+        data["cultivos"][clave] = {"campañas": campañas}
     return data
 
 
@@ -121,11 +153,13 @@ def render_js_object(data):
 
     cultivos_js = []
     for clave, c in data["cultivos"].items():
-        cultivos_js.append(
-            f"    {clave}:{{campaña:'{c['campaña']}',"
-            f"actual:{fmt_dict(c['actual'])},"
-            f"comparacion_anio_anterior:{fmt_dict(c['comparacion_anio_anterior'])}}}"
-        )
+        campañas_js = []
+        for camp, vals in c["campañas"].items():
+            campañas_js.append(
+                f"'{camp}':{{actual:{fmt_dict(vals['actual'])},"
+                f"comparacion_anio_anterior:{fmt_dict(vals['comparacion_anio_anterior'])}}}"
+            )
+        cultivos_js.append(f"    {clave}:{{campañas:{{{','.join(campañas_js)}}}}}")
     body = ",\n".join(cultivos_js)
     return (
         "const COMERCIALIZACION_DATA = {\n"
@@ -152,8 +186,6 @@ def update_file(path, new_js_text, new_fecha):
             return False
         new_html = html_text[: m.start()] + new_js_text + html_text[m.end() :]
     else:
-        # Primera vez: insertamos el bloque justo antes de la linea de NEWS_DATA,
-        # o si no existe, antes de </body>.
         marker = "const NEWS_DATA"
         idx = html_text.find(marker)
         if idx == -1:
