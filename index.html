@@ -292,6 +292,35 @@ canvas { max-height: 100%; }
 .ip-hint { font-size: 0.78rem; color: #aaa; text-align: center; padding: 4px 0 14px; font-style: italic; }
 .ip-range-bar { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
 .ip-sub { font-size: 0.8rem; color: #888; margin-bottom: 14px; }
+
+/* ── Brief Granos ── */
+#panel-brief-granos { padding: 4px 0; }
+#panel-brief-granos .bg-header { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+#panel-brief-granos .bg-header h2 { font-size:1.1rem; color:#1a1a2e; }
+#panel-brief-granos .bg-meta { font-size:0.75rem; color:#888; }
+#panel-brief-granos .bg-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+#panel-brief-granos .bg-tab { padding:7px 14px; border-radius:999px; font-size:0.78rem; font-weight:700; cursor:pointer; border:1px solid transparent; }
+#panel-brief-granos .bg-tab.alcista { background:#1e7e34; color:#fff; }
+#panel-brief-granos .bg-tab.bajista { background:#9b1c1c; color:#fff; }
+#panel-brief-granos .bg-tab.neutral { background:#e2e2e0; color:#444; border-color:#ccc; }
+#panel-brief-granos .bg-exec { background:#eef3ea; border:1px solid #cfe0c8; border-radius:10px; padding:14px 18px; margin-bottom:18px; }
+#panel-brief-granos .bg-exec h3 { font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; color:#1e7e34; margin-bottom:8px; }
+#panel-brief-granos .bg-exec ul { padding-left:18px; }
+#panel-brief-granos .bg-exec li { font-size:0.85rem; margin-bottom:5px; color:#333; }
+#panel-brief-granos .bg-crop { margin-bottom:22px; scroll-margin-top:12px; }
+#panel-brief-granos .bg-crop-title { display:flex; align-items:center; gap:8px; font-size:0.95rem; font-weight:700; padding-bottom:6px; border-bottom:1px solid #e5e7eb; margin-bottom:10px; }
+#panel-brief-granos .bg-pill { margin-left:auto; font-size:0.68rem; font-weight:700; padding:3px 10px; border-radius:999px; }
+#panel-brief-granos .bg-pill.alcista { background:#1e7e34; color:#fff; }
+#panel-brief-granos .bg-pill.bajista { background:#9b1c1c; color:#fff; }
+#panel-brief-granos .bg-pill.neutral { background:#e2e2e0; color:#444; }
+#panel-brief-granos .bg-factor { display:grid; grid-template-columns:26px 1fr; gap:8px; padding:9px 11px; border-radius:8px; margin-bottom:7px; font-size:0.82rem; }
+#panel-brief-granos .bg-factor.alcista { background:#eaf6ec; border-left:4px solid #1e7e34; }
+#panel-brief-granos .bg-factor.bajista { background:#fceaea; border-left:4px solid #9b1c1c; }
+#panel-brief-granos .bg-factor.neutral { background:#f1f1ef; border-left:4px solid #999; }
+#panel-brief-granos .bg-factor b { display:block; margin-bottom:2px; }
+#panel-brief-granos .bg-factor .bg-fuente { color:#888; font-size:0.7rem; display:block; margin-top:3px; }
+#panel-brief-granos .bg-factor .bg-fuente a { color:#4a6fa5; text-decoration:none; }
+#panel-brief-granos .bg-factor .bg-fuente a:hover { text-decoration:underline; }
 </style>
 <!-- Landing pública (Gemini design) — Tailwind scope-limited a #landing-gate -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -341,6 +370,7 @@ canvas { max-height: 100%; }
   <div class="tab ip-tab" onclick="showTab('insumo-producto')">🌱 Insumo-Producto</div>
   <div class="tab" onclick="showTab('comercializacion')">Comercialización</div>
   <div class="tab" onclick="showTab('noticias')">📰 Noticias</div>
+  <div class="tab" onclick="showTab('brief-granos')">🌾 Brief Granos</div>
   </div>
 <div class="content">
   <div class="panel" id="panel-noticias">
@@ -367,6 +397,7 @@ canvas { max-height: 100%; }
   <div class="panel" id="panel-financiamiento"></div>
   <div class="panel" id="panel-insumo-producto"></div>
   <div class="panel" id="panel-comercializacion"></div>
+  <div class="panel" id="panel-brief-granos"></div>
 </div>
 <script>
 // ── A3 – Futuros y Opciones (datos dinámicos desde Google Sheet) ─────────
@@ -1533,8 +1564,117 @@ function renderStratLegs(){const tbody=document.getElementById('strat-legs-tbody
 function renderStratResults(){const container=document.getElementById('strat-results');if(stratLegs.length===0){container.innerHTML='<div style="color:#aaa;font-size:0.85rem;font-style:italic;padding:20px 0">Aplicá una estrategia para ver el análisis</div>';if(stratChart){stratChart.destroy();stratChart=null;}return;}const strikes=stratLegs.map(l=>l.strike);const midStrike=strikes.reduce((a,b)=>a+b,0)/strikes.length;const minS=Math.round(midStrike*0.65),maxS=Math.round(midStrike*1.35),step=(maxS-minS)/200;const prices=[];for(let s=minS;s<=maxS;s+=step)prices.push(parseFloat(s.toFixed(2)));const payoffs=prices.map(s=>parseFloat(totalPayoff(s).toFixed(4)));const primaNeta=stratLegs.reduce((sum,l)=>sum+(l.accion==='C'?-l.prima:l.prima),0);const maxGain=Math.max(...payoffs),maxLoss=Math.min(...payoffs);const breakevens=[];for(let i=0;i<payoffs.length-1;i++){if((payoffs[i]<=0&&payoffs[i+1]>0)||(payoffs[i]>=0&&payoffs[i+1]<0))breakevens.push((prices[i]+(prices[i+1]-prices[i])*(-payoffs[i])/(payoffs[i+1]-payoffs[i])).toFixed(2));}const isGainInfinite=maxGain>midStrike*2,isLossInfinite=maxLoss<-midStrike;const presetName=selectedPreset?(PRESET_STRATEGIES.find(p=>p.id===selectedPreset)?.nombre||''):'';container.innerHTML=`<div class="full-card" style="margin-bottom:12px;padding:14px 18px"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h3 style="margin:0">${presetName||'Estrategia personalizada'}</h3><button class="btn-clear" onclick="clearStratLegs()">✕ Limpiar</button></div><div class="kpi-row" style="margin-bottom:0"><div class="kpi ${primaNeta>=0?'green':'red'}"><div class="label">Prima Neta</div><div class="value">${primaNeta>=0?'+':''}${primaNeta.toFixed(4)}</div><div class="sub">USD/tn · ${primaNeta>=0?'cobrada':'pagada'}</div></div><div class="kpi ${isGainInfinite?'':'green'}"><div class="label">Ganancia Máx.</div><div class="value">${isGainInfinite?'∞':(maxGain>=0?'+':'')+maxGain.toFixed(4)}</div><div class="sub">USD/tn al vencimiento</div></div><div class="kpi ${isLossInfinite?'':'red'}"><div class="label">Pérdida Máx.</div><div class="value">${isLossInfinite?'-∞':maxLoss.toFixed(4)}</div><div class="sub">USD/tn al vencimiento</div></div><div class="kpi yellow"><div class="label">Breakeven${breakevens.length!==1?'s':''}</div><div class="value" style="font-size:1rem">${breakevens.length>0?breakevens.join(' / '):'—'}</div><div class="sub">USD/tn</div></div></div></div><div class="full-card"><h3>Payoff al Vencimiento <span style="font-size:0.78rem;font-weight:400;text-transform:none;color:#888">USD/tn</span></h3><div class="canvas-wrap-lg"><canvas id="strat-payoff-chart"></canvas></div></div>`;if(stratChart){stratChart.destroy();stratChart=null;}setTimeout(()=>{const ctx=document.getElementById('strat-payoff-chart');if(!ctx)return;stratChart=new Chart(ctx,{type:'line',data:{labels:prices.map(p=>p.toFixed(0)),datasets:[{label:'Resultado (USD/tn)',data:payoffs,borderWidth:2,pointRadius:0,tension:0.1,fill:false,segment:{borderColor:ctx2=>ctx2.p0.parsed.y>=0&&ctx2.p1.parsed.y>=0?'rgba(34,134,58,0.9)':ctx2.p0.parsed.y<0&&ctx2.p1.parsed.y<0?'rgba(203,36,49,0.9)':'rgba(150,150,150,0.7)'}}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>`Precio subyacente: USD ${items[0].label}`,label:item=>`Resultado: ${item.raw>=0?'+':''}${item.raw.toFixed(4)} USD/tn`}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{size:11}},title:{display:true,text:'Precio subyacente (USD/tn)',font:{size:11}}},y:{grid:{color:'#f0f2f5'},ticks:{font:{size:11}},title:{display:true,text:'Resultado (USD/tn)',font:{size:11}},afterDataLimits:scale=>{const r=scale.max-scale.min;scale.max+=r*0.1;scale.min-=r*0.1;}}}}});},50);}
 function buildStratPanel(){const panel=document.getElementById('panel-estrategia');const groupLabels=['📈 Alcistas','📉 Bajistas','🔒 Conservadoras'];const groups=[['bull_call_spread','ratio_call_spread','fut_buy_sell_call'],['bear_put_spread','ratio_put_spread','fut_sell_buy_put'],['covered_call','bull_put_spread','covered_call_fut']].map(ids=>ids.map(id=>PRESET_STRATEGIES.find(p=>p.id===id)).filter(Boolean));const presetsHTML=groups.map((grp,gi)=>`<div class="preset-section-label">${groupLabels[gi]}</div><div class="preset-grid">${grp.map(p=>`<div class="preset-card" data-id="${p.id}" onclick="selectPreset('${p.id}')"><div class="pc-check">✔</div><div class="pc-name">${p.nombre}</div><div class="pc-market" style="background:${p.mercadoBg};color:${p.mercadoColor}">${p.mercado}</div><div class="pc-desc">${p.descripcion}</div><div class="pc-risk">${p.riesgo}</div></div>`).join('')}</div>`).join('');panel.innerHTML=`<div class="full-card"><h3>Estrategias</h3><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px"><div class="strat-field"><label>Cultivo</label><select id="strat-cultivo" class="strat-select" onchange="stratCultivoChange()"><option value="SOJ">🌱 Soja</option><option value="MAI">🌽 Maíz</option></select></div></div><div class="strat-mode-tabs"><button class="strat-mode-btn active" data-mode="preset" onclick="setStratMode('preset')">⚡ Estrategias predeterminadas</button><button class="strat-mode-btn" data-mode="manual" onclick="setStratMode('manual')">🔧 Constructor manual</button></div><div id="preset-section">${presetsHTML}<div class="preset-controls"><div class="strat-field"><label>Vencimiento</label><select id="preset-venc" class="strat-select"></select></div><button class="btn-apply-preset" id="btn-apply-preset" onclick="applyPreset()" disabled>⚡ Aplicar estrategia</button><span id="preset-selected-info" style="color:#888;font-size:0.8rem">Seleccioná una estrategia arriba</span></div></div><div id="manual-section" style="display:none"><div class="add-leg-row"><div class="strat-field"><label>Acción</label><select id="strat-accion" class="strat-select"><option value="C">Compra</option><option value="V">Venta</option></select></div><div class="strat-field"><label>Tipo</label><select id="strat-tipo" class="strat-select" onchange="updateStratContractOpts()"><option value="C">Call</option><option value="P">Put</option><option value="F">Futuro</option></select></div><div class="strat-field"><label>Vencimiento</label><select id="strat-venc" class="strat-select" onchange="updateStratContractOpts()"></select></div><div class="strat-field" style="flex:2;min-width:240px"><label>Contrato (Strike · Prima)</label><select id="strat-contrato" class="strat-select"></select></div><button class="btn-add" onclick="addStratLeg()">+ Agregar pata</button><button class="btn-clear" onclick="clearStratLegs()">Limpiar</button></div></div><div class="full-card" style="margin-bottom:0;box-shadow:none;padding:0 0 4px 0"><table class="legs-table"><thead><tr><th>Acción</th><th>Tipo</th><th>Strike</th><th style="text-align:right">Prima</th><th>Venc.</th><th></th></tr></thead><tbody id="strat-legs-tbody"><tr><td colspan="6" class="empty-legs">Seleccioná una estrategia y aplicala, o usá el constructor manual</td></tr></tbody></table></div></div><div id="strat-results" style="margin-top:4px"><div style="color:#aaa;font-size:0.85rem;font-style:italic;padding:20px 0">Aplicá una estrategia para ver el análisis</div></div>`;updatePresetVencOpts();updateStratVencOpts();}
 
+
+// ── Brief Granos ─────────────────────────────────────────────────
+// BRIEF_GRANOS_DATA se actualiza con cada corrida de la tarea programada
+// "brief-diario-granos". Estructura: fecha, resumen ejecutivo, y un array
+// de cultivos, cada uno con sus factores (alcista/bajista/neutral) y fuente.
+const BRIEF_GRANOS_DATA = {
+  fecha: '2026-07-28',
+  resumen: [
+    '<b>Trigo con fuerte impulso alcista:</b> los ataques en el Mar Negro (Kerch, Chornomorsk, Odesa) redujeron ~1/3 la capacidad exportadora de Ucrania y hundieron las exportaciones rusas a mínimos de 9 años; el trigo Chicago subió +10% en la semana a máximos de 2 años.',
+    '<b>Petróleo revierte con fuerza a la baja:</b> tras la tregua entre EE.UU. e Irán en el Estrecho de Ormuz, el Brent cayó hasta -8,7% el 27/7 (a ~u$s88), lo que le quita sostén a los aceites vegetales vía biocombustibles.',
+    '<b>Soja de EEUU con panorama de oferta récord:</b> WASDE de julio subió la producción a 4.475 M bu (récord potencial) con condición 66% G/E; presión desde el lado de oferta.',
+    '<b>Demanda china mejora pero con fricción arancelaria:</b> compras chinas de soja se reactivan (exportaciones EEUU-China +57% ene-mar) pero el arancel del 13% a la soja de EEUU vs. 3% a Argentina/Brasil sigue favoreciendo al origen sudamericano.',
+    '<b>Aceites (girasol y soja) en máximos del año:</b> aceite de girasol argentino FOB en u$s1.330/ton (máximo 2026) y aceite de soja en u$s1.170/ton, sostenidos por demanda firme y prima histórica de EEUU sobre Sudamérica.'
+  ],
+  cultivos: [
+    {
+      id: 'soja', icon: '🫘', nombre: 'Soja (poroto, harina y aceite)',
+      factores: [
+        {dir:'alcista', titulo:'Demanda de China se recupera', texto:'Compras chinas de soja de EEUU repuntaron (+57% ene-mar vs. año anterior); acuerdo comercial contempla al menos 25 Mt/año hasta 2028, aunque Beijing no confirmó cifras oficialmente.', fuente:'Investigate Midwest / Farm Policy News', url:'https://investigatemidwest.org/2026/07/01/china-resumes-us-soybean-purchases-under-trade-deal-with-trump-but-future-for-farmers-remains-daunting/'},
+        {dir:'bajista', titulo:'Oferta récord en EEUU', texto:'WASDE de julio elevó la producción a 4.475 M bu (récord histórico potencial), con yield estable en 53 bu/acre y condición de cultivo 66% G/E al 19/7, en mejora por 2da semana consecutiva.', fuente:'USDA WASDE vía DTN Progressive Farmer', url:'https://www.dtnpf.com/agriculture/web/ag/news/article/2026/07/10/usda-releases-july-crop-production-3'},
+        {dir:'bajista', titulo:'Brasil apunta a otra cosecha y crush récord', texto:'Crush brasileño proyectado en 65 Mt (récord) para 2026/27; exportaciones también en niveles récord, presionando la competitividad relativa de EEUU.', fuente:'USDA FAS - Brazil Oilseeds and Products Update', url:'https://www.fas.usda.gov/data/gain/2026/07/brazil-oilseeds-and-products-update'},
+        {dir:'bajista', titulo:'Arancel diferencial China', texto:'Soja de EEUU paga 13% de arancel en China vs. 3% para Argentina/Brasil, restando competitividad al origen norteamericano.', fuente:'Reuters vía Trading Economics', url:'https://tradingeconomics.com/commodity/soybeans/news/499424'},
+        {dir:'alcista', titulo:'Harina y aceite de soja: demanda de biocombustibles firme', texto:'Aceite de soja en máximos desde 2022 (~u$s1.160-1.170/ton), impulsado por demanda doméstica de biodiesel en EEUU.', fuente:'Agrositio', url:'https://www.agrositio.com.ar/noticia/247371-las-exportaciones-de-aceites-vegetales-avanzan-a-ritmo-record-en-2026.html'},
+        {dir:'bajista', titulo:'Aceite de soja: caída del petróleo resta sostén', texto:'El desplome del Brent (-8,7% el 27/7) tras la tregua EEUU-Irán reduce el atractivo relativo del biodiesel.', fuente:'El Cronista', url:'https://www.cronista.com/financial-times/el-petroleo-se-desploma-mientras-iran-y-estados-unidos-suspenden-los-ataques-en-el-estrecho-de-ormuz/'},
+        {dir:'neutral', titulo:'Argentina: cosecha ya finalizada', texto:'La campaña 2025/26 de soja cerró en Argentina con 50,1 Mt según BCR; sin novedades de cultivo en pie, el foco pasa a comercialización y stocks.', fuente:'Bolsa de Comercio de Rosario', url:'https://www.bcr.com.ar/es/mercados/gea/estimaciones-nacionales-de-produccion/estimaciones'}
+      ]
+    },
+    {
+      id: 'maiz', icon: '🌽', nombre: 'Maíz',
+      factores: [
+        {dir:'bajista', titulo:'Yield récord proyectado en EEUU', texto:'WASDE de julio ubicó la producción 2026/27 en 16.000 M bu con yield estable en 183 bu/acre; condición 67% G/E al 19/7.', fuente:'USDA WASDE vía DTN', url:'https://www.dtnpf.com/agriculture/web/ag/news/article/2026/07/20/usda-crop-progress-corn-rated-67-66'},
+        {dir:'alcista', titulo:'Recorte de stocks finales en EEUU', texto:'USDA recortó 170 M bu de los stocks finales 2026/27, a 1.790 M bu, algo más ajustado que el mes previo.', fuente:'USDA WASDE', url:'https://www.dtnpf.com/agriculture/web/ag/news/article/2026/07/10/usda-releases-july-crop-production-3'},
+        {dir:'bajista', titulo:'Brasil: exportación agresiva de safrinha', texto:'Cotizaciones FOB Paranaguá subieron a u$s222/ton; Brasil se perfila para exportar con fuerza desde jul-ago, compitiendo con el maíz de EEUU.', fuente:'Farm Progress', url:'https://www.farmprogress.com/commentary/market-forecast-brazil-calls-the-shots'},
+        {dir:'alcista', titulo:'Riesgo de siembra tardía de la safrinha', texto:'Retrasos en la siembra implican polinización tardía (abril-mayo); si el período seco llega temprano, podría recortar rindes y exportación brasileña.', fuente:'Ohio Ag Net', url:'https://ocj.com/2026/04/brazil-corn-strong-outlook-but-in-the-end-the-weather-still-decides/'},
+        {dir:'bajista', titulo:'Argentina: daño por chicharrita', texto:'El maíz argentino sigue sufriendo daños por la plaga "chicharrita", especialmente en el norte del país.', fuente:'Infocampo', url:'https://www.infocampo.com.ar/panorama-agricola-termino-la-soja-el-maiz-volvio-a-sufrir-danos-por-chicharrita-y-el-trigo-sigue-repuntando/'},
+        {dir:'neutral', titulo:'Fondos especulativos net long', texto:'Managed money en CBOT aumentó su posición neta larga en maíz a ~93.000 contratos al 21/7 (+49.518 en la semana).', fuente:'CFTC COT vía IndexBox', url:'https://www.indexbox.io/blog/cftc-cot-report-july-21-2026-major-shifts-in-grains-energy-and-metals/'}
+      ]
+    },
+    {
+      id: 'trigo', icon: '🌾', nombre: 'Trigo',
+      factores: [
+        {dir:'alcista', titulo:'Disrupción severa en Mar Negro', texto:'Ataques ucranianos cerraron el Estrecho de Kerch (10/7), afectando ~1/4 de las exportaciones rusas de trigo y girasol; Rusia va camino a su julio más débil en exportaciones en 9 años.', fuente:'Euromaidan Press / Moscow Times', url:'https://euromaidanpress.com/2026/07/21/russia-wheat-exports-kerch-strait-collapse/'},
+        {dir:'alcista', titulo:'Daño a infraestructura portuaria ucraniana', texto:'Ataques rusos en Chornomorsk y Odesa (10-19/7) dañaron terminales de Kernel, con ~45.000 t de trigo y 9.000 t de aceite de girasol perdidos o dañados.', fuente:'World Grain', url:'https://www.world-grain.com/articles/23027-black-sea-grain-trapped-as-russia-ukraine-attacks-continue'},
+        {dir:'alcista', titulo:'Cosecha de EEUU en mínimos desde 1970', texto:'WASDE de julio proyecta la menor cosecha de trigo de EEUU desde 1970, con stocks finales recortados a 722 M bu.', fuente:'RFD-TV', url:'https://www.rfdtv.com/july-wasde-report-signals-historic-wheat-decline-stronger-corn-demand-higher-cattle-prices'},
+        {dir:'alcista', titulo:'Reacción de precios en Chicago y París', texto:'El trigo de Chicago subió más de 10% en una semana, tocando máximos de 2 años; el trigo de París alcanzó máximos de 17 meses.', fuente:'Euromaidan Press', url:'https://euromaidanpress.com/2026/07/21/russia-wheat-exports-kerch-strait-collapse/'},
+        {dir:'alcista', titulo:'Argentina: buena implantación, exportar más caro', texto:'El trigo nace en buenas condiciones (siembra cerca de 7 M ha, 2da mayor de los últimos 17 años); con precios internacionales en alza, mejora la ecuación del productor.', fuente:'Bolsa de Comercio de Rosario', url:'https://www.bcr.com.ar/es/mercados/gea/estimaciones-nacionales-de-produccion/estimaciones/el-trigo-suma-130000-ha-mas-en-el'},
+        {dir:'neutral', titulo:'Fondos especulativos: posiciones mixtas', texto:'En trigo SRW (Chicago) managed money seguía neto corto al 21/7, mientras que en HRW estaba neto largo; el rally podría estar forzando cobertura de cortos.', fuente:'CFTC COT', url:'https://www.indexbox.io/blog/cftc-cot-report-july-21-2026-major-shifts-in-grains-energy-and-metals/'}
+      ]
+    },
+    {
+      id: 'girasol', icon: '🌻', nombre: 'Girasol',
+      factores: [
+        {dir:'alcista', titulo:'Aceite de girasol en máximos del año', texto:'FOB argentino promedió u$s1.290/ton en el año (máximo desde 2022) y llegó a u$s1.330/ton esta semana.', fuente:'Agrositio', url:'https://www.agrositio.com.ar/noticia/247267-girasol-argentino-crece-81-a-80-mt-en-202627-y-aceite-local-cotiza-hasta-us-1430-fob.html'},
+        {dir:'alcista', titulo:'Disrupción de exportaciones rusas/ucranianas de aceite', texto:'Los ataques en el Mar Negro dañaron terminales de aceite de girasol (Kernel en Odesa) y afectan ~1/4 de las exportaciones rusas del complejo.', fuente:'World Grain / Euromaidan Press', url:'https://www.world-grain.com/articles/23027-black-sea-grain-trapped-as-russia-ukraine-attacks-continue'},
+        {dir:'alcista', titulo:'Argentina: exportación en máximos históricos', texto:'El complejo girasolero argentino exporta en máximos de dos décadas; USDA proyecta cosecha récord y exportaciones de aceite creciendo a 2,05 Mt.', fuente:'Política y Medios / Agrolatam', url:'https://politicaymedios.com.ar/nota/21188/la-exportacion-del-complejo-girasolero-argentino-en-maximos-de-dos-decadas/'},
+        {dir:'bajista', titulo:'Caída del petróleo resta sostén a biocombustibles', texto:'El derrumbe del Brent tras la tregua EEUU-Irán le quita algo de impulso a la demanda de aceites vegetales para biodiesel.', fuente:'El Cronista', url:'https://www.cronista.com/financial-times/el-petroleo-se-desploma-mientras-iran-y-estados-unidos-suspenden-los-ataques-en-el-estrecho-de-ormuz/'}
+      ]
+    },
+    {
+      id: 'mani', icon: '🥜', nombre: 'Maní',
+      factores: []
+    }
+  ]
+};
+
+function buildBriefGranosPanel(){
+  var panel = document.getElementById('panel-brief-granos');
+  if(!panel) return;
+  var d = BRIEF_GRANOS_DATA;
+
+  function balance(factores){
+    var up=0, down=0;
+    factores.forEach(function(f){ if(f.dir==='alcista') up++; else if(f.dir==='bajista') down++; });
+    var cls = up>down ? 'alcista' : (down>up ? 'bajista' : 'neutral');
+    var icon = cls==='alcista' ? '🟢' : (cls==='bajista' ? '🔴' : '⚪');
+    return {cls:cls, icon:icon, up:up, down:down, neu: factores.length-up-down};
+  }
+
+  var tabsHtml = '<div class="bg-tabs">' + d.cultivos.map(function(c){
+    var b = balance(c.factores);
+    var label = c.nombre.split(' (')[0];
+    return '<span class="bg-tab ' + b.cls + '" onclick="var el=document.getElementById(\'bg-' + c.id + '\'); if(el) el.scrollIntoView({behavior:\'smooth\'});">' + b.icon + ' ' + label + '</span>';
+  }).join('') + '</div>';
+
+  var execHtml = '<div class="bg-exec"><h3>Resumen ejecutivo</h3><ul>' +
+    d.resumen.map(function(r){ return '<li>' + r + '</li>'; }).join('') +
+    '</ul></div>';
+
+  var cropsHtml = d.cultivos.map(function(c){
+    var b = balance(c.factores);
+    var pillLabel = b.cls==='alcista' ? 'Neto alcista' : (b.cls==='bajista' ? 'Neto bajista' : 'Parejo / sin datos');
+    var factoresHtml = c.factores.length ? c.factores.map(function(f){
+      var icon = f.dir==='alcista' ? '🟢' : (f.dir==='bajista' ? '🔴' : '⚪');
+      var fuenteHtml = f.url
+        ? '<span class="bg-fuente">Fuente: <a href="' + f.url + '" target="_blank" rel="noopener">' + f.fuente + '</a></span>'
+        : '<span class="bg-fuente">Sin fuente puntual</span>';
+      return '<div class="bg-factor ' + f.dir + '"><div>' + icon + '</div><div><b>' + f.titulo + '</b>' + f.texto + fuenteHtml + '</div></div>';
+    }).join('') : '<div class="bg-factor neutral"><div>⚪</div><div>Sin novedades relevantes hoy.</div></div>';
+
+    return '<div class="bg-crop" id="bg-' + c.id + '"><div class="bg-crop-title">' + c.icon + ' ' + c.nombre +
+      '<span class="bg-pill ' + b.cls + '">' + pillLabel + ' (' + b.up + ' 🟢 / ' + b.down + ' 🔴 / ' + b.neu + ' ⚪)</span></div>' +
+      factoresHtml + '</div>';
+  }).join('');
+
+  panel.innerHTML =
+    '<div class="bg-header"><h2>🌾 Brief Diario de Mercado de Granos</h2><div class="bg-meta">Actualizado: ' + d.fecha + '</div></div>' +
+    tabsHtml + execHtml + cropsHtml;
+}
+
 function showTab(id){
-  const ids=['soj-fut','mai-fut','tri-fut','soj-opts','mai-opts','tri-opts','estrategia','dlr-fut','lecaps','financiamiento','insumo-producto','comercializacion','noticias'];
+  const ids=['soj-fut','mai-fut','tri-fut','soj-opts','mai-opts','tri-opts','estrategia','dlr-fut','lecaps','financiamiento','insumo-producto','comercializacion','noticias','brief-granos'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',ids[i]===id));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
@@ -1543,6 +1683,7 @@ function showTab(id){
   if(id==='financiamiento') buildFinanciamientoPanel();
   if(id==='insumo-producto' && !document.getElementById('panel-insumo-producto').dataset.built){ buildInsumoProductoPanel(); document.getElementById('panel-insumo-producto').dataset.built='1'; }
   if(id==='comercializacion' && !document.getElementById('panel-comercializacion').dataset.built){ buildComercializacionPanel(); document.getElementById('panel-comercializacion').dataset.built='1'; }
+  if(id==='brief-granos' && !document.getElementById('panel-brief-granos').dataset.built){ buildBriefGranosPanel(); document.getElementById('panel-brief-granos').dataset.built='1'; }
 }
 
 // ── LECAPs ────────────────────────────────────────────────────────
