@@ -428,9 +428,9 @@ window.LANDING_LINKS = {
    BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
    oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
    valores (oficial, CCL, soja/maíz/trigo, etc.) siguen viniendo de la sheet.
-   Última actualización: 2026-07-29
+   Última actualización: 2026-07-30
    ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
-const BCRA_TC_OVERRIDE = 1499.8387;
+const BCRA_TC_OVERRIDE = 1496.3521;
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 // Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
 const PIZARRA_SOJ_2025={
@@ -2415,7 +2415,7 @@ window._initDeviceFlow=function(){
 /* ═══════════════════════════════════════════════════════════════════════
    NEWS_DATA — Claude actualiza este bloque cada vez que corre el scraping.
    Las noticias con más de 7 días son eliminadas automáticamente del array.
-   Última actualización: 2026-07-29
+   Última actualización: 2026-07-30
    ═══════════════════════════════════════════════════════════════════════ */
 const COMERCIALIZACION_DATA = {
   fecha:'2026-07-22',
@@ -2436,6 +2436,8 @@ const CARRYIN_DATA = {
 };
 
 const NEWS_DATA = [
+  {fecha:'2026-07-29',fuente:'Bichos de Campo',cultivo:'Maíz',titulo:'El mercado argentino de maíz sigue inmune al virus bajista presente en Chicago',resumen:'A los exportadores argentinos les está costando originar maíz para poder completar embarques y esa circunstancia evita que el mercado local se “contagie” de la tendencia bajista presente en el CME Group (“Chicago”). Este miércoles la autoridad monetaria de EE.UU. (Reserva Federal) decidió mantener las tasas de interés de referencia en un nivel de 3,50%-3,75% […]',link:'https://bichosdecampo.com/el-mercado-argentino-de-maiz-sigue-inmune-al-virus-bajista-presente-en-chicago/'},
+  {fecha:'2026-07-29',fuente:'Bichos de Campo',cultivo:'Maíz',titulo:'¿Qué te comprás con lo que cosechás? Un informe de Coninagro asegura que se complicó la relación insumo-producto para la próxima campaña de maíz',resumen:'La próxima campaña de maíz, que iniciará en un par de meses, está en un escenario de costos complejo. Esa es la principal conclusión que surge del Monitor Insumo-Producto elaborado por Coninagro, que analiza la capacidad de compra de los principales productos agropecuarios frente a insumos, servicios e inversiones. Si bien el cereal ganó terreno […]',link:'https://bichosdecampo.com/que-te-compras-con-lo-que-cosechas-un-informe-de-coninagro-asegura-que-se-complico-la-relacion-insumo-producto-para-la-proxima-campana-de-maiz/'},
   {fecha:'2026-07-28',fuente:'Infocampo',cultivo:'Soja',titulo:'La polinización también define a la soja: un hallazgo del INTA y el Conicet cambia un paradigma agrícola',resumen:'Una investigación argentina demuestra que la soja no depende únicamente de la autopolinización para formar semillas. El estudio detectó un mecanismo reproductivo hasta ahora desconocido y reveló que los polinizadores silvestres cumplen un papel clave para sostener el rendimiento.',link:'https://www.infocampo.com.ar/la-polinizacion-tambien-define-a-la-soja-un-hallazgo-del-inta-y-el-conicet-cambia-un-paradigma-agricola/'},
   {fecha:'2026-07-28',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Hagan sus apuestas: La oficina del USDA en Canberra estima que la cosecha australiana de trigo no caerá de manera tan dramática',resumen:'Mientras que el último informe oficial del USDA proyectó una cosecha australiana de trigo de 28,0 millones de toneladas para 2026/27 versus 35,9 millones en el ciclo previo, la oficina del organismo estadounidense en esa nación estima que la caída no será dramática y prevé una producción de 31,0 millones de toneladas. En ese marco, […]',link:'https://bichosdecampo.com/hagan-sus-apuestas-la-oficina-del-usda-en-canberra-estima-que-la-cosecha-australiana-de-trigo-no-caera-de-manera-tan-dramatica/'},
   {fecha:'2026-07-28',fuente:'Bichos de Campo',cultivo:'Maíz / Soja',titulo:'Recuperación de los precios de la soja y el maíz ante el temor de que el “apagón logístico” del Mar Negro se extienda por meses',resumen:'Luego de que ayer se registrara una toma de ganancias importante en el mercado de futuros agrícolas del CME Group (“Chicago”), este martes los valores de la soja y el maíz se recuperaron ante la incertidumbre generada por el “apagón logístico” presente en el Mar Negro. Los valores de la soja en el CME Group […]',link:'https://bichosdecampo.com/recuperacion-de-los-precios-de-la-soja-y-el-maiz-ante-el-temor-de-que-el-apagon-logistico-del-mar-negro-se-extienda-por-meses/'},
