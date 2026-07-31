@@ -20,6 +20,7 @@ Guardamos las dos campanias con su propia comparacion YoY, para poder
 elegir en el dashboard cual campania mostrar (toggle 26/27 / 25/26).
 """
 import re
+import time
 import requests
 from bs4 import BeautifulSoup
 
@@ -36,6 +37,10 @@ COLS = ["comprado", "precio_hecho", "a_fijar", "fijado", "saldo_a_fijar", "djve_
 
 TARGET_FILES = ["index.html"]
 
+# Reintentos ante caidas/lentitud puntual del sitio de MAGyP
+FETCH_INTENTOS = 3
+FETCH_ESPERA_SEG = 20
+
 
 def to_float(s):
     s = s.strip().replace(".", "").replace(",", ".")
@@ -49,9 +54,18 @@ def to_float(s):
 
 
 def fetch_html():
-    resp = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
-    resp.raise_for_status()
-    return resp.text
+    last_err = None
+    for intento in range(1, FETCH_INTENTOS + 1):
+        try:
+            resp = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
+            resp.raise_for_status()
+            return resp.text
+        except requests.exceptions.RequestException as e:
+            last_err = e
+            print(f"[WARN] Intento {intento}/{FETCH_INTENTOS} fallo al conectar a MAGyP: {e}")
+            if intento < FETCH_INTENTOS:
+                time.sleep(FETCH_ESPERA_SEG)
+    raise last_err
 
 
 def parse_fecha(html_text):
