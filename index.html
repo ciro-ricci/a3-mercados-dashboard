@@ -1242,8 +1242,10 @@ function injectPriceCrossPanel(panelId){
   const sortedVenc=sortByVenc(allVenc.map(v=>({venc_display:v}))).map(r=>r.venc_display);
   const rowsHtml=sortedVenc.map(v=>{
     const s=sM[v],m=mM[v],t=tM[v];
-    return `<tr><td>${v}</td><td style="${homeCult==='soja'?'font-weight:700;color:'+GRAIN_COLOR.soja:''}">${s?fmt(s):'—'}</td><td style="${homeCult==='maiz'?'font-weight:700;color:'+GRAIN_COLOR.maiz:''}">${m?fmt(m):'—'}</td><td style="${homeCult==='trigo'?'font-weight:700;color:'+GRAIN_COLOR.trigo:''}">${t?fmt(t):'—'}</td><td>${fmtRatio(ratio(s,m))}</td><td>${fmtRatio(ratio(s,t))}</td><td>${fmtRatio(ratio(m,t))}</td></tr>`;
-  }).join('');
+    const rSM=ratio(s,m),rST=ratio(s,t),rMT=ratio(m,t);
+    if(rSM===null&&rST===null&&rMT===null)return null;
+    return `<tr><td>${v}</td><td style="${homeCult==='soja'?'font-weight:700;color:'+GRAIN_COLOR.soja:''}">${s?fmt(s):'—'}</td><td style="${homeCult==='maiz'?'font-weight:700;color:'+GRAIN_COLOR.maiz:''}">${m?fmt(m):'—'}</td><td style="${homeCult==='trigo'?'font-weight:700;color:'+GRAIN_COLOR.trigo:''}">${t?fmt(t):'—'}</td><td>${fmtRatio(rSM)}</td><td>${fmtRatio(rST)}</td><td>${fmtRatio(rMT)}</td></tr>`;
+  }).filter(Boolean).join('');
   const wrap=document.createElement('div');
   wrap.id='price-cross-wrap-'+panelId;
   wrap.className='full-card';
