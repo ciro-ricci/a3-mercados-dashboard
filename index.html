@@ -428,9 +428,9 @@ window.LANDING_LINKS = {
    BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
    oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
    valores (oficial, CCL, soja/maíz/trigo, etc.) siguen viniendo de la sheet.
-   Última actualización: 2026-07-30
+   Última actualización: 2026-07-28
    ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
-const BCRA_TC_OVERRIDE = 1496.3521;
+const BCRA_TC_OVERRIDE = 1498.5117;
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 // Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
 const PIZARRA_SOJ_2025={
@@ -1123,7 +1123,7 @@ window._setCustomSpotArs=function(panelId,val){
   if(window._futState&&window._futState[panelId]){
     _renderFutPanel(panelId);
     injectSpotCard(panelId,SPOT);
-    if(panelId==='soj-fut')injectSojSeasonalChart();
+    injectPriceCrossPanel(panelId);
   }
 };
 function injectSpotCard(panelId,spot){
@@ -1197,85 +1197,6 @@ function findVencByMonth(arr,prefix){
   const s=sortByVenc(arr.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste))));
   return s.find(r=>(r.venc_display||'').startsWith(prefix))?.venc_display||s[0]?.venc_display||'';
 }
-function injectSojSeasonalChart(){
-  const panel=document.getElementById('panel-soj-fut');
-  if(!panel)return;
-  const existing=document.getElementById('soj-seasonal-wrap');
-  if(existing)existing.remove();
-  const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const datasets=[
-    {label:'MAY',data:[2,4,6,1,8,2,0,0,1,0,0,2],color:'#22c55e'},
-    {label:'JUL',data:[3,0,3,0,5,5,5,2,1,1,0,0],color:'#f97316'},
-    {label:'SEP',data:[2,0,3,0,3,4,3,1,8,1,1,0],color:'#06b6d4'},
-    {label:'NOV',data:[2,0,2,1,3,4,1,1,2,4,6,0],color:'#a855f7'},
-  ];
-  const wrap=document.createElement('div');
-  wrap.id='soj-seasonal-wrap';
-  wrap.style.cssText='margin:18px 0 4px;padding:20px 22px 18px;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border-radius:14px;border:1px solid #334155;';
-  wrap.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div>
-        <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8;">Estacionalidad Histórica · 2001–2025</div>
-        <div style="font-size:0.72rem;color:#64748b;margin-top:2px;">Frecuencia de picos mensuales por contrato</div>
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
-        ${datasets.map(d=>`<span style="display:flex;align-items:center;gap:5px;font-size:0.72rem;color:#cbd5e1;"><span style="width:10px;height:10px;border-radius:2px;background:${d.color};display:inline-block;"></span>${d.label}</span>`).join('')}
-      </div>
-    </div>
-    <div style="position:relative;height:200px;"><canvas id="soj-seasonal-chart"></canvas></div>`;
-  panel.appendChild(wrap);
-  requestAnimationFrame(()=>{
-    const ctx=document.getElementById('soj-seasonal-chart');
-    if(!ctx||!window.Chart)return;
-    if(ctx._chartInst){ctx._chartInst.destroy();}
-    ctx._chartInst=new Chart(ctx,{
-      type:'bar',
-      data:{
-        labels:months,
-        datasets:datasets.map(d=>({
-          label:d.label,
-          data:d.data,
-          backgroundColor:d.color+'cc',
-          borderColor:d.color,
-          borderWidth:1,
-          borderRadius:3,
-          borderSkipped:false,
-        }))
-      },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false,
-        interaction:{mode:'index',intersect:false},
-        plugins:{
-          legend:{display:false},
-          tooltip:{
-            backgroundColor:'#1e293b',
-            borderColor:'#334155',
-            borderWidth:1,
-            titleColor:'#f1f5f9',
-            bodyColor:'#94a3b8',
-            callbacks:{
-              title:items=>`${items[0].label}`,
-              label:item=>`  ${item.dataset.label}: ${item.raw} veces`
-            }
-          }
-        },
-        scales:{
-          x:{
-            grid:{color:'#1e293b',drawBorder:false},
-            ticks:{color:'#94a3b8',font:{size:11}},
-          },
-          y:{
-            beginAtZero:true,
-            grid:{color:'#1e293b88',drawBorder:false},
-            ticks:{color:'#94a3b8',font:{size:11},stepSize:1,precision:0},
-            title:{display:true,text:'Frecuencia',color:'#64748b',font:{size:10}}
-          }
-        }
-      }
-    });
-  });
-}
 function injectChicagoErrorBanner(panelId){
   const panel=document.getElementById('panel-'+panelId);if(!panel)return;
   const existing=document.getElementById('chicago-err-'+panelId);if(existing)existing.remove();
@@ -1287,6 +1208,53 @@ function injectChicagoErrorBanner(panelId){
   if(spotCard)spotCard.insertAdjacentElement('afterend',div);
   else panel.insertAdjacentElement('afterbegin',div);
 }
+function injectPriceCrossPanel(panelId){
+  const panel=document.getElementById('panel-'+panelId);
+  if(!panel)return;
+  const existing=document.getElementById('price-cross-wrap-'+panelId);
+  if(existing)existing.remove();
+  const GRAIN_COLOR={soja:'#2e7d32',maiz:'#e65100',trigo:'#1565c0'};
+  const homeCult=panelId.startsWith('soj')?'soja':panelId.startsWith('mai')?'maiz':panelId.startsWith('tri')?'trigo':null;
+  function spotArs(pid,key){
+    const custom=window._customSpotArs&&window._customSpotArs[pid];
+    if(custom)return custom;
+    return SPOT?SPOT[key+'_ars']:null;
+  }
+  const sSoja=spotArs('soj-fut','soja'),sMaiz=spotArs('mai-fut','maiz'),sTrigo=spotArs('tri-fut','trigo');
+  function ratio(a,b){return(a&&b)?a/b:null;}
+  function fmtRatio(v){return v===null?'—':v.toFixed(2);}
+  const spotPairs=[
+    {a:'Soja',b:'Maíz',va:sSoja,vb:sMaiz},
+    {a:'Soja',b:'Trigo',va:sSoja,vb:sTrigo},
+    {a:'Maíz',b:'Trigo',va:sMaiz,vb:sTrigo},
+  ];
+  const spotCardsHtml=spotPairs.map(p=>{
+    const r=ratio(p.va,p.vb);
+    return `<div style="flex:1;min-width:200px;background:#f7f8fa;border-radius:12px;padding:16px 18px;border:1px solid #e8eaed;">
+      <div style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">${p.a} / ${p.b} · Disponible</div>
+      <div style="font-size:1.5rem;font-weight:800;color:#1a1a2e;">${fmtRatio(r)}</div>
+      <div style="font-size:0.76rem;color:#666;margin-top:4px;">${r?`1 tn de ${p.a} equivale a ${fmtRatio(r)} tn de ${p.b}`:'Sin datos disponibles'}</div>
+    </div>`;
+  }).join('');
+  function mapByVenc(rows){const m={};(rows||[]).forEach(r=>{const v=parseFloat(r.ajuste);if(!r.is_disp&&r.venc_display&&!isNaN(v))m[r.venc_display]=v;});return m;}
+  const sM=mapByVenc(SOJ_FUT),mM=mapByVenc(MAI_FUT),tM=mapByVenc(TRI_FUT);
+  const allVenc=[...new Set([...Object.keys(sM),...Object.keys(mM),...Object.keys(tM)])];
+  const sortedVenc=sortByVenc(allVenc.map(v=>({venc_display:v}))).map(r=>r.venc_display);
+  const rowsHtml=sortedVenc.map(v=>{
+    const s=sM[v],m=mM[v],t=tM[v];
+    return `<tr><td>${v}</td><td style="${homeCult==='soja'?'font-weight:700;color:'+GRAIN_COLOR.soja:''}">${s?fmt(s):'—'}</td><td style="${homeCult==='maiz'?'font-weight:700;color:'+GRAIN_COLOR.maiz:''}">${m?fmt(m):'—'}</td><td style="${homeCult==='trigo'?'font-weight:700;color:'+GRAIN_COLOR.trigo:''}">${t?fmt(t):'—'}</td><td>${fmtRatio(ratio(s,m))}</td><td>${fmtRatio(ratio(s,t))}</td><td>${fmtRatio(ratio(m,t))}</td></tr>`;
+  }).join('');
+  const wrap=document.createElement('div');
+  wrap.id='price-cross-wrap-'+panelId;
+  wrap.className='full-card';
+  wrap.style.cssText='margin:18px 0 4px;';
+  wrap.innerHTML=`
+    <h3>Cruces de Precios entre Granos</h3>
+    <div style="font-size:0.75rem;color:#888;margin:-6px 0 16px;">Relación de precios entre soja, maíz y trigo, en el disponible y en cada posición de futuro (USD/tn).</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px;">${spotCardsHtml}</div>
+    ${rowsHtml?`<table class="fut-table"><thead><tr><th>Posición</th><th>Soja (USD)</th><th>Maíz (USD)</th><th>Trigo (USD)</th><th>Soja/Maíz</th><th>Soja/Trigo</th><th>Maíz/Trigo</th></tr></thead><tbody>${rowsHtml}</tbody></table>`:'<div style="padding:24px;text-align:center;color:#aaa;font-size:0.85rem;">Sin datos de futuros disponibles todavía.</div>'}`;
+  panel.appendChild(wrap);
+}
 function applyA3(p){
   SOJ_FUT=p.sojFut;MAI_FUT=p.maiFut;TRI_FUT=p.triFut;DLR_FUT=p.dlrFut;SOJ_OPTS=p.sojOpts;MAI_OPTS=p.maiOpts;TRI_OPTS=p.triOpts||[];
   a3DataLoaded=true;
@@ -1294,9 +1262,9 @@ function applyA3(p){
   const mR=findVencByMonth(MAI_FUT,'JUL')||'JUL26';
   const tR=secondValidVenc(TRI_FUT)||'JUL26';
   const dR=firstValidVenc(DLR_FUT)||'05/2026';
-  buildFutPanel('soj-fut',SOJ_FUT,'USD',sR,CHICAGO);injectSpotCard('soj-fut',SPOT);injectSojSeasonalChart();if(CHICAGO_ERROR)injectChicagoErrorBanner('soj-fut');
-  buildFutPanel('mai-fut',MAI_FUT,'USD',mR,CHICAGO);injectSpotCard('mai-fut',SPOT);if(CHICAGO_ERROR)injectChicagoErrorBanner('mai-fut');
-  buildFutPanel('tri-fut',TRI_FUT,'USD',tR,CHICAGO);injectSpotCard('tri-fut',SPOT);if(CHICAGO_ERROR)injectChicagoErrorBanner('tri-fut');
+  buildFutPanel('soj-fut',SOJ_FUT,'USD',sR,CHICAGO);injectSpotCard('soj-fut',SPOT);injectPriceCrossPanel('soj-fut');if(CHICAGO_ERROR)injectChicagoErrorBanner('soj-fut');
+  buildFutPanel('mai-fut',MAI_FUT,'USD',mR,CHICAGO);injectSpotCard('mai-fut',SPOT);injectPriceCrossPanel('mai-fut');if(CHICAGO_ERROR)injectChicagoErrorBanner('mai-fut');
+  buildFutPanel('tri-fut',TRI_FUT,'USD',tR,CHICAGO);injectSpotCard('tri-fut',SPOT);injectPriceCrossPanel('tri-fut');if(CHICAGO_ERROR)injectChicagoErrorBanner('tri-fut');
   buildFutPanel('dlr-fut',DLR_FUT,'$',dR);injectDollarRatesCard('dlr-fut');
   buildChain('soj-opts',SOJ_OPTS,[...new Set(SOJ_OPTS.map(r=>r.venc_serie))].sort());
   buildChain('mai-opts',MAI_OPTS,[...new Set(MAI_OPTS.map(r=>r.venc_serie))].sort());
@@ -1440,14 +1408,14 @@ window._setFutRef=function(panelId,venc){
   _renderFutPanel(panelId);
   if(st.spotHtml)document.getElementById('panel-'+panelId).insertAdjacentHTML('afterbegin',st.spotHtml);
   if(panelId==='dlr-fut')injectDollarRatesCard('dlr-fut');
-  if(panelId==='soj-fut')injectSojSeasonalChart();
+  if(['soj-fut','mai-fut','tri-fut'].includes(panelId))injectPriceCrossPanel(panelId);
 };
 window._toggleChicagoChart=function(panelId){
   const st=window._futState[panelId];if(!st)return;
   st.showChicago=!st.showChicago;
   _renderFutPanel(panelId);
   if(st.spotHtml)document.getElementById('panel-'+panelId).insertAdjacentHTML('afterbegin',st.spotHtml);
-  if(panelId==='soj-fut')injectSojSeasonalChart();
+  if(['soj-fut','mai-fut','tri-fut'].includes(panelId))injectPriceCrossPanel(panelId);
 };
 function buildFutPanel(panelId,rows,currency,refVenc,chicago=null){
   window._futState[panelId]={rows,currency,chicago,refVenc,spotHtml:null};
@@ -2415,7 +2383,7 @@ window._initDeviceFlow=function(){
 /* ═══════════════════════════════════════════════════════════════════════
    NEWS_DATA — Claude actualiza este bloque cada vez que corre el scraping.
    Las noticias con más de 7 días son eliminadas automáticamente del array.
-   Última actualización: 2026-07-30
+   Última actualización: 2026-07-28
    ═══════════════════════════════════════════════════════════════════════ */
 const COMERCIALIZACION_DATA = {
   fecha:'2026-07-22',
@@ -2436,11 +2404,8 @@ const CARRYIN_DATA = {
 };
 
 const NEWS_DATA = [
-  {fecha:'2026-07-29',fuente:'Bichos de Campo',cultivo:'Maíz',titulo:'El mercado argentino de maíz sigue inmune al virus bajista presente en Chicago',resumen:'A los exportadores argentinos les está costando originar maíz para poder completar embarques y esa circunstancia evita que el mercado local se “contagie” de la tendencia bajista presente en el CME Group (“Chicago”). Este miércoles la autoridad monetaria de EE.UU. (Reserva Federal) decidió mantener las tasas de interés de referencia en un nivel de 3,50%-3,75% […]',link:'https://bichosdecampo.com/el-mercado-argentino-de-maiz-sigue-inmune-al-virus-bajista-presente-en-chicago/'},
-  {fecha:'2026-07-29',fuente:'Bichos de Campo',cultivo:'Maíz',titulo:'¿Qué te comprás con lo que cosechás? Un informe de Coninagro asegura que se complicó la relación insumo-producto para la próxima campaña de maíz',resumen:'La próxima campaña de maíz, que iniciará en un par de meses, está en un escenario de costos complejo. Esa es la principal conclusión que surge del Monitor Insumo-Producto elaborado por Coninagro, que analiza la capacidad de compra de los principales productos agropecuarios frente a insumos, servicios e inversiones. Si bien el cereal ganó terreno […]',link:'https://bichosdecampo.com/que-te-compras-con-lo-que-cosechas-un-informe-de-coninagro-asegura-que-se-complico-la-relacion-insumo-producto-para-la-proxima-campana-de-maiz/'},
   {fecha:'2026-07-28',fuente:'Infocampo',cultivo:'Soja',titulo:'La polinización también define a la soja: un hallazgo del INTA y el Conicet cambia un paradigma agrícola',resumen:'Una investigación argentina demuestra que la soja no depende únicamente de la autopolinización para formar semillas. El estudio detectó un mecanismo reproductivo hasta ahora desconocido y reveló que los polinizadores silvestres cumplen un papel clave para sostener el rendimiento.',link:'https://www.infocampo.com.ar/la-polinizacion-tambien-define-a-la-soja-un-hallazgo-del-inta-y-el-conicet-cambia-un-paradigma-agricola/'},
   {fecha:'2026-07-28',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Hagan sus apuestas: La oficina del USDA en Canberra estima que la cosecha australiana de trigo no caerá de manera tan dramática',resumen:'Mientras que el último informe oficial del USDA proyectó una cosecha australiana de trigo de 28,0 millones de toneladas para 2026/27 versus 35,9 millones en el ciclo previo, la oficina del organismo estadounidense en esa nación estima que la caída no será dramática y prevé una producción de 31,0 millones de toneladas. En ese marco, […]',link:'https://bichosdecampo.com/hagan-sus-apuestas-la-oficina-del-usda-en-canberra-estima-que-la-cosecha-australiana-de-trigo-no-caera-de-manera-tan-dramatica/'},
-  {fecha:'2026-07-28',fuente:'Bichos de Campo',cultivo:'Maíz / Soja',titulo:'Recuperación de los precios de la soja y el maíz ante el temor de que el “apagón logístico” del Mar Negro se extienda por meses',resumen:'Luego de que ayer se registrara una toma de ganancias importante en el mercado de futuros agrícolas del CME Group (“Chicago”), este martes los valores de la soja y el maíz se recuperaron ante la incertidumbre generada por el “apagón logístico” presente en el Mar Negro. Los valores de la soja en el CME Group […]',link:'https://bichosdecampo.com/recuperacion-de-los-precios-de-la-soja-y-el-maiz-ante-el-temor-de-que-el-apagon-logistico-del-mar-negro-se-extienda-por-meses/'},
   {fecha:'2026-07-26',fuente:'Bichos de Campo',cultivo:'Trigo / Maíz / Soja',titulo:'Proximidad geográfica: Seis mapas para entender un factor de competitividad clave de la agroindustria argentina',resumen:'Al sumar la producción de los seis cultivos principales de Argentina –soja, maíz, trigo, girasol, cebada y sorgo– se observa que el 67% del total nacional se localiza a 300 kilómetros de complejos portuarios. Se trata de una ventaja logística estructural de la agroindustria argentina, ya que en EE.UU. y Brasil la producción de granos […]',link:'https://bichosdecampo.com/proximidad-geografica-seis-mapas-para-entender-un-factor-de-competitividad-clave-de-la-agroindustria-argentina/'},
   {fecha:'2026-07-25',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 25 julio 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-25-julio-2026/'},
   {fecha:'2026-07-25',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 25 julio 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-25-julio-2026/'},
