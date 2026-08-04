@@ -1694,6 +1694,18 @@ function dsFmtTn(n){
   if(n===null||n===undefined||isNaN(n))return'—';
   return n.toLocaleString('es-AR',{maximumFractionDigits:1})+' tn';
 }
+function dsParseNum(str){
+  if(str===null||str===undefined)return 0;
+  str=String(str).trim();
+  if(!str)return 0;
+  str=str.replace(/\./g,'').replace(',','.');
+  const n=parseFloat(str);
+  return isNaN(n)?0:n;
+}
+function dsFmtNumInput(n){
+  if(n===null||n===undefined||isNaN(n)||n===0)return'';
+  return n.toLocaleString('es-AR',{maximumFractionDigits:2});
+}
 function dsParseFecha(ym){
   if(!ym)return null;
   const m=/^(\d{4})-(\d{2})$/.exec(ym);
@@ -1826,8 +1838,8 @@ function dsRemoveVenc(i){
   dsSaveState();dsRenderInputs();dsRefresh();
 }
 function dsUpdateVenc(i,field,val){
-  window.DS_STATE.vencimientos[i][field]=field==='monto'?(parseFloat(val)||0):val;
-  dsSaveState();dsRefresh();
+  window.DS_STATE.vencimientos[i][field]=field==='monto'?dsParseNum(val):val;
+  dsSaveState();dsRenderInputs();dsRefresh();
 }
 function dsAddCxc(){
   window.DS_STATE.cxc.push({fecha:'',monto:0});
@@ -1838,16 +1850,16 @@ function dsRemoveCxc(i){
   dsSaveState();dsRenderInputs();dsRefresh();
 }
 function dsUpdateCxc(i,field,val){
-  window.DS_STATE.cxc[i][field]=field==='monto'?(parseFloat(val)||0):val;
-  dsSaveState();dsRefresh();
+  window.DS_STATE.cxc[i][field]=field==='monto'?dsParseNum(val):val;
+  dsSaveState();dsRenderInputs();dsRefresh();
 }
 function dsToggleCxc(){
   window.DS_STATE.considerarCxc=!window.DS_STATE.considerarCxc;
   dsSaveState();dsRenderInputs();dsRefresh();
 }
 function dsUpdateStock(cult,field,val){
-  window.DS_STATE.stock[cult][field]=field==='cantidad'?(parseFloat(val)||0):(val===''?null:parseFloat(val));
-  dsSaveState();dsRefresh();
+  window.DS_STATE.stock[cult][field]=field==='cantidad'?dsParseNum(val):(val===''?null:dsParseNum(val));
+  dsSaveState();dsRenderInputs();dsRefresh();
 }
 function dsUpdateSens(key,val){
   window.DS_STATE.sens[key]=parseFloat(val)||0;
@@ -1884,7 +1896,7 @@ function dsRenderInputs(){
     vencRows.innerHTML=(st.vencimientos.length?st.vencimientos.map(function(v,i){
       return'<div class="ds-row">'+
         '<input type="month" value="'+(v.fecha||'')+'" onchange="dsUpdateVenc('+i+',\'fecha\',this.value)">'+
-        '<input type="number" placeholder="Monto USD" value="'+(v.monto||'')+'" onchange="dsUpdateVenc('+i+',\'monto\',this.value)">'+
+        '<input type="text" inputmode="decimal" placeholder="Monto USD" value="'+dsFmtNumInput(v.monto)+'" onchange="dsUpdateVenc('+i+',\'monto\',this.value)">'+
         '<button class="ds-del" onclick="dsRemoveVenc('+i+')">✕</button>'+
       '</div>';
     }).join(''):'<div class="ds-empty">Sin vencimientos cargados.</div>');
@@ -1900,7 +1912,7 @@ function dsRenderInputs(){
     cxcRows.innerHTML=(st.cxc.length?st.cxc.map(function(c,i){
       return'<div class="ds-row">'+
         '<input type="month" value="'+(c.fecha||'')+'" onchange="dsUpdateCxc('+i+',\'fecha\',this.value)">'+
-        '<input type="number" placeholder="Monto USD" value="'+(c.monto||'')+'" onchange="dsUpdateCxc('+i+',\'monto\',this.value)">'+
+        '<input type="text" inputmode="decimal" placeholder="Monto USD" value="'+dsFmtNumInput(c.monto)+'" onchange="dsUpdateCxc('+i+',\'monto\',this.value)">'+
         '<button class="ds-del" onclick="dsRemoveCxc('+i+')">✕</button>'+
       '</div>';
     }).join(''):'<div class="ds-empty">Sin cuentas por cobrar cargadas.</div>');
@@ -1914,7 +1926,7 @@ function dsRenderInputs(){
       const s=st.stock[cult];
       return'<div class="ds-stock-card">'+
         '<div class="ds-stock-title" style="color:'+DS_GRAIN_COLOR[cult]+'">'+DS_GRAIN_LABEL[cult]+'</div>'+
-        '<label>Cantidad (tn)<input type="number" min="0" value="'+(s.cantidad||'')+'" onchange="dsUpdateStock(\''+cult+'\',\'cantidad\',this.value)"></label>'+
+        '<label>Cantidad (tn)<input type="text" inputmode="decimal" placeholder="0" value="'+dsFmtNumInput(s.cantidad)+'" onchange="dsUpdateStock(\''+cult+'\',\'cantidad\',this.value)"></label>'+
       '</div>';
     }).join('');
   }
@@ -1998,14 +2010,28 @@ function dsRenderCronograma(res){
   ctx._chartInst=new Chart(ctx,{
     type:'bar',
     data:{labels:labels,datasets:[
-      {label:'Compromisos',data:deudaData.map(function(v){return-v;}),backgroundColor:'#ef4444cc'},
-      {label:'Cuentas por cobrar',data:cobroData,backgroundColor:'#22c55ecc'},
-      {label:'Ventas proyectadas',data:ventaData,backgroundColor:'#3b82f6cc'}
+      {label:'Compromisos',data:deudaData.map(function(v){return-v;}),backgroundColor:'#ef4444cc',stack:'flujo'},
+      {label:'Cuentas por cobrar',data:cobroData,backgroundColor:'#22c55ecc',stack:'flujo'},
+      {label:'Ventas proyectadas',data:ventaData,backgroundColor:'#3b82f6cc',stack:'flujo'}
     ]},
     options:{
       responsive:true,maintainAspectRatio:false,
-      scales:{y:{ticks:{callback:function(v){return dsFmtUsd(v);}}}},
-      plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:function(item){return item.dataset.label+': '+dsFmtUsd(Math.abs(item.raw));}}}}
+      scales:{
+        x:{stacked:true},
+        y:{stacked:true,ticks:{callback:function(v){return dsFmtUsd(v);}}}
+      },
+      plugins:{
+        legend:{position:'bottom'},
+        tooltip:{
+          callbacks:{
+            label:function(item){return item.dataset.label+': '+dsFmtUsd(Math.abs(item.raw));},
+            footer:function(items){
+              const neto=items.reduce(function(a,it){return a+it.raw;},0);
+              return'Neto del mes: '+dsFmtUsd(neto);
+            }
+          }
+        }
+      }
     }
   });
 }
@@ -2090,7 +2116,7 @@ function buildDeudaStockPanel(){
       @media(max-width:800px){.ds-grid-top{grid-template-columns:1fr;}}
       .ds-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
       .ds-row input[type=month]{flex:1;padding:8px 10px;border:1px solid #e2e8f0;border-radius:7px;font-size:0.82rem;}
-      .ds-row input[type=number]{flex:1;padding:8px 10px;border:1px solid #e2e8f0;border-radius:7px;font-size:0.82rem;}
+      .ds-row input[type=number],.ds-row input[type=text]{flex:1;padding:8px 10px;border:1px solid #e2e8f0;border-radius:7px;font-size:0.82rem;}
       .ds-del{background:#fee2e2;color:#b91c1c;border:none;border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:0.8rem;flex-shrink:0;}
       .ds-empty{color:#aaa;font-size:0.82rem;padding:8px 0;}
       .ds-add-btn{margin-top:6px;padding:8px 16px;border-radius:8px;border:1.5px dashed #94a3b8;background:transparent;color:#475569;font-size:0.8rem;font-weight:600;cursor:pointer;}
