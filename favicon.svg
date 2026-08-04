@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- brote / hojas -->
+  <path d="M30 26 C22 24 16 16 17 6 C26 8 32 15 31 24 Z" fill="#2e7d32"/>
+  <path d="M31 24 C33 15 41 9 49 8 C49 17 43 24 33 26 Z" fill="#43a047"/>
+  <!-- tallo -->
+  <rect x="29.5" y="22" width="3" height="10" rx="1.5" fill="#2e7d32"/>
+  <!-- grano de maiz -->
+  <ellipse cx="31" cy="46" rx="15" ry="18" fill="#f5a623"/>
+  <ellipse cx="31" cy="46" rx="15" ry="18" fill="none" stroke="#c9750f" stroke-width="2"/>
+  <path d="M31 30 L31 62" stroke="#c9750f" stroke-width="1.4" opacity="0.55"/>
+  <path d="M20 34 Q31 38 42 34" stroke="#c9750f" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M18 44 Q31 48 44 44" stroke="#c9750f" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M20 54 Q31 58 42 54" stroke="#c9750f" stroke-width="1.2" fill="none" opacity="0.5"/>
+</svg>
