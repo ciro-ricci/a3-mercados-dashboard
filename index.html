@@ -371,6 +371,7 @@ canvas { max-height: 100%; }
   <div class="tab" onclick="showTab('comercializacion')">Comercialización</div>
   <div class="tab" onclick="showTab('noticias')">📰 Noticias</div>
   <div class="tab" onclick="showTab('brief-granos')">🌾 Brief Granos</div>
+  <div class="tab ds-tab" onclick="showTab('deuda-stock')">💳 Deuda/Stock</div>
   </div>
 <div class="content">
   <div class="panel" id="panel-noticias">
@@ -398,6 +399,7 @@ canvas { max-height: 100%; }
   <div class="panel" id="panel-insumo-producto"></div>
   <div class="panel" id="panel-comercializacion"></div>
   <div class="panel" id="panel-brief-granos"></div>
+  <div class="panel" id="panel-deuda-stock"></div>
 </div>
 <script>
 // ── A3 – Futuros y Opciones (datos dinámicos desde Google Sheet) ─────────
@@ -428,9 +430,9 @@ window.LANDING_LINKS = {
    BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
    oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
    valores (oficial, CCL, soja/maíz/trigo, etc.) siguen viniendo de la sheet.
-   Última actualización: 2026-08-01
+   Última actualización: 2026-07-28
    ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
-const BCRA_TC_OVERRIDE = 1488.4531;
+const BCRA_TC_OVERRIDE = 1498.5117;
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 // Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
 const PIZARRA_SOJ_2025={
@@ -1643,8 +1645,542 @@ function buildBriefGranosPanel(){
     tabsHtml + execHtml + cropsHtml;
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// DEUDA / STOCK — planificador de ventas para cubrir compromisos
+// Reutiliza SOJ_FUT/MAI_FUT/TRI_FUT/SPOT/VENC_DATES ya cargados por A3.
+// ══════════════════════════════════════════════════════════════════════
+const DS_STORAGE_KEY='ds_state_v1';
+const DS_GRAIN_LABEL={soja:'Soja',maiz:'Maíz',trigo:'Trigo'};
+const DS_GRAIN_COLOR={soja:'#2e7d32',maiz:'#e65100',trigo:'#1565c0'};
+
+function dsDefaultState(){
+  return{
+    vencimientos:[],
+    cxc:[],
+    considerarCxc:false,
+    stock:{soja:{cantidad:0,precio:null},maiz:{cantidad:0,precio:null},trigo:{cantidad:0,precio:null}},
+    sens:{soja:0,maiz:0,trigo:0,tc:0}
+  };
+}
+function dsLoadState(){
+  try{
+    const raw=localStorage.getItem(DS_STORAGE_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      const base=dsDefaultState();
+      base.vencimientos=parsed.vencimientos||[];
+      base.cxc=parsed.cxc||[];
+      base.considerarCxc=!!parsed.considerarCxc;
+      if(parsed.stock){
+        ['soja','maiz','trigo'].forEach(function(c){
+          if(parsed.stock[c])base.stock[c]=Object.assign(base.stock[c],parsed.stock[c]);
+        });
+      }
+      if(parsed.sens)base.sens=Object.assign(base.sens,parsed.sens);
+      return base;
+    }
+  }catch(e){}
+  return dsDefaultState();
+}
+window.DS_STATE=dsLoadState();
+function dsSaveState(){
+  try{localStorage.setItem(DS_STORAGE_KEY,JSON.stringify(window.DS_STATE));}catch(e){}
+}
+function dsFmtUsd(n){
+  if(n===null||n===undefined||isNaN(n))return'—';
+  return'USD '+Math.round(n).toLocaleString('es-AR');
+}
+function dsFmtTn(n){
+  if(n===null||n===undefined||isNaN(n))return'—';
+  return n.toLocaleString('es-AR',{maximumFractionDigits:1})+' tn';
+}
+function dsParseFecha(ym){
+  if(!ym)return null;
+  const m=/^(\d{4})-(\d{2})$/.exec(ym);
+  if(!m)return null;
+  const y=parseInt(m[1]),mo=parseInt(m[2]);
+  return new Date(y,mo,0);
+}
+function dsFechaLabel(ym){
+  const f=dsParseFecha(ym);
+  if(!f)return ym||'—';
+  const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return meses[f.getMonth()]+' '+f.getFullYear();
+}
+
+function dsPosicionesGrano(cult){
+  const arr=cult==='soja'?SOJ_FUT:cult==='maiz'?MAI_FUT:TRI_FUT;
+  const out=[];
+  const spotArs=SPOT?SPOT[cult+'_ars']:null;
+  const tc=SPOT?SPOT.tc:null;
+  if(spotArs&&tc){
+    out.push({posicion:'Disponible',fecha:new Date(),precio:spotArs/tc,esSpot:true});
+  }
+  (arr||[]).forEach(function(r){
+    const p=parseFloat(r.ajuste);
+    if(isNaN(p)||!r.venc_display)return;
+    const f=(typeof VENC_DATES!=='undefined'&&VENC_DATES[r.venc_display])||(typeof parseDlrDate==='function'?parseDlrDate(r.venc_display):null);
+    if(!f)return;
+    out.push({posicion:r.venc_display,fecha:f,precio:p,esSpot:false});
+  });
+  return out.sort(function(a,b){return a.fecha-b.fecha;});
+}
+
+function dsOptimizar(sensOverride){
+  const st=window.DS_STATE;
+  const sens=sensOverride||st.sens;
+  const posicionesPorGrano={};
+  ['soja','maiz','trigo'].forEach(function(cult){
+    const pct=(sens[cult]||0)/100;
+    const tcPct=(sens.tc||0)/100;
+    const stockPrecioPropio=st.stock[cult]&&st.stock[cult].precio;
+    posicionesPorGrano[cult]=dsPosicionesGrano(cult).map(function(p){
+      let precio=p.precio;
+      if(p.esSpot){
+        if(stockPrecioPropio){
+          precio=stockPrecioPropio;
+        }else{
+          const spotArs=SPOT?SPOT[cult+'_ars']:null;
+          const tc=SPOT?SPOT.tc:null;
+          if(spotArs&&tc)precio=spotArs/(tc*(1+tcPct));
+        }
+      }
+      precio=precio*(1+pct);
+      return{posicion:p.posicion,fecha:p.fecha,precio:precio,cult:cult};
+    });
+  });
+
+  const stockRestante={
+    soja:(st.stock.soja&&st.stock.soja.cantidad)||0,
+    maiz:(st.stock.maiz&&st.stock.maiz.cantidad)||0,
+    trigo:(st.stock.trigo&&st.stock.trigo.cantidad)||0
+  };
+
+  const compromisos=(st.vencimientos||[]).map(function(v){return{monto:v.monto,fecha:dsParseFecha(v.fecha),fechaStr:v.fecha};})
+    .filter(function(v){return v.fecha&&v.monto>0;})
+    .sort(function(a,b){return a.fecha-b.fecha;});
+  const cobros=st.considerarCxc?(st.cxc||[]).map(function(c){return{monto:c.monto,fecha:dsParseFecha(c.fecha),fechaStr:c.fecha};}).filter(function(c){return c.fecha&&c.monto>0;}).sort(function(a,b){return a.fecha-b.fecha;}):[];
+
+  let deudaAcum=0,ingresosAcum=0,cobrosAcum=0,cIdx=0;
+  const ventas=[];
+  const coberturaTimeline=[];
+
+  compromisos.forEach(function(comp){
+    while(cIdx<cobros.length&&cobros[cIdx].fecha<=comp.fecha){
+      cobrosAcum+=cobros[cIdx].monto;
+      cIdx++;
+    }
+    deudaAcum+=comp.monto;
+    let necesidad=deudaAcum-(ingresosAcum+cobrosAcum);
+
+    if(necesidad>0){
+      let candidatos=[];
+      ['soja','maiz','trigo'].forEach(function(cult){
+        if(stockRestante[cult]<=0)return;
+        posicionesPorGrano[cult].forEach(function(p){
+          if(p.fecha<=comp.fecha)candidatos.push(p);
+        });
+      });
+      candidatos.sort(function(a,b){return b.precio-a.precio;});
+      for(let i=0;i<candidatos.length&&necesidad>0;i++){
+        const cand=candidatos[i];
+        const stockDisp=stockRestante[cand.cult];
+        if(stockDisp<=0)continue;
+        const tnNecesarias=necesidad/cand.precio;
+        const tnAsignar=Math.min(stockDisp,tnNecesarias);
+        if(tnAsignar<=0)continue;
+        const ingreso=tnAsignar*cand.precio;
+        ventas.push({fecha:comp.fecha,fechaStr:comp.fechaStr,producto:cand.cult,posicion:cand.posicion,toneladas:tnAsignar,precio:cand.precio,ingreso:ingreso});
+        stockRestante[cand.cult]-=tnAsignar;
+        ingresosAcum+=ingreso;
+        necesidad-=ingreso;
+      }
+    }
+    const coberturaPct=deudaAcum>0?Math.min(100,((ingresosAcum+cobrosAcum)/deudaAcum)*100):100;
+    coberturaTimeline.push({fecha:comp.fecha,fechaStr:comp.fechaStr,coberturaPct:coberturaPct,deudaAcum:deudaAcum,disponibleAcum:ingresosAcum+cobrosAcum});
+  });
+
+  const deudaTotal=compromisos.reduce(function(a,c){return a+c.monto;},0);
+  const cxcTotal=cobros.reduce(function(a,c){return a+c.monto;},0);
+  const exposicionNeta=deudaTotal-cxcTotal;
+  const ingresoProyectado=ventas.reduce(function(a,v){return a+v.ingreso;},0);
+  const excedente=(ingresoProyectado+cxcTotal)-deudaTotal;
+  const coberturaFinal=deudaTotal>0?Math.min(100,((ingresoProyectado+cxcTotal)/deudaTotal)*100):100;
+  const tnVendidas=ventas.reduce(function(a,v){return a+v.toneladas;},0);
+  const precioPromedio=tnVendidas>0?ingresoProyectado/tnVendidas:null;
+
+  return{
+    ventas:ventas,stockRestante:stockRestante,compromisos:compromisos,cobros:cobros,
+    coberturaTimeline:coberturaTimeline,deudaTotal:deudaTotal,cxcTotal:cxcTotal,
+    exposicionNeta:exposicionNeta,ingresoProyectado:ingresoProyectado,excedente:excedente,
+    coberturaFinal:coberturaFinal,precioPromedio:precioPromedio
+  };
+}
+
+function dsAddVenc(){
+  window.DS_STATE.vencimientos.push({fecha:'',monto:0});
+  dsSaveState();dsRenderInputs();dsRefresh();
+}
+function dsRemoveVenc(i){
+  window.DS_STATE.vencimientos.splice(i,1);
+  dsSaveState();dsRenderInputs();dsRefresh();
+}
+function dsUpdateVenc(i,field,val){
+  window.DS_STATE.vencimientos[i][field]=field==='monto'?(parseFloat(val)||0):val;
+  dsSaveState();dsRefresh();
+}
+function dsAddCxc(){
+  window.DS_STATE.cxc.push({fecha:'',monto:0});
+  dsSaveState();dsRenderInputs();dsRefresh();
+}
+function dsRemoveCxc(i){
+  window.DS_STATE.cxc.splice(i,1);
+  dsSaveState();dsRenderInputs();dsRefresh();
+}
+function dsUpdateCxc(i,field,val){
+  window.DS_STATE.cxc[i][field]=field==='monto'?(parseFloat(val)||0):val;
+  dsSaveState();dsRefresh();
+}
+function dsToggleCxc(){
+  window.DS_STATE.considerarCxc=!window.DS_STATE.considerarCxc;
+  dsSaveState();dsRenderInputs();dsRefresh();
+}
+function dsUpdateStock(cult,field,val){
+  window.DS_STATE.stock[cult][field]=field==='cantidad'?(parseFloat(val)||0):(val===''?null:parseFloat(val));
+  dsSaveState();dsRefresh();
+}
+function dsUpdateSens(key,val){
+  window.DS_STATE.sens[key]=parseFloat(val)||0;
+  dsSaveState();dsRefresh();
+}
+function dsResetSens(){
+  window.DS_STATE.sens={soja:0,maiz:0,trigo:0,tc:0};
+  dsSaveState();dsRenderInputs();dsRefresh();
+}
+function dsUpdateSensLive(key,val,el){
+  const wrap=el.closest('.ds-slider-row');
+  if(wrap){
+    const span=wrap.querySelector('span');
+    if(span)span.textContent=(parseFloat(val)>0?'+':'')+val+'%';
+  }
+}
+
+function dsRenderInputs(){
+  const st=window.DS_STATE;
+  const vencRows=document.getElementById('ds-venc-rows');
+  if(vencRows){
+    vencRows.innerHTML=(st.vencimientos.length?st.vencimientos.map(function(v,i){
+      return'<div class="ds-row">'+
+        '<input type="month" value="'+(v.fecha||'')+'" onchange="dsUpdateVenc('+i+',\'fecha\',this.value)">'+
+        '<input type="number" placeholder="Monto USD" value="'+(v.monto||'')+'" onchange="dsUpdateVenc('+i+',\'monto\',this.value)">'+
+        '<button class="ds-del" onclick="dsRemoveVenc('+i+')">✕</button>'+
+      '</div>';
+    }).join(''):'<div class="ds-empty">Sin vencimientos cargados.</div>');
+  }
+  const cxcToggle=document.getElementById('ds-cxc-toggle');
+  if(cxcToggle){
+    const track=cxcToggle.querySelector('.ds-switch-track');
+    if(track)track.classList.toggle('on',st.considerarCxc);
+  }
+  const cxcRows=document.getElementById('ds-cxc-rows');
+  if(cxcRows){
+    cxcRows.style.display=st.considerarCxc?'':'none';
+    cxcRows.innerHTML=(st.cxc.length?st.cxc.map(function(c,i){
+      return'<div class="ds-row">'+
+        '<input type="month" value="'+(c.fecha||'')+'" onchange="dsUpdateCxc('+i+',\'fecha\',this.value)">'+
+        '<input type="number" placeholder="Monto USD" value="'+(c.monto||'')+'" onchange="dsUpdateCxc('+i+',\'monto\',this.value)">'+
+        '<button class="ds-del" onclick="dsRemoveCxc('+i+')">✕</button>'+
+      '</div>';
+    }).join(''):'<div class="ds-empty">Sin cuentas por cobrar cargadas.</div>');
+  }
+  const cxcAddBtn=document.getElementById('ds-cxc-add-btn');
+  if(cxcAddBtn)cxcAddBtn.style.display=st.considerarCxc?'':'none';
+
+  const stockWrap=document.getElementById('ds-stock-inputs');
+  if(stockWrap){
+    stockWrap.innerHTML=['soja','maiz','trigo'].map(function(cult){
+      const s=st.stock[cult];
+      return'<div class="ds-stock-card">'+
+        '<div class="ds-stock-title" style="color:'+DS_GRAIN_COLOR[cult]+'">'+DS_GRAIN_LABEL[cult]+'</div>'+
+        '<label>Cantidad (tn)<input type="number" min="0" value="'+(s.cantidad||'')+'" onchange="dsUpdateStock(\''+cult+'\',\'cantidad\',this.value)"></label>'+
+        '<label>Precio propio (USD/tn, opcional)<input type="number" min="0" placeholder="usa spot si vacío" value="'+(s.precio||'')+'" onchange="dsUpdateStock(\''+cult+'\',\'precio\',this.value)"></label>'+
+      '</div>';
+    }).join('');
+  }
+
+  const sliders=document.getElementById('ds-sliders');
+  if(sliders){
+    const s=st.sens;
+    sliders.innerHTML=['soja','maiz','trigo'].map(function(cult){
+      return'<div class="ds-slider-row"><label>'+DS_GRAIN_LABEL[cult]+' <span>'+(s[cult]>0?'+':'')+s[cult]+'%</span></label>'+
+        '<input type="range" min="-20" max="20" step="1" value="'+s[cult]+'" oninput="dsUpdateSensLive(\''+cult+'\',this.value,this)" onchange="dsUpdateSens(\''+cult+'\',this.value)"></div>';
+    }).join('')+
+    '<div class="ds-slider-row"><label>Tipo de cambio (solo afecta el disponible) <span>'+(s.tc>0?'+':'')+s.tc+'%</span></label>'+
+    '<input type="range" min="-20" max="20" step="1" value="'+s.tc+'" oninput="dsUpdateSensLive(\'tc\',this.value,this)" onchange="dsUpdateSens(\'tc\',this.value)"></div>'+
+    '<button class="ds-reset-btn" onclick="dsResetSens()">Restablecer escenario base</button>';
+  }
+}
+
+function dsRenderPosiciones(){
+  const wrap=document.getElementById('ds-posiciones-table');
+  if(!wrap)return;
+  const rows=[];
+  ['soja','maiz','trigo'].forEach(function(cult){
+    dsPosicionesGrano(cult).forEach(function(p){
+      rows.push({cult:cult,posicion:p.posicion,fecha:p.fecha,precio:p.precio});
+    });
+  });
+  rows.sort(function(a,b){return a.fecha-b.fecha;});
+  if(!rows.length){
+    wrap.innerHTML='<div class="ds-empty">Todavía no cargaron los datos de la curva de futuros. Probá de nuevo en unos segundos.</div>';
+    return;
+  }
+  wrap.innerHTML='<table class="fut-table"><thead><tr><th>Producto</th><th>Posición</th><th>Fecha</th><th>Precio (USD)</th></tr></thead><tbody>'+
+    rows.map(function(r){
+      return'<tr><td style="color:'+DS_GRAIN_COLOR[r.cult]+';font-weight:700">'+DS_GRAIN_LABEL[r.cult]+'</td><td>'+r.posicion+'</td><td>'+r.fecha.toLocaleDateString('es-AR')+'</td><td>'+fmt(r.precio)+'</td></tr>';
+    }).join('')+
+  '</tbody></table>';
+}
+
+function dsRenderKPIs(res){
+  const wrap=document.getElementById('ds-kpis');
+  if(!wrap)return;
+  const excedenteCls=res.excedente>=0?'pos':'neg';
+  const kpis=[
+    {label:'Deuda total',val:dsFmtUsd(res.deudaTotal)},
+    {label:'Cuentas por cobrar',val:dsFmtUsd(res.cxcTotal)},
+    {label:'Exposición neta',val:dsFmtUsd(res.exposicionNeta)},
+    {label:'Ingreso proyectado',val:dsFmtUsd(res.ingresoProyectado)},
+    {label:res.excedente>=0?'Excedente':'Faltante',val:dsFmtUsd(Math.abs(res.excedente)),cls:excedenteCls},
+    {label:'Cobertura alcanzada',val:res.coberturaFinal.toFixed(1)+'%'},
+    {label:'Precio promedio de venta',val:res.precioPromedio?fmt(res.precioPromedio)+' USD/tn':'—'},
+    {label:'Stock remanente',val:['soja','maiz','trigo'].map(function(c){return dsFmtTn(res.stockRestante[c])+' '+DS_GRAIN_LABEL[c].toLowerCase();}).join(' · ')}
+  ];
+  wrap.innerHTML=kpis.map(function(k){
+    return'<div class="ds-kpi'+(k.cls?' '+k.cls:'')+'"><div class="ds-kpi-label">'+k.label+'</div><div class="ds-kpi-val">'+k.val+'</div></div>';
+  }).join('');
+}
+
+function dsRenderTablaVentas(res){
+  const wrap=document.getElementById('ds-tabla-ventas');
+  if(!wrap)return;
+  if(!res.ventas.length){
+    wrap.innerHTML='<div class="ds-empty">Cargá vencimientos y stock para ver la estrategia recomendada.</div>';
+    return;
+  }
+  const ventasOrdenadas=res.ventas.slice().sort(function(a,b){return a.fecha-b.fecha;});
+  let html='<table class="fut-table"><thead><tr><th>Fecha compromiso</th><th>Producto</th><th>Posición</th><th>Toneladas</th><th>Precio (USD)</th><th>Ingreso</th></tr></thead><tbody>'+
+    ventasOrdenadas.map(function(v){
+      return'<tr><td>'+dsFechaLabel(v.fechaStr)+'</td><td style="color:'+DS_GRAIN_COLOR[v.producto]+';font-weight:700">'+DS_GRAIN_LABEL[v.producto]+'</td><td>'+v.posicion+'</td><td>'+dsFmtTn(v.toneladas)+'</td><td>'+fmt(v.precio)+'</td><td>'+dsFmtUsd(v.ingreso)+'</td></tr>';
+    }).join('')+
+  '</tbody></table>';
+
+  const deficitFinal=res.deudaTotal-(res.ingresoProyectado+res.cxcTotal);
+  if(deficitFinal>1){
+    html+='<div class="ds-alert">⚠️ El stock disponible no alcanza para cubrir todos los compromisos con las posiciones actuales. Faltante proyectado: '+dsFmtUsd(deficitFinal)+'.</div>';
+  }
+  wrap.innerHTML=html;
+}
+
+function dsRenderCronograma(res){
+  const ctx=document.getElementById('ds-chart-cronograma');
+  if(!ctx||!window.Chart)return;
+  const fechas=Array.from(new Set(
+    res.compromisos.map(function(c){return c.fechaStr;})
+    .concat(res.cobros.map(function(c){return c.fechaStr;}))
+    .concat(res.ventas.map(function(v){return v.fechaStr;}))
+  )).sort();
+  if(!fechas.length){
+    if(ctx._chartInst){ctx._chartInst.destroy();ctx._chartInst=null;}
+    return;
+  }
+  const labels=fechas.map(dsFechaLabel);
+  const deudaData=fechas.map(function(f){
+    return res.compromisos.filter(function(c){return c.fechaStr===f;}).reduce(function(a,c){return a+c.monto;},0);
+  });
+  const cobroData=fechas.map(function(f){
+    return res.cobros.filter(function(c){return c.fechaStr===f;}).reduce(function(a,c){return a+c.monto;},0);
+  });
+  const ventaData=fechas.map(function(f){
+    return res.ventas.filter(function(v){return v.fechaStr===f;}).reduce(function(a,v){return a+v.ingreso;},0);
+  });
+  if(ctx._chartInst)ctx._chartInst.destroy();
+  ctx._chartInst=new Chart(ctx,{
+    type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'Compromisos',data:deudaData.map(function(v){return-v;}),backgroundColor:'#ef4444cc'},
+      {label:'Cuentas por cobrar',data:cobroData,backgroundColor:'#22c55ecc'},
+      {label:'Ventas proyectadas',data:ventaData,backgroundColor:'#3b82f6cc'}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{y:{ticks:{callback:function(v){return dsFmtUsd(v);}}}},
+      plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:function(item){return item.dataset.label+': '+dsFmtUsd(Math.abs(item.raw));}}}}
+    }
+  });
+}
+
+function dsRenderCobertura(res){
+  const ctx=document.getElementById('ds-chart-cobertura');
+  if(!ctx||!window.Chart)return;
+  if(!res.coberturaTimeline.length){
+    if(ctx._chartInst){ctx._chartInst.destroy();ctx._chartInst=null;}
+    return;
+  }
+  const labels=res.coberturaTimeline.map(function(t){return dsFechaLabel(t.fechaStr);});
+  const data=res.coberturaTimeline.map(function(t){return t.coberturaPct;});
+  if(ctx._chartInst)ctx._chartInst.destroy();
+  ctx._chartInst=new Chart(ctx,{
+    type:'line',
+    data:{labels:labels,datasets:[{label:'Cobertura acumulada (%)',data:data,borderColor:'#16a34a',backgroundColor:'#16a34a22',fill:true,tension:0.25}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{y:{min:0,max:110,ticks:{callback:function(v){return v+'%';}}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(item){return'Cobertura: '+item.raw.toFixed(1)+'%';}}}}
+    }
+  });
+}
+
+function dsRenderEscenarios(){
+  const ctx=document.getElementById('ds-chart-escenarios');
+  if(!ctx||!window.Chart)return;
+  const base=window.DS_STATE.sens;
+  const pes=dsOptimizar({soja:base.soja-10,maiz:base.maiz-10,trigo:base.trigo-10,tc:base.tc});
+  const bas=dsOptimizar(base);
+  const opt=dsOptimizar({soja:base.soja+10,maiz:base.maiz+10,trigo:base.trigo+10,tc:base.tc});
+  if(ctx._chartInst)ctx._chartInst.destroy();
+  ctx._chartInst=new Chart(ctx,{
+    data:{
+      labels:['Pesimista (-10%)','Base','Optimista (+10%)'],
+      datasets:[
+        {type:'bar',label:'Ingreso proyectado (USD)',data:[pes.ingresoProyectado,bas.ingresoProyectado,opt.ingresoProyectado],backgroundColor:'#3b82f6cc',yAxisID:'y'},
+        {type:'line',label:'Cobertura (%)',data:[pes.coberturaFinal,bas.coberturaFinal,opt.coberturaFinal],borderColor:'#16a34a',backgroundColor:'#16a34a',yAxisID:'y1'}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{
+        y:{position:'left',ticks:{callback:function(v){return dsFmtUsd(v);}}},
+        y1:{position:'right',min:0,max:110,grid:{drawOnChartArea:false},ticks:{callback:function(v){return v+'%';}}}
+      },
+      plugins:{legend:{position:'bottom'}}
+    }
+  });
+}
+
+function dsRefresh(){
+  const res=dsOptimizar();
+  dsRenderPosiciones();
+  dsRenderKPIs(res);
+  dsRenderTablaVentas(res);
+  dsRenderCronograma(res);
+  dsRenderCobertura(res);
+  dsRenderEscenarios();
+}
+
+function buildDeudaStockPanel(){
+  const panel=document.getElementById('panel-deuda-stock');
+  if(!panel)return;
+  panel.innerHTML=`
+    <style>
+      .ds-wrap{display:flex;flex-direction:column;gap:18px;}
+      .ds-header p{font-size:0.82rem;color:#666;margin-top:2px;max-width:760px;}
+      .ds-grid-top{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+      @media(max-width:800px){.ds-grid-top{grid-template-columns:1fr;}}
+      .ds-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+      .ds-row input[type=month]{flex:1;padding:8px 10px;border:1px solid #e2e8f0;border-radius:7px;font-size:0.82rem;}
+      .ds-row input[type=number]{flex:1;padding:8px 10px;border:1px solid #e2e8f0;border-radius:7px;font-size:0.82rem;}
+      .ds-del{background:#fee2e2;color:#b91c1c;border:none;border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:0.8rem;flex-shrink:0;}
+      .ds-empty{color:#aaa;font-size:0.82rem;padding:8px 0;}
+      .ds-add-btn{margin-top:6px;padding:8px 16px;border-radius:8px;border:1.5px dashed #94a3b8;background:transparent;color:#475569;font-size:0.8rem;font-weight:600;cursor:pointer;}
+      .ds-switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:0.78rem;font-weight:600;color:#666;margin-left:10px;vertical-align:middle;}
+      .ds-switch-track{width:36px;height:20px;border-radius:12px;background:#e2e8f0;position:relative;transition:background 0.2s;flex-shrink:0;}
+      .ds-switch-track.on{background:#22c55e;}
+      .ds-switch-track::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:white;transition:left 0.2s;}
+      .ds-switch-track.on::after{left:18px;}
+      .ds-stock-card{display:inline-block;width:220px;vertical-align:top;background:#f7f8fa;border-radius:10px;padding:14px 16px;margin:0 12px 12px 0;}
+      .ds-stock-title{font-weight:800;font-size:0.85rem;margin-bottom:8px;}
+      .ds-stock-card label{display:block;font-size:0.72rem;color:#888;margin-bottom:8px;}
+      .ds-stock-card input{width:100%;margin-top:3px;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.82rem;box-sizing:border-box;}
+      .ds-kpis-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+      @media(max-width:900px){.ds-kpis-grid{grid-template-columns:repeat(2,1fr);}}
+      .ds-kpi{background:#f7f8fa;border-radius:10px;padding:14px 16px;border:1px solid #e8eaed;}
+      .ds-kpi-label{font-size:0.66rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;}
+      .ds-kpi-val{font-size:1.1rem;font-weight:800;color:#1a1a2e;}
+      .ds-kpi.pos .ds-kpi-val{color:#16a34a;}
+      .ds-kpi.neg .ds-kpi-val{color:#dc2626;}
+      .ds-alert{margin-top:10px;padding:10px 14px;background:#fff3cd;border:1.5px solid #f59e0b;border-radius:8px;font-size:0.8rem;color:#92400e;}
+      .ds-grid-charts{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+      @media(max-width:900px){.ds-grid-charts{grid-template-columns:1fr;}}
+      .ds-slider-row{margin-bottom:14px;}
+      .ds-slider-row label{display:flex;justify-content:space-between;font-size:0.8rem;color:#555;margin-bottom:4px;}
+      .ds-slider-row input[type=range]{width:100%;}
+      .ds-reset-btn{margin-top:6px;padding:8px 16px;border-radius:8px;border:1px solid #e2e8f0;background:#f7f8fa;color:#475569;font-size:0.78rem;font-weight:600;cursor:pointer;}
+    </style>
+    <div class="ds-header">
+      <h2>💳 Deuda / Stock</h2>
+      <p>Planificá qué vender, cuánto y en qué posición para cubrir tus compromisos financieros, usando el stock disponible y la curva de futuros ya cargada en el tablero.</p>
+    </div>
+
+    <div class="ds-grid-top">
+      <div class="full-card">
+        <h3>Vencimientos</h3>
+        <div id="ds-venc-rows"></div>
+        <button class="ds-add-btn" onclick="dsAddVenc()">+ Agregar vencimiento</button>
+      </div>
+      <div class="full-card">
+        <h3>Cuentas por cobrar
+          <span id="ds-cxc-toggle" class="ds-switch" onclick="dsToggleCxc()"><span class="ds-switch-track"></span>Considerar cuentas por cobrar</span>
+        </h3>
+        <div id="ds-cxc-rows"></div>
+        <button id="ds-cxc-add-btn" class="ds-add-btn" onclick="dsAddCxc()">+ Agregar cuenta por cobrar</button>
+      </div>
+    </div>
+
+    <div class="full-card">
+      <h3>Stock disponible</h3>
+      <div id="ds-stock-inputs"></div>
+    </div>
+
+    <div class="full-card">
+      <h3>Posiciones disponibles <span style="font-weight:400;font-size:0.72rem;color:#999">· reutiliza la curva de futuros de cada grano</span></h3>
+      <div id="ds-posiciones-table"></div>
+    </div>
+
+    <div id="ds-kpis" class="ds-kpis-grid"></div>
+
+    <div class="full-card">
+      <h3>Estrategia de ventas recomendada</h3>
+      <div id="ds-tabla-ventas"></div>
+    </div>
+
+    <div class="ds-grid-charts">
+      <div class="full-card">
+        <h3>Cronograma de flujos</h3>
+        <div class="canvas-wrap" style="height:250px"><canvas id="ds-chart-cronograma"></canvas></div>
+      </div>
+      <div class="full-card">
+        <h3>Evolución de la cobertura</h3>
+        <div class="canvas-wrap" style="height:250px"><canvas id="ds-chart-cobertura"></canvas></div>
+      </div>
+    </div>
+
+    <div class="full-card">
+      <h3>Sensibilizador</h3>
+      <div id="ds-sliders"></div>
+    </div>
+
+    <div class="full-card">
+      <h3>Comparación de escenarios</h3>
+      <div class="canvas-wrap" style="height:280px"><canvas id="ds-chart-escenarios"></canvas></div>
+    </div>
+  `;
+  dsRenderInputs();
+  dsRefresh();
+}
+
 function showTab(id){
-  const ids=['soj-fut','mai-fut','tri-fut','soj-opts','mai-opts','tri-opts','estrategia','dlr-fut','lecaps','financiamiento','insumo-producto','comercializacion','noticias','brief-granos'];
+  const ids=['soj-fut','mai-fut','tri-fut','soj-opts','mai-opts','tri-opts','estrategia','dlr-fut','lecaps','financiamiento','insumo-producto','comercializacion','noticias','brief-granos','deuda-stock'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',ids[i]===id));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
@@ -1654,6 +2190,8 @@ function showTab(id){
   if(id==='insumo-producto' && !document.getElementById('panel-insumo-producto').dataset.built){ buildInsumoProductoPanel(); document.getElementById('panel-insumo-producto').dataset.built='1'; }
   if(id==='comercializacion' && !document.getElementById('panel-comercializacion').dataset.built){ buildComercializacionPanel(); document.getElementById('panel-comercializacion').dataset.built='1'; }
   if(id==='brief-granos' && !document.getElementById('panel-brief-granos').dataset.built){ buildBriefGranosPanel(); document.getElementById('panel-brief-granos').dataset.built='1'; }
+  if(id==='deuda-stock' && !document.getElementById('panel-deuda-stock').dataset.built){ buildDeudaStockPanel(); document.getElementById('panel-deuda-stock').dataset.built='1'; }
+  if(id==='deuda-stock' && document.getElementById('panel-deuda-stock').dataset.built){ dsRefresh(); }
 }
 
 // ── LECAPs ────────────────────────────────────────────────────────
@@ -2385,7 +2923,7 @@ window._initDeviceFlow=function(){
 /* ═══════════════════════════════════════════════════════════════════════
    NEWS_DATA — Claude actualiza este bloque cada vez que corre el scraping.
    Las noticias con más de 7 días son eliminadas automáticamente del array.
-   Última actualización: 2026-08-03
+   Última actualización: 2026-07-28
    ═══════════════════════════════════════════════════════════════════════ */
 const COMERCIALIZACION_DATA = {
   fecha:'2026-07-22',
@@ -2406,15 +2944,6 @@ const CARRYIN_DATA = {
 };
 
 const NEWS_DATA = [
-  {fecha:'2026-08-02',fuente:'Bichos de Campo',cultivo:'Maíz',titulo:'Europa tendrá que importar una mayor cantidad de maíz y Ucrania está complicada: Gran oportunidad para EE.UU. y Brasil (no para la Argentina)',resumen:'Debido a una reducción del área y fallas productivas ocasionadas por restricciones hídricas y altas temperaturas, la cosecha de maíz 2026/27 en la Unión Europea fue estimada por la oficina del USDA en Bruselas en 52,5 millones de toneladas versus 56,8 y 59,6 millones en los dos ciclos previos anteriores. “La mayor reducción de superficie […]',link:'https://bichosdecampo.com/europa-tendra-que-importar-una-mayor-cantidad-de-maiz-y-ucrania-esta-complicada-gran-oportunidad-para-ee-uu-y-brasil-no-para-la-argentina/'},
-  {fecha:'2026-08-01',fuente:'Bichos de Campo',cultivo:'Maíz',titulo:'Tira y afloja: Se enfriaron otra vez las ventas de fertilizantes en el mercado argentino',resumen:'Las ventas de fertilizantes en el mercado argentino volvieron a ralentizarse esta semana de la mano de una caída de los precios de los granos y complicaciones climáticas que retrasan la cosecha de maíz (el principal producto generador de liquidez en la actual coyuntura). En lo que respecta a la urea, las operaciones con entregas […]',link:'https://bichosdecampo.com/tira-y-afloja-se-enfriaron-otra-vez-las-ventas-de-fertilizantes-en-el-mercado-argentino/'},
-  {fecha:'2026-08-01',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 1 agosto 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-1-agosto-2026/'},
-  {fecha:'2026-08-01',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 1 agosto 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-1-agosto-2026/'},
-  {fecha:'2026-08-01',fuente:'Bichos de Campo',cultivo:'Trigo / Maíz / Soja',titulo:'¿Qué tiene que ver el yen y la política cambiaria de Japón con los valores de la soja, el maíz y el trigo? Mucho más de lo que imaginás',resumen:'Esta semana se registró una turbulencia financiera de grandes proporciones que terminó afectando a muchos mercados, uno de los cuales es el de futuros de commodities agroindustriales, el cual finalizó la semana con bajas profundas. El Banco Central de Japón, en coordinación con el gobierno de EE.UU., intervinieron de manera masiva el mercado cambiario nipón […]',link:'https://bichosdecampo.com/que-tiene-que-ver-el-yen-y-la-politica-cambiaria-de-japon-con-los-valores-de-la-soja-el-maiz-y-el-trigo-mucho-mas-de-lo-que-imaginas/'},
-  {fecha:'2026-08-01',fuente:'Bichos de Campo',cultivo:'Trigo / Soja',titulo:'Márgenes agrícolas proyectados “con y sin arrendamiento” ¿Se puede evaluar un negocio obviando su principal costo?',resumen:'La Bolsa de Comercio de Rosario publicó un informe en el cual se muestra que el margen neto proyectado del cultivo de trigo/soja de segunda 2026/27 de un planteo tecnológico estándar en la zona núcleo pampeana es de 531 u$s/ha en campo propio y 59 u$s/ha en campo arrendado. En el caso de la soja […]',link:'https://bichosdecampo.com/margenes-agricolas-proyectados-con-y-sin-arrendamiento-se-puede-evaluar-un-negocio-obviando-su-principal-costo/'},
-  {fecha:'2026-07-31',fuente:'Infocampo',cultivo:'Maíz',titulo:'La dicotomía del maíz: a días de la siembra gana poder de compra con algunos insumos, pero pierde con otros',resumen:'Un informe de Coninagro reveló que el maíz mejoró su relación de intercambio para la compra de maquinaria, vehículos y semillas. Sin embargo, el gasoil, los fertilizantes, los herbicidas y la reposición de hacienda continúan absorbiendo una mayor cantidad de kilos.',link:'https://www.infocampo.com.ar/la-dicotomia-del-maiz-a-dias-de-la-siembra-gana-poder-de-compra-con-algunos-insumos-pero-pierde-con-otros/'},
-  {fecha:'2026-07-31',fuente:'Bichos de Campo',cultivo:'Trigo / Maíz / Soja',titulo:'Esta semana se rompió la “brújula” en el mercado de Chicago ¿Y ahora qué hacemos?',resumen:'Esta semana se rompió la “brújula” en el mercado estadounidense CME Group (“Chicago”) ya que una multiplicidad de variables alcistas derivó en bajas generalizadas de precios de maíz, trigo y soja. Los administradores de fondos agrícolas continuaron esta semana la fase de construcción de “apuestas alcistas” en contratos de maíz y soja del CME Group […]',link:'https://bichosdecampo.com/esta-semana-se-rompio-la-brujula-en-el-mercado-de-chicago-y-ahora-que-hacemos/'},
-  {fecha:'2026-07-31',fuente:'Bichos de Campo',cultivo:'Trigo / Maíz / Soja',titulo:'En el primer semestre los productores vendieron solo 30% de la cosecha de soja: ¿Una estrategia para tratar de empalmar con la rebaja paulatina de retenciones a partir de 2027?',resumen:'Argentina ingresó al segundo semestre del 2026 con una situación agrícola paradójica. A mediados de julio, las ventas con precio cerrado de soja, maíz y trigo de la campaña 2025/26 alcanzaban 58,2 millones de toneladas, un volumen 20% superior a la mediana histórica. De todos modos, quedaba mucho porcentaje de la cosecha, especialmente en soja, […]',link:'https://bichosdecampo.com/en-el-primer-semestre-los-productores-vendieron-solo-30-de-la-cosecha-de-soja-una-estrategia-para-tratar-de-empalmar-con-la-rebaja-paulatina-de-retenciones-a-partir-de-2027/'},
   {fecha:'2026-07-28',fuente:'Infocampo',cultivo:'Soja',titulo:'La polinización también define a la soja: un hallazgo del INTA y el Conicet cambia un paradigma agrícola',resumen:'Una investigación argentina demuestra que la soja no depende únicamente de la autopolinización para formar semillas. El estudio detectó un mecanismo reproductivo hasta ahora desconocido y reveló que los polinizadores silvestres cumplen un papel clave para sostener el rendimiento.',link:'https://www.infocampo.com.ar/la-polinizacion-tambien-define-a-la-soja-un-hallazgo-del-inta-y-el-conicet-cambia-un-paradigma-agricola/'},
   {fecha:'2026-07-28',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Hagan sus apuestas: La oficina del USDA en Canberra estima que la cosecha australiana de trigo no caerá de manera tan dramática',resumen:'Mientras que el último informe oficial del USDA proyectó una cosecha australiana de trigo de 28,0 millones de toneladas para 2026/27 versus 35,9 millones en el ciclo previo, la oficina del organismo estadounidense en esa nación estima que la caída no será dramática y prevé una producción de 31,0 millones de toneladas. En ese marco, […]',link:'https://bichosdecampo.com/hagan-sus-apuestas-la-oficina-del-usda-en-canberra-estima-que-la-cosecha-australiana-de-trigo-no-caera-de-manera-tan-dramatica/'},
   {fecha:'2026-07-26',fuente:'Bichos de Campo',cultivo:'Trigo / Maíz / Soja',titulo:'Proximidad geográfica: Seis mapas para entender un factor de competitividad clave de la agroindustria argentina',resumen:'Al sumar la producción de los seis cultivos principales de Argentina –soja, maíz, trigo, girasol, cebada y sorgo– se observa que el 67% del total nacional se localiza a 300 kilómetros de complejos portuarios. Se trata de una ventaja logística estructural de la agroindustria argentina, ya que en EE.UU. y Brasil la producción de granos […]',link:'https://bichosdecampo.com/proximidad-geografica-seis-mapas-para-entender-un-factor-de-competitividad-clave-de-la-agroindustria-argentina/'},
@@ -2428,7 +2957,18 @@ const NEWS_DATA = [
   {fecha:'2026-07-24',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 24 julio 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-24-julio-2026/'},
   {fecha:'2026-07-24',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 24 julio 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-24-julio-2026/'},
   {fecha:'2026-07-24',fuente:'Bichos de Campo',cultivo:'Maíz',titulo:'Optimismo: Aún no comenzó la campaña, pero en la Bolsa de Rosario ya se entusiasman con una siembra récord de maíz',resumen:'Todavía faltan 45 días para que arranque la siembra de maíz en la región núcleo, pero el informe semanal de la Bolsa de Comercio de Rosario (BCR) ya deja trascender un clima de entusiasmo entre los técnicos que recorren los campos. Según indicó un informe de los rosarinos, con 2,3 millones de hectáreas de intención […]',link:'https://bichosdecampo.com/optimismo-aun-no-comenzo-la-campana-pero-en-la-bolsa-de-rosario-se-entusiasman-con-una-siembra-record-de-maiz/'},
-  {fecha:'2026-07-24',fuente:'Bichos de Campo',cultivo:'Maíz / Soja',titulo:'Pum para arriba: Siguen subiendo las “apuestas” alcistas en maíz y soja por parte de los fondos agrícolas',resumen:'Los administradores de fondos agrícolas continuaron esta semana la fase de construcción de “apuestas alcistas” en contratos de maíz y soja del CME Group (“Chicago”), lo que contribuyó a potenciar los factores propios del mercado. El martes pasado la posición neta especulativa en contratos futuros y opciones de maíz en el CME Group (“Chicago”) siguió […]',link:'https://bichosdecampo.com/pum-para-arriba-siguen-subiendo-las-apuestas-alcistas-en-maiz-y-soja-por-parte-de-los-fondos-agricolas/'}
+  {fecha:'2026-07-24',fuente:'Bichos de Campo',cultivo:'Maíz / Soja',titulo:'Pum para arriba: Siguen subiendo las “apuestas” alcistas en maíz y soja por parte de los fondos agrícolas',resumen:'Los administradores de fondos agrícolas continuaron esta semana la fase de construcción de “apuestas alcistas” en contratos de maíz y soja del CME Group (“Chicago”), lo que contribuyó a potenciar los factores propios del mercado. El martes pasado la posición neta especulativa en contratos futuros y opciones de maíz en el CME Group (“Chicago”) siguió […]',link:'https://bichosdecampo.com/pum-para-arriba-siguen-subiendo-las-apuestas-alcistas-en-maiz-y-soja-por-parte-de-los-fondos-agricolas/'},
+  {fecha:'2026-07-23',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Se está llevando a cabo una prueba piloto para armar el primer “mapa de calidad de soja” de la Argentina',resumen:'Las autoridades de la Secretaría de Agricultura comenzaron a instrumentar la metodología para armar un “mapa de calidad de soja” que permita identificar los valores promedio de humedad, proteína y materia grasa en cada una de las regiones productivas. En ese marco, se realizó este miércoles una reunión de trabajo en la Exposición Rural de […]',link:'https://bichosdecampo.com/se-esta-llevando-a-cabo-una-prueba-piloto-para-armar-el-primer-mapa-de-calidad-de-soja-de-la-argentina/'},
+  {fecha:'2026-07-23',fuente:'Bichos de Campo',cultivo:'Maíz',titulo:'Lo que mata es la humedad: La cosecha argentina de maíz está muy retrasada y los exportadores siguen urgidos por completar embarques',resumen:'Si bien la Argentina va camino a lograr un cosechón histórico de maíz, falta mucho para completar la recolección y además buena parte de la levantado tienen niveles de humedad que hacen inviable la comercialización del cereal. La cosecha de maíz con destino grano comercial alcanzó el 66,8% del área programada a nivel nacional con […]',link:'https://bichosdecampo.com/lo-que-mata-es-la-humedad-la-cosecha-argentina-de-maiz-esta-muy-retrasada-y-los-exportadores-siguen-urgidos-por-completar-embarques/'},
+  {fecha:'2026-07-23',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'¿Lo sabías? Ya comenzó a comercializarse soja argentina en el marco de contratos con cláusula Visec',resumen:'Ya ha comenzado la comercialización de soja de la nueva campaña –que todavía no comenzó a sembrarse– en el marco de contratos que contemplan el recibo de mercadería acorde a las exigencias del reglamento 1115 de la Unión Europea. El último dato oficial disponible, correspondiente al pasado 15 de junio, mostraba compras de soja 2026/27 […]',link:'https://bichosdecampo.com/lo-sabias-ya-comenzo-a-comercializarse-soja-argentina-en-el-marco-de-contratos-con-clausula-visec/'},
+  {fecha:'2026-07-22',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Cambio de época: En lo que va del año el superávit comercial del sector energético equivalente al 75% del saldo generado por la soja',resumen:'El estancamiento del sector sojero argentino –producto de una elevada presión impositiva– contrasta cada vez más con el impulsdo que está tomando la producción de hidrocarburos. En el primer semestre de 2026 la balanza comercial de los principales productos derivados de la soja registró un superávit de 6706 millones de dólares, una cifra 2,1% inferior […]',link:'https://bichosdecampo.com/cambio-de-epoca-en-lo-que-va-del-ano-el-superavit-comercial-del-sector-energetico-equivalente-al-75-del-saldo-generado-por-la-soja/'},
+  {fecha:'2026-07-22',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Poroto devaluado: El precio de la soja volvió a superar los 500.000 $/tonelada ¡luego de seis meses!',resumen:'Luego de seis meses, el precio de la soja Rosario disponible volvió a superar los 500.000 $/tonelada de la mano de una recuperación del valor internacional de la oleaginosa. Este miércoles el precio de referencia de la Soja Rosario disponible en A3 Mercados terminó en un promedio de 510.000 $/tonelada, cifra equivalente a 345 u$s/tonelada. […]',link:'https://bichosdecampo.com/poroto-devaluado-el-precio-de-la-soja-volvio-a-superar-los-500-000-tonelada-luego-de-seis-meses/'},
+  {fecha:'2026-07-22',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Histórico: Buscando abastecer a la industria con materia prima de calidad, Argentina importó por primera vez trigo desde… Paraguay',resumen:'Por primera vez en la historia del comercio bilateral, Paraguay le vendió trigo a la Argentina. El dato podría pasar inadvertido en medio de una planilla de exportaciones, pero tiene un peso simbólico enorme, ya que la Argentina es uno de los grandes productores y exportadores de trigo del mundo, mientras que Paraguay, condicionado por […]',link:'https://bichosdecampo.com/historico-buscando-abastecer-a-la-industria-con-materia-prima-de-calidad-argentina-importo-por-primera-vez-trigo-desde-paraguay/'},
+  {fecha:'2026-07-21',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 21 julio 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-21-julio-2026/'},
+  {fecha:'2026-07-21',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 21 julio 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-21-julio-2026/'},
+  {fecha:'2026-07-21',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 21 julio 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-21-julio-2026/'},
+  {fecha:'2026-07-21',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Los precios del trigo en EE.UU. siguen muy desarbitrados con respecto a los europeos ¿Por qué?',resumen:'Los precios del trigo en EE.UU. siguen estando muy desarbitrados con respecto a los valores presentes en Europa a pesar de la acumulación de factores alcistas que está registrando el cereal. Mientras que el contrato Trigo Septiembre 2026 en el mercado Euronext registró un alza del 16% en el último mes, la posición equivalente de […]',link:'https://bichosdecampo.com/los-precios-del-trigo-en-ee-uu-siguen-muy-desarbitrados-con-respecto-a-los-europeos-por-que/'},
+  {fecha:'2026-07-21',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Mercosur a pleno: La soja paraguaya permitió sostener los niveles de molienda de soja ante el bajo nivel de venta de los productores argentinos',resumen:'En los tres primeros meses del ciclo comercial 2025/26 una de cada cuatro toneladas procesadas por la industria oleaginosa argentina provino de países vecinos (principalmente de Paraguay). En junio pasado la molienda de soja en la Argentina –según datos oficiales– fue de 4,14 millones de toneladas, una cifra 1,9% superior a la del mismo mes […]',link:'https://bichosdecampo.com/mercosur-a-pleno-la-soja-paraguaya-permitio-sostener-los-niveles-de-molienda-de-soja-ante-el-bajo-nivel-de-venta-de-los-productores-argentinos/'}
 ];
 /* ═══════════════════════════════════════════════════════════════════════ */
 
