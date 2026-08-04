@@ -1863,6 +1863,18 @@ function dsUpdateSensLive(key,val,el){
     const span=wrap.querySelector('span');
     if(span)span.textContent=(parseFloat(val)>0?'+':'')+val+'%';
   }
+  dsRenderSensChart(dsReadLiveSens());
+}
+function dsReadLiveSens(){
+  const wrap=document.getElementById('ds-sliders');
+  const sens={soja:0,maiz:0,trigo:0,tc:0};
+  if(wrap){
+    wrap.querySelectorAll('input[type=range]').forEach(function(inp){
+      const key=inp.dataset.key;
+      if(key)sens[key]=parseFloat(inp.value)||0;
+    });
+  }
+  return sens;
 }
 
 function dsRenderInputs(){
@@ -1903,7 +1915,6 @@ function dsRenderInputs(){
       return'<div class="ds-stock-card">'+
         '<div class="ds-stock-title" style="color:'+DS_GRAIN_COLOR[cult]+'">'+DS_GRAIN_LABEL[cult]+'</div>'+
         '<label>Cantidad (tn)<input type="number" min="0" value="'+(s.cantidad||'')+'" onchange="dsUpdateStock(\''+cult+'\',\'cantidad\',this.value)"></label>'+
-        '<label>Precio propio (USD/tn, opcional)<input type="number" min="0" placeholder="usa spot si vacío" value="'+(s.precio||'')+'" onchange="dsUpdateStock(\''+cult+'\',\'precio\',this.value)"></label>'+
       '</div>';
     }).join('');
   }
@@ -1913,33 +1924,12 @@ function dsRenderInputs(){
     const s=st.sens;
     sliders.innerHTML=['soja','maiz','trigo'].map(function(cult){
       return'<div class="ds-slider-row"><label>'+DS_GRAIN_LABEL[cult]+' <span>'+(s[cult]>0?'+':'')+s[cult]+'%</span></label>'+
-        '<input type="range" min="-20" max="20" step="1" value="'+s[cult]+'" oninput="dsUpdateSensLive(\''+cult+'\',this.value,this)" onchange="dsUpdateSens(\''+cult+'\',this.value)"></div>';
+        '<input type="range" min="-20" max="20" step="1" data-key="'+cult+'" value="'+s[cult]+'" oninput="dsUpdateSensLive(\''+cult+'\',this.value,this)" onchange="dsUpdateSens(\''+cult+'\',this.value)"></div>';
     }).join('')+
     '<div class="ds-slider-row"><label>Tipo de cambio (solo afecta el disponible) <span>'+(s.tc>0?'+':'')+s.tc+'%</span></label>'+
-    '<input type="range" min="-20" max="20" step="1" value="'+s.tc+'" oninput="dsUpdateSensLive(\'tc\',this.value,this)" onchange="dsUpdateSens(\'tc\',this.value)"></div>'+
+    '<input type="range" min="-20" max="20" step="1" data-key="tc" value="'+s.tc+'" oninput="dsUpdateSensLive(\'tc\',this.value,this)" onchange="dsUpdateSens(\'tc\',this.value)"></div>'+
     '<button class="ds-reset-btn" onclick="dsResetSens()">Restablecer escenario base</button>';
   }
-}
-
-function dsRenderPosiciones(){
-  const wrap=document.getElementById('ds-posiciones-table');
-  if(!wrap)return;
-  const rows=[];
-  ['soja','maiz','trigo'].forEach(function(cult){
-    dsPosicionesGrano(cult).forEach(function(p){
-      rows.push({cult:cult,posicion:p.posicion,fecha:p.fecha,precio:p.precio});
-    });
-  });
-  rows.sort(function(a,b){return a.fecha-b.fecha;});
-  if(!rows.length){
-    wrap.innerHTML='<div class="ds-empty">Todavía no cargaron los datos de la curva de futuros. Probá de nuevo en unos segundos.</div>';
-    return;
-  }
-  wrap.innerHTML='<table class="fut-table"><thead><tr><th>Producto</th><th>Posición</th><th>Fecha</th><th>Precio (USD)</th></tr></thead><tbody>'+
-    rows.map(function(r){
-      return'<tr><td style="color:'+DS_GRAIN_COLOR[r.cult]+';font-weight:700">'+DS_GRAIN_LABEL[r.cult]+'</td><td>'+r.posicion+'</td><td>'+r.fecha.toLocaleDateString('es-AR')+'</td><td>'+fmt(r.precio)+'</td></tr>';
-    }).join('')+
-  '</tbody></table>';
 }
 
 function dsRenderKPIs(res){
@@ -2020,62 +2010,45 @@ function dsRenderCronograma(res){
   });
 }
 
-function dsRenderCobertura(res){
-  const ctx=document.getElementById('ds-chart-cobertura');
+function dsRenderSensChart(sens){
+  const ctx=document.getElementById('ds-chart-sens');
   if(!ctx||!window.Chart)return;
-  if(!res.coberturaTimeline.length){
-    if(ctx._chartInst){ctx._chartInst.destroy();ctx._chartInst=null;}
+  const res=dsOptimizar(sens);
+  const necesidad=Math.max(0,res.deudaTotal-res.cxcTotal);
+  const ingreso=res.ingresoProyectado;
+  const excedente=res.excedente;
+  const barColor=excedente>=0?'#22c55ecc':'#ef4444cc';
+  const subtitle=(res.deudaTotal>0?'Cobertura: '+res.coberturaFinal.toFixed(1)+'%  ·  ':'')+
+    (excedente>=0?'Excedente':'Faltante')+': '+dsFmtUsd(Math.abs(excedente));
+  if(ctx._chartInst){
+    const c=ctx._chartInst;
+    c.data.datasets[0].data=[necesidad,ingreso];
+    c.data.datasets[0].backgroundColor=['#94a3b8cc',barColor];
+    c.options.plugins.subtitle.text=subtitle;
+    c.update();
     return;
   }
-  const labels=res.coberturaTimeline.map(function(t){return dsFechaLabel(t.fechaStr);});
-  const data=res.coberturaTimeline.map(function(t){return t.coberturaPct;});
-  if(ctx._chartInst)ctx._chartInst.destroy();
   ctx._chartInst=new Chart(ctx,{
-    type:'line',
-    data:{labels:labels,datasets:[{label:'Cobertura acumulada (%)',data:data,borderColor:'#16a34a',backgroundColor:'#16a34a22',fill:true,tension:0.25}]},
+    type:'bar',
+    data:{labels:['Necesitás cubrir','Podés generar vendiendo'],datasets:[{data:[necesidad,ingreso],backgroundColor:['#94a3b8cc',barColor],borderRadius:6}]},
     options:{
-      responsive:true,maintainAspectRatio:false,
-      scales:{y:{min:0,max:110,ticks:{callback:function(v){return v+'%';}}}},
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(item){return'Cobertura: '+item.raw.toFixed(1)+'%';}}}}
-    }
-  });
-}
-
-function dsRenderEscenarios(){
-  const ctx=document.getElementById('ds-chart-escenarios');
-  if(!ctx||!window.Chart)return;
-  const base=window.DS_STATE.sens;
-  const pes=dsOptimizar({soja:base.soja-10,maiz:base.maiz-10,trigo:base.trigo-10,tc:base.tc});
-  const bas=dsOptimizar(base);
-  const opt=dsOptimizar({soja:base.soja+10,maiz:base.maiz+10,trigo:base.trigo+10,tc:base.tc});
-  if(ctx._chartInst)ctx._chartInst.destroy();
-  ctx._chartInst=new Chart(ctx,{
-    data:{
-      labels:['Pesimista (-10%)','Base','Optimista (+10%)'],
-      datasets:[
-        {type:'bar',label:'Ingreso proyectado (USD)',data:[pes.ingresoProyectado,bas.ingresoProyectado,opt.ingresoProyectado],backgroundColor:'#3b82f6cc',yAxisID:'y'},
-        {type:'line',label:'Cobertura (%)',data:[pes.coberturaFinal,bas.coberturaFinal,opt.coberturaFinal],borderColor:'#16a34a',backgroundColor:'#16a34a',yAxisID:'y1'}
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      scales:{
-        y:{position:'left',ticks:{callback:function(v){return dsFmtUsd(v);}}},
-        y1:{position:'right',min:0,max:110,grid:{drawOnChartArea:false},ticks:{callback:function(v){return v+'%';}}}
-      },
-      plugins:{legend:{position:'bottom'}}
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{callback:function(v){return dsFmtUsd(v);}}}},
+      plugins:{
+        legend:{display:false},
+        subtitle:{display:true,text:subtitle,font:{size:13,weight:'600'},color:'#475569',padding:{bottom:10}},
+        tooltip:{callbacks:{label:function(item){return dsFmtUsd(item.raw);}}}
+      }
     }
   });
 }
 
 function dsRefresh(){
   const res=dsOptimizar();
-  dsRenderPosiciones();
   dsRenderKPIs(res);
   dsRenderTablaVentas(res);
   dsRenderCronograma(res);
-  dsRenderCobertura(res);
-  dsRenderEscenarios();
+  dsRenderSensChart(window.DS_STATE.sens);
 }
 
 function buildDeudaStockPanel(){
@@ -2119,18 +2092,18 @@ function buildDeudaStockPanel(){
     </style>
     <div class="ds-header">
       <h2>💳 Deuda / Stock</h2>
-      <p>Planificá qué vender, cuánto y en qué posición para cubrir tus compromisos financieros, usando el stock disponible y la curva de futuros ya cargada en el tablero.</p>
+      <p>Cargá cuánto debés (y cuándo), cuánto tenés para cobrar y cuánto stock te queda. El tablero calcula solo, con la curva de futuros vigente, qué conviene vender para cubrir todo con el mejor precio.</p>
     </div>
 
     <div class="ds-grid-top">
       <div class="full-card">
-        <h3>Vencimientos</h3>
+        <h3>¿Cuánto debés y cuándo?</h3>
         <div id="ds-venc-rows"></div>
         <button class="ds-add-btn" onclick="dsAddVenc()">+ Agregar vencimiento</button>
       </div>
       <div class="full-card">
-        <h3>Cuentas por cobrar
-          <span id="ds-cxc-toggle" class="ds-switch" onclick="dsToggleCxc()"><span class="ds-switch-track"></span>Considerar cuentas por cobrar</span>
+        <h3>¿Tenés cuentas por cobrar?
+          <span id="ds-cxc-toggle" class="ds-switch" onclick="dsToggleCxc()"><span class="ds-switch-track"></span>Considerarlas</span>
         </h3>
         <div id="ds-cxc-rows"></div>
         <button id="ds-cxc-add-btn" class="ds-add-btn" onclick="dsAddCxc()">+ Agregar cuenta por cobrar</button>
@@ -2138,41 +2111,27 @@ function buildDeudaStockPanel(){
     </div>
 
     <div class="full-card">
-      <h3>Stock disponible</h3>
+      <h3>¿Cuánto stock te queda?</h3>
       <div id="ds-stock-inputs"></div>
-    </div>
-
-    <div class="full-card">
-      <h3>Posiciones disponibles <span style="font-weight:400;font-size:0.72rem;color:#999">· reutiliza la curva de futuros de cada grano</span></h3>
-      <div id="ds-posiciones-table"></div>
     </div>
 
     <div id="ds-kpis" class="ds-kpis-grid"></div>
 
     <div class="full-card">
-      <h3>Estrategia de ventas recomendada</h3>
+      <h3>Qué conviene vender</h3>
       <div id="ds-tabla-ventas"></div>
     </div>
 
-    <div class="ds-grid-charts">
-      <div class="full-card">
-        <h3>Cronograma de flujos</h3>
-        <div class="canvas-wrap" style="height:250px"><canvas id="ds-chart-cronograma"></canvas></div>
-      </div>
-      <div class="full-card">
-        <h3>Evolución de la cobertura</h3>
-        <div class="canvas-wrap" style="height:250px"><canvas id="ds-chart-cobertura"></canvas></div>
-      </div>
+    <div class="full-card">
+      <h3>Cronograma de flujos</h3>
+      <div class="canvas-wrap" style="height:250px"><canvas id="ds-chart-cronograma"></canvas></div>
     </div>
 
     <div class="full-card">
-      <h3>Sensibilizador</h3>
+      <h3>¿Y si cambian los precios?</h3>
+      <p style="font-size:0.8rem;color:#666;margin-top:-4px;margin-bottom:14px;">Movés los precios y el gráfico se actualiza al instante, mostrando si te sigue alcanzando para cubrir todo.</p>
+      <div class="canvas-wrap" style="height:150px;margin-bottom:18px"><canvas id="ds-chart-sens"></canvas></div>
       <div id="ds-sliders"></div>
-    </div>
-
-    <div class="full-card">
-      <h3>Comparación de escenarios</h3>
-      <div class="canvas-wrap" style="height:280px"><canvas id="ds-chart-escenarios"></canvas></div>
     </div>
   `;
   dsRenderInputs();
