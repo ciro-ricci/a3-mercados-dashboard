@@ -2010,33 +2010,61 @@ function dsRenderCronograma(res){
   });
 }
 
+function dsCapacidadMaxima(sens){
+  const st=window.DS_STATE;
+  let total=0;
+  ['soja','maiz','trigo'].forEach(function(cult){
+    const cantidad=(st.stock[cult]&&st.stock[cult].cantidad)||0;
+    if(cantidad<=0)return;
+    const pct=(sens[cult]||0)/100;
+    const tcPct=(sens.tc||0)/100;
+    const stockPrecioPropio=st.stock[cult]&&st.stock[cult].precio;
+    const posiciones=dsPosicionesGrano(cult).map(function(p){
+      let precio=p.precio;
+      if(p.esSpot){
+        if(stockPrecioPropio){precio=stockPrecioPropio;}
+        else{
+          const spotArs=SPOT?SPOT[cult+'_ars']:null;
+          const tc=SPOT?SPOT.tc:null;
+          if(spotArs&&tc)precio=spotArs/(tc*(1+tcPct));
+        }
+      }
+      return precio*(1+pct);
+    });
+    if(!posiciones.length)return;
+    total+=cantidad*Math.max.apply(null,posiciones);
+  });
+  return total;
+}
+
 function dsRenderSensChart(sens){
   const ctx=document.getElementById('ds-chart-sens');
   if(!ctx||!window.Chart)return;
   const res=dsOptimizar(sens);
   const necesidad=Math.max(0,res.deudaTotal-res.cxcTotal);
-  const ingreso=res.ingresoProyectado;
-  const excedente=res.excedente;
-  const barColor=excedente>=0?'#22c55ecc':'#ef4444cc';
-  const subtitle=(res.deudaTotal>0?'Cobertura: '+res.coberturaFinal.toFixed(1)+'%  ·  ':'')+
-    (excedente>=0?'Excedente':'Faltante')+': '+dsFmtUsd(Math.abs(excedente));
+  const capacidad=dsCapacidadMaxima(sens);
+  const excedente=capacidad-necesidad;
+  const barColor=necesidad<=0?'#94a3b8cc':(excedente>=0?'#22c55ecc':'#ef4444cc');
+  const subtitle=necesidad<=0?'Sin compromisos cargados todavía':
+    (excedente>=0?'Te alcanza · margen: '+dsFmtUsd(excedente):'No te alcanza · faltante: '+dsFmtUsd(Math.abs(excedente)));
   if(ctx._chartInst){
     const c=ctx._chartInst;
-    c.data.datasets[0].data=[necesidad,ingreso];
+    c.data.datasets[0].data=[necesidad,capacidad];
     c.data.datasets[0].backgroundColor=['#94a3b8cc',barColor];
     c.options.plugins.subtitle.text=subtitle;
+    c.options.plugins.subtitle.color=necesidad<=0?'#888':(excedente>=0?'#16a34a':'#dc2626');
     c.update();
     return;
   }
   ctx._chartInst=new Chart(ctx,{
     type:'bar',
-    data:{labels:['Necesitás cubrir','Podés generar vendiendo'],datasets:[{data:[necesidad,ingreso],backgroundColor:['#94a3b8cc',barColor],borderRadius:6}]},
+    data:{labels:['Necesitás cubrir','Podés generar con todo tu stock'],datasets:[{data:[necesidad,capacidad],backgroundColor:['#94a3b8cc',barColor],borderRadius:6}]},
     options:{
       indexAxis:'y',responsive:true,maintainAspectRatio:false,
       scales:{x:{ticks:{callback:function(v){return dsFmtUsd(v);}}}},
       plugins:{
         legend:{display:false},
-        subtitle:{display:true,text:subtitle,font:{size:13,weight:'600'},color:'#475569',padding:{bottom:10}},
+        subtitle:{display:true,text:subtitle,font:{size:13,weight:'700'},color:necesidad<=0?'#888':(excedente>=0?'#16a34a':'#dc2626'),padding:{bottom:10}},
         tooltip:{callbacks:{label:function(item){return dsFmtUsd(item.raw);}}}
       }
     }
