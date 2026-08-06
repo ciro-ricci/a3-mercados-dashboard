@@ -1671,6 +1671,7 @@ function dsLoadState(){
     const raw=localStorage.getItem(DS_STORAGE_KEY);
     if(raw){
       const parsed=JSON.parse(raw);
+      if(parsed._savedAt)window.DS_LAST_SAVED=new Date(parsed._savedAt);
       const base=dsDefaultState();
       base.vencimientos=parsed.vencimientos||[];
       base.cxc=parsed.cxc||[];
@@ -1688,7 +1689,39 @@ function dsLoadState(){
 }
 window.DS_STATE=dsLoadState();
 function dsSaveState(){
-  try{localStorage.setItem(DS_STORAGE_KEY,JSON.stringify(window.DS_STATE));}catch(e){}
+  try{
+    window.DS_LAST_SAVED=new Date();
+    const payload=Object.assign({},window.DS_STATE,{_savedAt:window.DS_LAST_SAVED.toISOString()});
+    localStorage.setItem(DS_STORAGE_KEY,JSON.stringify(payload));
+  }catch(e){}
+  dsRenderSaveStatus();
+}
+function dsRenderSaveStatus(){
+  const el=document.getElementById('ds-save-time');
+  if(!el)return;
+  if(!window.DS_LAST_SAVED){el.textContent='Todavía no cargaste datos';return;}
+  const t=window.DS_LAST_SAVED;
+  const hh=String(t.getHours()).padStart(2,'0');
+  const mm=String(t.getMinutes()).padStart(2,'0');
+  el.textContent='· última vez guardado '+hh+':'+mm+'hs';
+}
+function dsManualSave(){
+  dsSaveState();
+  const toast=document.getElementById('ds-save-toast');
+  if(toast){
+    toast.classList.add('show');
+    clearTimeout(window._dsToastTimer);
+    window._dsToastTimer=setTimeout(function(){toast.classList.remove('show');},1800);
+  }
+}
+function dsClearAll(){
+  if(!confirm('¿Borrar todos los datos de Deuda/Stock guardados en este navegador (vencimientos, cuentas por cobrar y stock)? Esta acción no se puede deshacer.'))return;
+  try{localStorage.removeItem(DS_STORAGE_KEY);}catch(e){}
+  window.DS_STATE=dsDefaultState();
+  window.DS_LAST_SAVED=null;
+  dsRenderInputs();
+  dsRefresh();
+  dsRenderSaveStatus();
 }
 function dsFmtUsd(n){
   if(n===null||n===undefined||isNaN(n))return'—';
@@ -2110,6 +2143,7 @@ function dsRefresh(){
   dsRenderTablaVentas(res);
   dsRenderCronograma(res);
   dsRenderSensChart(window.DS_STATE.sens);
+  dsRenderSaveStatus();
 }
 
 function buildDeudaStockPanel(){
@@ -2121,6 +2155,17 @@ function buildDeudaStockPanel(){
       .ds-wrap h2,.ds-wrap h3{font-family:inherit;}
       .ds-header h2{font-size:1.2rem;font-weight:800;color:#0f172a;margin:0;letter-spacing:-0.01em;}
       .ds-header p{font-size:0.84rem;color:#64748b;margin-top:4px;max-width:760px;line-height:1.5;}
+      .ds-save-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:14px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;}
+      .ds-save-info{display:flex;align-items:center;gap:8px;font-size:0.78rem;color:#166534;font-weight:600;}
+      .ds-save-dot{width:8px;height:8px;border-radius:50%;background:#10b981;flex-shrink:0;}
+      .ds-save-time{color:#059669;font-weight:700;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+      .ds-save-actions{display:flex;gap:8px;position:relative;}
+      .ds-save-btn{padding:7px 14px;border-radius:8px;border:1px solid #bbf7d0;background:#fff;color:#166534;font-size:0.76rem;font-weight:700;cursor:pointer;transition:background 0.15s;}
+      .ds-save-btn:hover{background:#dcfce7;}
+      .ds-clear-btn{padding:7px 14px;border-radius:8px;border:1px solid #fecdd3;background:#fff;color:#be123c;font-size:0.76rem;font-weight:700;cursor:pointer;transition:background 0.15s;}
+      .ds-clear-btn:hover{background:#fff1f2;}
+      .ds-save-toast{position:absolute;top:-36px;right:0;background:#0f172a;color:#fff;font-size:0.72rem;font-weight:600;padding:6px 12px;border-radius:8px;opacity:0;transform:translateY(4px);pointer-events:none;transition:opacity 0.2s,transform 0.2s;white-space:nowrap;z-index:5;}
+      .ds-save-toast.show{opacity:1;transform:translateY(0);}
       .ds-wrap .ds-card{background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 2px rgba(15,23,42,0.04);padding:20px;margin-bottom:0;transition:box-shadow 0.15s;}
       .ds-wrap .ds-card:hover{box-shadow:0 2px 8px rgba(15,23,42,0.06);}
       .ds-wrap .ds-card h3{font-size:0.86rem;font-weight:700;color:#0f172a;margin-bottom:14px;text-transform:none;letter-spacing:0;display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -2187,6 +2232,14 @@ function buildDeudaStockPanel(){
     <div class="ds-header">
       <h2>💳 Deuda / Stock</h2>
       <p>Cargá cuánto debés (y cuándo), cuánto tenés para cobrar y cuánto stock te queda. El tablero calcula solo, con la curva de futuros vigente, qué conviene vender para cubrir todo con el mejor precio.</p>
+      <div class="ds-save-bar">
+        <div class="ds-save-info"><span class="ds-save-dot"></span><span>Tus datos se guardan solos en este navegador <span id="ds-save-time" class="ds-save-time"></span></span></div>
+        <div class="ds-save-actions">
+          <button class="ds-save-btn" onclick="dsManualSave()">💾 Guardar ahora</button>
+          <button class="ds-clear-btn" onclick="dsClearAll()">🗑️ Borrar datos</button>
+          <div id="ds-save-toast" class="ds-save-toast">✓ Guardado en este navegador</div>
+        </div>
+      </div>
     </div>
 
     <div class="ds-grid-top">
