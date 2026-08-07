@@ -433,9 +433,9 @@ window.LANDING_LINKS = {
    BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
    oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
    valores (oficial, CCL, soja/maíz/trigo, etc.) siguen viniendo de la sheet.
-   Última actualización: 2026-08-06
+   Última actualización: 2026-08-07
    ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
-const BCRA_TC_OVERRIDE = 1496.3132;
+const BCRA_TC_OVERRIDE = 1497.0062;
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 // Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
 const PIZARRA_SOJ_2025={
@@ -3040,7 +3040,7 @@ window._initDeviceFlow=function(){
 /* ═══════════════════════════════════════════════════════════════════════
    NEWS_DATA — Claude actualiza este bloque cada vez que corre el scraping.
    Las noticias con más de 7 días son eliminadas automáticamente del array.
-   Última actualización: 2026-08-06
+   Última actualización: 2026-08-07
    ═══════════════════════════════════════════════════════════════════════ */
 const COMERCIALIZACION_DATA = {
   fecha:'2026-07-29',
@@ -3063,6 +3063,9 @@ const CARRYIN_DATA = {
 const NEWS_DATA = [
   {fecha:'2026-08-06',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Poco confiables: La Argentina necesita más estadistas y menos “patoteros” para recuperar la institucionalidad',resumen:'En el año 2013 la Argentina se quedó sin trigo porque, gracias a la intervención instrumentada por el gobierno kirchnerista, se evaporaron los incentivos para producir el cereal. La semana pasada el gobierno libertario decidió intervenir la actividad de practicaje y provocó la paralización del comercio exterior. Por fortuna, reaccionaron a tiempo y suspendieron la […]',link:'https://bichosdecampo.com/poco-confiables-la-argentina-necesita-mas-estadistas-y-menos-patoteros-para-recuperar-la-institucionalidad/'},
   {fecha:'2026-08-06',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Evaristo de Miranda, referente agrícola brasileño, pidió que los hermanos sigan siendo unidos: “Brasil nunca ha dependido tanto del trigo argentino”',resumen:'“Brasil nunca ha dependido tanto del trigo argentino. La mala cosecha nacional obligará al país a importar entre ocho y diez millones de toneladas en 2026, el mayor volumen de su historia”. Así lo indicó Evaristo de Miranda, uno de los referentes técnicos agropecuarios más prestigiosos de Brasil en un artículo publicado en el sitio […]',link:'https://bichosdecampo.com/evaristo-de-miranda-referente-agricola-brasileno-pidio-que-los-hermanos-sigan-siendo-unidos-brasil-nunca-ha-dependido-tanto-del-trigo-argentino/'},
+  {fecha:'2026-08-06',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 6 agosto 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-6-agosto-2026/'},
+  {fecha:'2026-08-06',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 6 agosto 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-6-agosto-2026/'},
+  {fecha:'2026-08-06',fuente:'Bichos de Campo',cultivo:'Maíz',titulo:'El primer embarque registrado de la campaña argentina 2026/27 corresponde al maíz (y no es casualidad)',resumen:'A los exportadores argentinos les está costando originar maíz para poder completar embarques en un contexto internacional de creciente nerviosismo por el “apagón logístico” presente en el Mar Negro. La cosecha de maíz argentino sigue muy retrasada y alcanza el 73,7% del área nacional, lo que representa una demora de 15,6 puntos. respecto de la […]',link:'https://bichosdecampo.com/el-primer-embarque-registrado-de-la-campana-argentina-2026-27-corresponde-al-maiz-y-no-es-casualidad/'},
   {fecha:'2026-08-05',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Hace 25 años los defensores de la soja RR decían que el desmonte iba a generar desarrollo: Ahora investigan qué sucedió finalmente con ese “derrame”',resumen:'Hace más de un cuarto de siglo, mientras la Argentina tenía la tasa de deforestación más elevada del mundo (tendencia que se detuvo recién en 2007, con la Ley de Bosques) y se liberaban 1,1 millón de hectáreas en el norte del país para sembrar soja transgénica o poner las vacas que se corrían desde […]',link:'https://bichosdecampo.com/hace-25-anos-los-defensores-de-la-soja-rr-decian-que-el-desmonte-iba-a-generar-desarrollo-ahora-investigan-que-sucedio-finalmente-con-ese-derrame/'},
   {fecha:'2026-08-05',fuente:'Infocampo',cultivo:'Maíz',titulo:'“Será crítico monitorear”: la chicharrita del maíz abunda en las zonas endémicas y eleva los alertas',resumen:'Según la Red Nacional que monitorea a la chicharrita del maíz, la plata está presente en el 98% de las localides del NOA y NEA, y en un 60% de los casos registra los niveles de abundancia más altos. Por eso piden intensificar las tareas de control.',link:'https://www.infocampo.com.ar/sera-critico-monitorear-la-chicharrita-del-maiz-abunda-en-las-zonas-endemicas-y-eleva-los-alertas/'},
   {fecha:'2026-08-05',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Trigo: El “ofertón” de precios del “club del miedo” del Mar Negro le pone un techo al impulso alcista registrado en los orígenes libres de conflictos bélicos',resumen:'Los puertos del Mar Negro –la principal ruta logística para las exportaciones agroindustriales de Rusia y Ucrania– están virtualmente inactivos ante los ataques recíprocos de drones y misiles sobre terminales y buques. Ante esa realidad, ambas naciones en guerra están buscando rutas logísticas alternativas, lo que conlleva un costo superior y obliga a reducir los […]',link:'https://bichosdecampo.com/trigo-el-oferton-de-precios-del-club-del-medio-del-mar-negro-le-pone-un-techo-al-impulso-alcista-registrado-en-los-origenes-libres-de-conflictos-belicos/'},
