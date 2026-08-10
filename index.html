@@ -363,15 +363,10 @@ canvas { max-height: 100%; }
   <div class="tab active" onclick="showTab('soj-fut')">Futuros Soja</div>
   <div class="tab" onclick="showTab('mai-fut')">Futuros Maíz</div>
   <div class="tab" onclick="showTab('tri-fut')">Futuros Trigo</div>
-  <div class="tab" onclick="showTab('soj-opts')">Opciones Soja</div>
-  <div class="tab" onclick="showTab('mai-opts')">Opciones Maíz</div>
-  <div class="tab" onclick="showTab('tri-opts')">Opciones Trigo</div>
+  <div class="tab" onclick="showTab('opciones')">Opciones</div>
   <div class="tab estrategia-tab" onclick="showTab('estrategia')">⚙ Estrategia</div>
-  <div class="tab" onclick="showTab('dlr-fut')">💵 Dólar Futuro</div>
-  <div class="tab lecap-tab" onclick="showTab('lecaps')">📈 LECAPs</div>
   <div class="tab fin-tab" onclick="showTab('financiamiento')">💰 Matriz de decisión</div>
   <div class="tab ip-tab" onclick="showTab('insumo-producto')">🌱 Insumo-Producto</div>
-  <div class="tab" onclick="showTab('comercializacion')">Comercialización</div>
   <div class="tab" onclick="showTab('noticias')">📰 Noticias</div>
   <div class="tab" onclick="showTab('brief-granos')">🌾 Brief Granos</div>
   <div class="tab ds-tab" onclick="showTab('deuda-stock')">💳 Deuda/Stock</div>
@@ -392,15 +387,16 @@ canvas { max-height: 100%; }
   <div class="panel active" id="panel-soj-fut"></div>
   <div class="panel" id="panel-mai-fut"></div>
   <div class="panel" id="panel-tri-fut"></div>
-  <div class="panel" id="panel-soj-opts"></div>
-  <div class="panel" id="panel-mai-opts"></div>
-  <div class="panel" id="panel-tri-opts"></div>
+  <div class="panel" id="panel-opciones">
+    <div id="opciones-cult-btns" style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap"></div>
+    <div id="panel-soj-opts" class="opts-subpanel"></div>
+    <div id="panel-mai-opts" class="opts-subpanel" style="display:none"></div>
+    <div id="panel-tri-opts" class="opts-subpanel" style="display:none"></div>
+  </div>
   <div class="panel" id="panel-estrategia"></div>
-  <div class="panel" id="panel-dlr-fut"></div>
-  <div class="panel" id="panel-lecaps"></div>
+  <div class="panel" id="panel-dlr-fut" style="display:none !important"></div>
   <div class="panel" id="panel-financiamiento"></div>
   <div class="panel" id="panel-insumo-producto"></div>
-  <div class="panel" id="panel-comercializacion"></div>
   <div class="panel" id="panel-brief-granos"></div>
   <div class="panel" id="panel-deuda-stock"></div>
 </div>
@@ -2286,16 +2282,32 @@ function buildDeudaStockPanel(){
   dsRefresh();
 }
 
+let _opcionesGrain='soj';
+function _opcionesRenderBtns(){
+  const wrap=document.getElementById('opciones-cult-btns');
+  if(!wrap)return;
+  const cults=[{c:'soj',lbl:'🌱 Soja',cc:'#2e7d32'},{c:'mai',lbl:'🌽 Maíz',cc:'#e65100'},{c:'tri',lbl:'🌾 Trigo',cc:'#1565c0'}];
+  wrap.innerHTML=cults.map(({c,lbl,cc})=>{
+    const act=c===_opcionesGrain;
+    return `<button onclick="_opcionesSetGrain('${c}')" style="padding:8px 22px;border:2px solid ${act?cc:'#dde'};border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;background:${act?cc:'white'};color:${act?'white':'#555'};transition:all 0.15s">${lbl}</button>`;
+  }).join('');
+}
+function _opcionesSetGrain(c){
+  _opcionesGrain=c;
+  document.getElementById('panel-soj-opts').style.display=c==='soj'?'':'none';
+  document.getElementById('panel-mai-opts').style.display=c==='mai'?'':'none';
+  document.getElementById('panel-tri-opts').style.display=c==='tri'?'':'none';
+  _opcionesRenderBtns();
+}
 function showTab(id){
-  const ids=['soj-fut','mai-fut','tri-fut','soj-opts','mai-opts','tri-opts','estrategia','dlr-fut','lecaps','financiamiento','insumo-producto','comercializacion','noticias','brief-granos','deuda-stock'];
+  const ids=['soj-fut','mai-fut','tri-fut','opciones','estrategia','financiamiento','insumo-producto','noticias','brief-granos','deuda-stock'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',ids[i]===id));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   if(id==='noticias') newsRender();
-  if(id==='lecaps') loadLecapPanel();
   if(id==='financiamiento') buildFinanciamientoPanel();
+  if(id==='opciones' && !document.getElementById('panel-opciones').dataset.built){ _opcionesRenderBtns(); document.getElementById('panel-opciones').dataset.built='1'; }
   if(id==='insumo-producto' && !document.getElementById('panel-insumo-producto').dataset.built){ buildInsumoProductoPanel(); document.getElementById('panel-insumo-producto').dataset.built='1'; }
-  if(id==='comercializacion' && !document.getElementById('panel-comercializacion').dataset.built){ buildComercializacionPanel(); document.getElementById('panel-comercializacion').dataset.built='1'; }
   if(id==='brief-granos' && !document.getElementById('panel-brief-granos').dataset.built){ buildBriefGranosPanel(); document.getElementById('panel-brief-granos').dataset.built='1'; }
   if(id==='deuda-stock' && !document.getElementById('panel-deuda-stock').dataset.built){ buildDeudaStockPanel(); document.getElementById('panel-deuda-stock').dataset.built='1'; }
   if(id==='deuda-stock' && document.getElementById('panel-deuda-stock').dataset.built){ dsRefresh(); }
