@@ -1714,130 +1714,6 @@ function dsManualSave(){
     window._dsToastTimer=setTimeout(function(){toast.classList.remove('show');},1800);
   }
 }
-function dsAiHandleFile(file){
-  if(!file||!file.type||file.type.indexOf('image/')!==0){
-    dsAiSetStatus('Elegí un archivo de imagen (foto o captura).','error');
-    return;
-  }
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const dataUrl=e.target.result;
-    const commaIdx=dataUrl.indexOf(',');
-    window._dsAiImageBase64=dataUrl.slice(commaIdx+1);
-    window._dsAiMediaType=file.type;
-    const preview=document.getElementById('ds-ai-preview');
-    if(preview)preview.innerHTML='<img src="'+dataUrl+'" alt="preview">';
-    const dzText=document.getElementById('ds-ai-dropzone-text');
-    if(dzText)dzText.textContent='📎 '+file.name+' — tocá para cambiar la imagen';
-    const btn=document.getElementById('ds-ai-btn');
-    if(btn)btn.style.display='';
-    document.getElementById('ds-ai-review').innerHTML='';
-    dsAiSetStatus('','');
-  };
-  reader.readAsDataURL(file);
-}
-
-function dsAiSetStatus(msg,cls){
-  const el=document.getElementById('ds-ai-status');
-  if(!el)return;
-  el.textContent=msg;
-  el.className='ds-ai-status'+(cls?' '+cls:'');
-}
-
-function dsAiInterpretar(){
-  if(!window._dsAiImageBase64){
-    dsAiSetStatus('Primero elegí una imagen.','error');
-    return;
-  }
-  const btn=document.getElementById('ds-ai-btn');
-  if(btn){btn.disabled=true;btn.textContent='Analizando…';}
-  dsAiSetStatus('🔎 Analizando la imagen con IA, puede tardar unos segundos…','loading');
-  fetch('/.netlify/functions/parse-debt-image',{
-    method:'POST',
-    headers:{'content-type':'application/json'},
-    body:JSON.stringify({image:window._dsAiImageBase64,mediaType:window._dsAiMediaType})
-  }).then(function(res){
-    return res.json().then(function(data){return{ok:res.ok,data:data};});
-  }).then(function(r){
-    if(btn){btn.disabled=false;btn.textContent='✨ Interpretar con IA';}
-    if(!r.ok){
-      dsAiSetStatus('⚠️ '+(r.data&&r.data.error?r.data.error:'No se pudo interpretar la imagen.'),'error');
-      return;
-    }
-    dsAiSetStatus('','');
-    dsAiRenderReview(r.data);
-  }).catch(function(e){
-    if(btn){btn.disabled=false;btn.textContent='✨ Interpretar con IA';}
-    dsAiSetStatus('⚠️ No se pudo conectar con el servicio de IA. Probá de nuevo en un momento.','error');
-  });
-}
-
-function dsAiRenderReview(data){
-  window._dsAiParsed=data;
-  const wrap=document.getElementById('ds-ai-review');
-  if(!wrap)return;
-  const venc=data.vencimientos||[];
-  const cxc=data.cxc||[];
-  const stock=data.stock||{};
-  const stockItems=['soja','maiz','trigo'].filter(function(c){return stock[c]!==null&&stock[c]!==undefined&&!isNaN(stock[c]);});
-  if(!venc.length&&!cxc.length&&!stockItems.length){
-    wrap.innerHTML='<div class="ds-empty">La IA no pudo identificar renglones claros en esta imagen. Probá con una foto más nítida o cargá los datos a mano.</div>';
-    return;
-  }
-  let html='<div class="ds-ai-review-title">Esto detectó la IA — desmarcá lo que no quieras cargar:</div>';
-  venc.forEach(function(v,i){
-    html+='<label class="ds-ai-item"><input type="checkbox" checked data-type="venc" data-idx="'+i+'"><span class="ds-ai-item-label">Vencimiento '+(v.fecha||'?')+(v.label?' · '+v.label:'')+'</span><span class="ds-ai-item-val">'+dsFmtUsd(v.monto)+'</span></label>';
-  });
-  cxc.forEach(function(c,i){
-    html+='<label class="ds-ai-item"><input type="checkbox" checked data-type="cxc" data-idx="'+i+'"><span class="ds-ai-item-label">Cuenta por cobrar '+(c.fecha||'?')+(c.label?' · '+c.label:'')+'</span><span class="ds-ai-item-val">'+dsFmtUsd(c.monto)+'</span></label>';
-  });
-  stockItems.forEach(function(c){
-    const yaTieneStock=window.DS_STATE.stock[c]&&window.DS_STATE.stock[c].cantidad>0;
-    html+='<label class="ds-ai-item"><input type="checkbox" '+(yaTieneStock?'':'checked')+' data-type="stock" data-idx="'+c+'"><span class="ds-ai-item-label">Stock '+DS_GRAIN_LABEL[c]+(yaTieneStock?' (ya tenés cargado, no se pisa salvo que lo marques)':'')+'</span><span class="ds-ai-item-val">'+dsFmtTn(stock[c])+'</span></label>';
-  });
-  if(data.notas){
-    html+='<div class="ds-ai-notas">ℹ️ '+data.notas+'</div>';
-  }
-  html+='<button class="ds-ai-apply-btn" onclick="dsAiApply()">Agregar lo seleccionado al tablero</button>';
-  wrap.innerHTML=html;
-}
-
-function dsAiApply(){
-  const data=window._dsAiParsed;
-  if(!data)return;
-  const wrap=document.getElementById('ds-ai-review');
-  const checks=wrap?wrap.querySelectorAll('input[type=checkbox]'):[];
-  const st=window.DS_STATE;
-  let nVenc=0,nCxc=0,nStock=0;
-  checks.forEach(function(chk){
-    if(!chk.checked)return;
-    const type=chk.dataset.type;
-    const idx=chk.dataset.idx;
-    if(type==='venc'){
-      const v=data.vencimientos[idx];
-      if(v&&v.fecha&&v.monto!=null){st.vencimientos.push({fecha:v.fecha,monto:v.monto});nVenc++;}
-    }else if(type==='cxc'){
-      const c=data.cxc[idx];
-      if(c&&c.fecha&&c.monto!=null){st.cxc.push({fecha:c.fecha,monto:c.monto});nCxc++;st.considerarCxc=true;}
-    }else if(type==='stock'){
-      const val=data.stock[idx];
-      if(val!=null&&!isNaN(val)){st.stock[idx].cantidad=val;nStock++;}
-    }
-  });
-  dsSaveState();
-  dsRenderInputs();
-  dsRefresh();
-  window._dsAiImageBase64=null;
-  window._dsAiMediaType=null;
-  window._dsAiParsed=null;
-  document.getElementById('ds-ai-preview').innerHTML='';
-  document.getElementById('ds-ai-dropzone-text').textContent='📎 Elegí una imagen o arrastrala acá';
-  document.getElementById('ds-ai-btn').style.display='none';
-  document.getElementById('ds-ai-review').innerHTML='';
-  document.getElementById('ds-ai-file').value='';
-  dsAiSetStatus('✓ Se agregaron '+nVenc+' vencimiento(s), '+nCxc+' cuenta(s) por cobrar y '+nStock+' stock(s).','');
-}
-
 function dsClearAll(){
   if(!confirm('¿Borrar todos los datos de Deuda/Stock guardados en este navegador (vencimientos, cuentas por cobrar y stock)? Esta acción no se puede deshacer.'))return;
   try{localStorage.removeItem(DS_STORAGE_KEY);}catch(e){}
@@ -2351,24 +2227,6 @@ function buildDeudaStockPanel(){
       .ds-slider-row input[type=range]::-moz-range-track{height:6px;border-radius:999px;background:linear-gradient(90deg,#fecdd3 0%,#e2e8f0 50%,#a7f3d0 100%);}
       .ds-reset-btn{margin-top:8px;padding:9px 16px;border-radius:9px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:0.78rem;font-weight:600;cursor:pointer;transition:background 0.15s,border-color 0.15s;}
       .ds-reset-btn:hover{background:#eef2ff;border-color:#c7d2fe;color:#4f46e5;}
-      .ds-ai-card{border:1.5px dashed #c7d2fe;background:#fafbff;}
-      .ds-ai-beta{font-size:0.62rem;font-weight:700;color:#7c3aed;background:#ede9fe;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:0.3px;margin-left:8px;}
-      .ds-ai-dropzone{border:1.5px dashed #cbd5e1;border-radius:12px;padding:22px;text-align:center;cursor:pointer;background:#fff;transition:border-color 0.15s,background 0.15s;}
-      .ds-ai-dropzone:hover,.ds-ai-dropzone.drag{border-color:#6366f1;background:#eef2ff;}
-      .ds-ai-dropzone-text{font-size:0.82rem;color:#64748b;font-weight:600;}
-      .ds-ai-preview img{max-height:160px;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 4px rgba(15,23,42,0.15);}
-      .ds-ai-status{font-size:0.8rem;color:#64748b;margin-top:10px;}
-      .ds-ai-status.loading{color:#4f46e5;font-weight:600;}
-      .ds-ai-status.error{color:#be123c;font-weight:600;}
-      .ds-ai-review{margin-top:14px;}
-      .ds-ai-review-title{font-size:0.78rem;font-weight:700;color:#0f172a;margin-bottom:8px;}
-      .ds-ai-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;margin-bottom:6px;font-size:0.8rem;}
-      .ds-ai-item input[type=checkbox]{width:16px;height:16px;flex-shrink:0;accent-color:#6366f1;}
-      .ds-ai-item .ds-ai-item-label{flex:1;color:#334155;}
-      .ds-ai-item .ds-ai-item-val{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;color:#0f172a;}
-      .ds-ai-notas{font-size:0.76rem;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:8px;}
-      .ds-ai-apply-btn{margin-top:12px;padding:10px 18px;border-radius:9px;border:none;background:#4f46e5;color:#fff;font-size:0.82rem;font-weight:700;cursor:pointer;transition:background 0.15s;}
-      .ds-ai-apply-btn:hover{background:#4338ca;}
     </style>
     <div class="ds-wrap">
     <div class="ds-header">
@@ -2382,19 +2240,6 @@ function buildDeudaStockPanel(){
           <div id="ds-save-toast" class="ds-save-toast">✓ Guardado en este navegador</div>
         </div>
       </div>
-    </div>
-
-    <div class="full-card ds-card ds-ai-card">
-      <h3>📸 Cargar desde una foto (IA) <span class="ds-ai-beta">beta</span></h3>
-      <p style="font-size:0.8rem;color:#64748b;margin-top:-6px;margin-bottom:12px">Subí una foto o captura de tu deuda o cuentas por cobrar (como una planilla de Excel) y la IA te arma los renglones. Después los revisás y confirmás antes de aplicarlos — no se carga nada automáticamente.</p>
-      <input type="file" id="ds-ai-file" accept="image/*" style="display:none" onchange="dsAiHandleFile(this.files[0])">
-      <div id="ds-ai-dropzone" class="ds-ai-dropzone" onclick="document.getElementById('ds-ai-file').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="event.preventDefault();this.classList.remove('drag');dsAiHandleFile(event.dataTransfer.files[0])">
-        <div id="ds-ai-preview"></div>
-        <div id="ds-ai-dropzone-text">📎 Elegí una imagen o arrastrala acá</div>
-      </div>
-      <button id="ds-ai-btn" class="ds-add-btn" style="display:none" onclick="dsAiInterpretar()">✨ Interpretar con IA</button>
-      <div id="ds-ai-status" class="ds-ai-status"></div>
-      <div id="ds-ai-review"></div>
     </div>
 
     <div class="ds-grid-top">
