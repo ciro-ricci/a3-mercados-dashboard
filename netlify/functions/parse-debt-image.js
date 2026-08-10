@@ -1,13 +1,14 @@
 // Netlify Function: parse-debt-image
 // Recibe una imagen (base64) con una tabla/captura de deuda o cuentas por cobrar
-// y usa la API de Claude (Anthropic) con visión para extraer los datos estructurados
-// que después se cargan en la pestaña Deuda/Stock del dashboard.
+// y usa la API de Gemini (Google, nivel gratuito) con visión para extraer los datos
+// estructurados que después se cargan en la pestaña Deuda/Stock del dashboard.
 //
-// Requiere la variable de entorno ANTHROPIC_API_KEY configurada en Netlify
-// (Site settings -> Environment variables).
+// Requiere la variable de entorno GEMINI_API_KEY configurada en Netlify
+// (Site settings -> Environment variables). Se consigue gratis en
+// https://aistudio.google.com/apikey
 
-const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-3-5-sonnet-latest';
+const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent';
 const MAX_BASE64_CHARS = 7_000_000; // ~5MB de imagen aprox.
 
 const SYSTEM_PROMPT = `Sos un asistente que lee capturas de pantalla o fotos de planillas de deuda agropecuaria argentina (tipo Excel) y extrae datos estructurados.
@@ -62,10 +63,10 @@ exports.handler = async function (event) {
     return jsonResponse(405, { error: 'Método no permitido.' });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return jsonResponse(500, {
-      error: 'Falta configurar ANTHROPIC_API_KEY en las variables de entorno de Netlify.'
+      error: 'Falta configurar GEMINI_API_KEY en las variables de entorno de Netlify.'
     });
   }
 
@@ -87,45 +88,43 @@ exports.handler = async function (event) {
   const finalMediaType = allowedTypes.includes(mediaType) ? mediaType : 'image/png';
 
   try {
-    const anthropicRes = await fetch(ANTHROPIC_URL, {
+    const geminiRes = await fetch(GEMINI_URL + '?key=' + apiKey, {
       method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 1500,
-        system: SYSTEM_PROMPT,
-        messages: [
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [
           {
             role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: finalMediaType, data: image } },
-              { type: 'text', text: 'Extraé los datos de esta imagen siguiendo las instrucciones del sistema. Respondé solo con el JSON.' }
+            parts: [
+              { text: 'Extraé los datos de esta imagen siguiendo las instrucciones del sistema. Respondé solo con el JSON.' },
+              { inline_data: { mime_type: finalMediaType, data: image } }
             ]
           }
-        ]
+        ],
+        generationConfig: { temperature: 0, maxOutputTokens: 1500 }
       })
     });
 
-    if (!anthropicRes.ok) {
-      const errText = await anthropicRes.text();
-      return jsonResponse(anthropicRes.status, {
-        error: 'La API de Claude devolvió un error.',
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text();
+      return jsonResponse(geminiRes.status, {
+        error: 'La API de Gemini devolvió un error.',
         detail: errText.slice(0, 500)
       });
     }
 
-    const data = await anthropicRes.json();
-    const textBlock = (data.content || []).find((c) => c.type === 'text');
-    const parsed = extractJson(textBlock ? textBlock.text : '');
+    const data = await geminiRes.json();
+    const candidate = (data.candidates || [])[0];
+    const textOut = candidate && candidate.content && candidate.content.parts
+      ? candidate.content.parts.map((p) => p.text || '').join('')
+      : '';
+    const parsed = extractJson(textOut);
 
     if (!parsed) {
       return jsonResponse(502, {
         error: 'No se pudo interpretar la respuesta de la IA como JSON.',
-        raw: textBlock ? textBlock.text.slice(0, 800) : ''
+        raw: textOut.slice(0, 800)
       });
     }
 
