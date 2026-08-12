@@ -18,12 +18,11 @@ navegador headless):
 - Dólar oficial (A 3500): API pública del BCRA, para construir el punto
   del mes en curso de la serie histórica de girasol en USD oficial.
 
-Corre una vez por semana. Cada corrida actualiza el punto del mes en curso
-de hist_usd_oficial con el último dato disponible (no es un promedio real
-del mes, es el último valor visto esa semana); al cerrar el mes ese valor
-queda fijo como referencia mensual. El backfill inicial (mar-24 a may-26)
-sí se calculó con el promedio real de todas las fijaciones de cada mes
-(vía el buscador histórico oficial de la Cámara Arbitral).
+Corre una vez por semana. Cada corrida agrega o actualiza el punto de la
+fecha de hoy en girasol.hist_usd (disponible ÷ TC oficial A3500). El
+backfill inicial (25/08/2025 a 10/08/2026) es una serie diaria real de
+pizarra Rosario cargada por el usuario desde una planilla externa, ya en
+USD -- no se recalcula ni se toca, solo se le van agregando puntos nuevos.
 
 El FOB implícito de maní (valor unitario de exportación, INDEC) se descartó
 como automatizable: comex.indec.gov.ar/search es un SPA sin API publica y
@@ -346,19 +345,19 @@ def main():
         rosario_ars = data["girasol"].get("disponible_rosario_ars")
         if rosario_ars:
             usd_oficial = round(rosario_ars / tc_valor, 1)
-            hist = data["girasol"].get("hist_usd_oficial", [])
-            hist = _fill_gap_months(hist, mes_actual)
+            hist = data["girasol"].get("hist_usd", [])
             found = False
             for h in hist:
-                if h["mes"] == mes_actual:
+                if h["fecha"] == today:
                     h["valor"] = usd_oficial
                     found = True
                     break
             if not found:
-                hist.append({"mes": mes_actual, "valor": usd_oficial})
-            data["girasol"]["hist_usd_oficial"] = hist
+                hist.append({"fecha": today, "valor": usd_oficial})
+                hist.sort(key=lambda h: h["fecha"])
+            data["girasol"]["hist_usd"] = hist
             changed = True
-            print(f"Girasol USD oficial mes {mes_actual}: {usd_oficial} (TC {tc_valor})")
+            print(f"Girasol USD {today}: {usd_oficial} (TC {tc_valor})")
     except Exception as e:
         print(f"[WARN] Calculo de USD oficial girasol fallo: {e}")
 
