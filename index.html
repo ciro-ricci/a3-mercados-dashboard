@@ -1214,6 +1214,237 @@ function injectChicagoErrorBanner(panelId){
   if(spotCard)spotCard.insertAdjacentElement('afterend',div);
   else panel.insertAdjacentElement('afterbegin',div);
 }
+/* HIST_CRUCES_DATA — series diarias del disponible en USD de soja, maíz y trigo,
+   tal como figuran en las pestañas de Futuros (SPOT / filas *.ROS/DIS26 de la planilla).
+   Backfill mayo-2025 a agosto-2026 cargado a mano con el historial diario ya llevado por el equipo.
+   De acá en adelante se va completando solo, un punto por día hábil (scripts/update_cruces.py),
+   leyendo la misma planilla que ya alimenta el disponible de las pestañas de futuros. */
+const HIST_CRUCES_DATA = {
+  "soja": [
+    {"fecha":"2025-05-26","valor":272.0},{"fecha":"2025-05-27","valor":271.6},{"fecha":"2025-05-28","valor":267.3},{"fecha":"2025-05-29","valor":267.9},
+    {"fecha":"2025-05-30","valor":269.3},{"fecha":"2025-06-02","valor":271.0},{"fecha":"2025-06-03","valor":272.0},{"fecha":"2025-06-06","valor":271.0},
+    {"fecha":"2025-06-10","valor":270.04},{"fecha":"2025-06-11","valor":270.04},{"fecha":"2025-06-12","valor":275.8},{"fecha":"2025-06-13","valor":276.65},
+    {"fecha":"2025-06-17","valor":281.81},{"fecha":"2025-06-18","valor":278.51},{"fecha":"2025-06-19","valor":274.87},{"fecha":"2025-06-23","valor":272.84},
+    {"fecha":"2025-06-24","valor":275.01},{"fecha":"2025-06-25","valor":269.4},{"fecha":"2025-06-27","valor":269.97},{"fecha":"2025-06-30","valor":266.4},
+    {"fecha":"2025-07-02","valor":255.9},{"fecha":"2025-07-07","valor":250.5},{"fecha":"2025-07-10","valor":254.98},{"fecha":"2025-07-11","valor":256.04},
+    {"fecha":"2025-07-14","valor":257.81},{"fecha":"2025-07-15","valor":261.9},{"fecha":"2025-07-16","valor":261.7},{"fecha":"2025-07-17","valor":262.95},
+    {"fecha":"2025-07-18","valor":264.39},{"fecha":"2025-07-21","valor":265.49},{"fecha":"2025-07-22","valor":267.41},{"fecha":"2025-07-23","valor":270.16},
+    {"fecha":"2025-07-24","valor":268.47},{"fecha":"2025-07-25","valor":269.53},{"fecha":"2025-07-28","valor":277.99},{"fecha":"2025-07-29","valor":282.73},
+    {"fecha":"2025-07-30","valor":285.0},{"fecha":"2025-08-01","valor":285.19},{"fecha":"2025-08-04","valor":290.44},{"fecha":"2025-08-05","valor":292.87},
+    {"fecha":"2025-08-06","valor":292.79},{"fecha":"2025-08-07","valor":294.23},{"fecha":"2025-08-08","valor":293.0},{"fecha":"2025-08-11","valor":293.2},
+    {"fecha":"2025-08-12","valor":295.3},{"fecha":"2025-08-13","valor":297.03},{"fecha":"2025-08-14","valor":295.38},{"fecha":"2025-08-18","valor":293.89},
+    {"fecha":"2025-08-19","valor":294.39},{"fecha":"2025-08-20","valor":295.93},{"fecha":"2025-08-21","valor":296.58},{"fecha":"2025-08-22","valor":296.74},
+    {"fecha":"2025-08-25","valor":293.7},{"fecha":"2025-08-26","valor":294.8},{"fecha":"2025-08-27","valor":291.96},{"fecha":"2025-09-01","valor":287.9},
+    {"fecha":"2025-09-02","valor":293.9},{"fecha":"2025-09-03","valor":290.12},{"fecha":"2025-09-04","valor":293.58},{"fecha":"2025-09-05","valor":295.2},
+    {"fecha":"2025-09-08","valor":290.99},{"fecha":"2025-09-09","valor":292.98},{"fecha":"2025-09-10","valor":293.71},{"fecha":"2025-09-15","valor":299.93},
+    {"fecha":"2025-09-16","valor":299.52},{"fecha":"2025-09-17","valor":298.41},{"fecha":"2025-09-19","valor":298.17},{"fecha":"2025-09-23","valor":360.12},
+    {"fecha":"2025-09-25","valor":335.85},{"fecha":"2025-09-26","valor":337.84},{"fecha":"2025-10-02","valor":350.86},{"fecha":"2025-10-07","valor":346.0},
+    {"fecha":"2025-10-10","valor":351.76},{"fecha":"2025-10-13","valor":344.55},{"fecha":"2025-10-14","valor":341.18},{"fecha":"2025-10-15","valor":340.58},
+    {"fecha":"2025-10-17","valor":331.03},{"fecha":"2025-10-20","valor":322.03},{"fecha":"2025-10-21","valor":322.04},{"fecha":"2025-10-22","valor":322.36},
+    {"fecha":"2025-10-24","valor":321.72},{"fecha":"2025-10-27","valor":334.49},{"fecha":"2025-10-28","valor":333.33},{"fecha":"2025-10-30","valor":335.0},
+    {"fecha":"2025-11-06","valor":330.58},{"fecha":"2025-11-07","valor":336.75},{"fecha":"2025-11-10","valor":337.91},{"fecha":"2025-11-11","valor":339.7},
+    {"fecha":"2025-11-12","valor":342.37},{"fecha":"2025-11-14","valor":340.7},{"fecha":"2025-11-17","valor":348.95},{"fecha":"2025-11-18","valor":346.64},
+    {"fecha":"2025-11-19","valor":341.3},{"fecha":"2025-11-25","valor":339.8},{"fecha":"2025-12-10","valor":347.2},{"fecha":"2025-12-12","valor":344.11},
+    {"fecha":"2025-12-15","valor":344.11},{"fecha":"2025-12-16","valor":341.14},{"fecha":"2025-12-17","valor":337.7},{"fecha":"2025-12-18","valor":340.45},
+    {"fecha":"2025-12-19","valor":339.31},{"fecha":"2025-12-22","valor":340.56},{"fecha":"2025-12-23","valor":341.14},{"fecha":"2025-12-26","valor":344.23},
+    {"fecha":"2025-12-29","valor":341.8},{"fecha":"2025-12-30","valor":343.64},{"fecha":"2026-01-02","valor":337.63},{"fecha":"2026-01-05","valor":340.14},
+    {"fecha":"2026-01-06","valor":344.01},{"fecha":"2026-01-07","valor":345.8},{"fecha":"2026-01-08","valor":344.95},{"fecha":"2026-01-09","valor":344.71},
+    {"fecha":"2026-01-12","valor":344.12},{"fecha":"2026-01-13","valor":343.17},{"fecha":"2026-01-14","valor":344.12},{"fecha":"2026-01-15","valor":343.51},
+    {"fecha":"2026-01-16","valor":339.16},{"fecha":"2026-01-19","valor":338.1},{"fecha":"2026-01-22","valor":336.0},{"fecha":"2026-01-23","valor":331.47},
+    {"fecha":"2026-01-26","valor":326.96},{"fecha":"2026-01-27","valor":329.29},{"fecha":"2026-01-28","valor":328.83},{"fecha":"2026-01-29","valor":328.83},
+    {"fecha":"2026-01-30","valor":328.96},{"fecha":"2026-02-02","valor":323.91},{"fecha":"2026-02-04","valor":328.15},{"fecha":"2026-02-05","valor":332.87},
+    {"fecha":"2026-02-06","valor":332.75},{"fecha":"2026-02-09","valor":331.92},{"fecha":"2026-02-10","valor":330.73},{"fecha":"2026-02-13","valor":332.26},
+    {"fecha":"2026-02-18","valor":332.26},{"fecha":"2026-02-19","valor":333.09},{"fecha":"2026-02-20","valor":331.4},{"fecha":"2026-02-23","valor":329.59},
+    {"fecha":"2026-02-24","valor":329.59},{"fecha":"2026-02-25","valor":328.81},{"fecha":"2026-02-26","valor":332.86},{"fecha":"2026-02-27","valor":332.86},
+    {"fecha":"2026-03-02","valor":329.75},{"fecha":"2026-03-03","valor":328.62},{"fecha":"2026-03-04","valor":328.45},{"fecha":"2026-03-05","valor":328.45},
+    {"fecha":"2026-03-06","valor":328.39},{"fecha":"2026-03-13","valor":339.29},{"fecha":"2026-03-16","valor":333.09},{"fecha":"2026-03-18","valor":344.33},
+    {"fecha":"2026-03-19","valor":347.79},{"fecha":"2026-03-20","valor":349.49},{"fecha":"2026-03-25","valor":348.05},{"fecha":"2026-03-26","valor":348.77},
+    {"fecha":"2026-03-27","valor":317.07},{"fecha":"2026-03-30","valor":317.07},{"fecha":"2026-03-31","valor":317.07},{"fecha":"2026-04-01","valor":317.07},
+    {"fecha":"2026-04-06","valor":316.16},{"fecha":"2026-04-07","valor":315.39},{"fecha":"2026-04-09","valor":314.43},{"fecha":"2026-04-10","valor":320.26},
+    {"fecha":"2026-04-13","valor":316.52},{"fecha":"2026-04-14","valor":315.7},{"fecha":"2026-04-15","valor":317.82},{"fecha":"2026-04-16","valor":316.17},
+    {"fecha":"2026-04-17","valor":313.23},{"fecha":"2026-04-20","valor":311.81},{"fecha":"2026-04-21","valor":312.02},{"fecha":"2026-04-22","valor":309.87},
+    {"fecha":"2026-04-23","valor":307.76},{"fecha":"2026-04-24","valor":304.32},{"fecha":"2026-04-27","valor":304.66},{"fecha":"2026-04-28","valor":308.18},
+    {"fecha":"2026-04-29","valor":311.35},{"fecha":"2026-04-30","valor":301.79},{"fecha":"2026-05-04","valor":308.2},{"fecha":"2026-05-05","valor":317.39},
+    {"fecha":"2026-05-06","valor":312.81},{"fecha":"2026-05-07","valor":314.59},{"fecha":"2026-05-08","valor":319.08},{"fecha":"2026-05-10","valor":319.08},
+    {"fecha":"2026-05-11","valor":324.21},{"fecha":"2026-05-12","valor":328.16},{"fecha":"2026-05-13","valor":330.23},{"fecha":"2026-05-14","valor":329.87},
+    {"fecha":"2026-05-15","valor":329.42},{"fecha":"2026-05-18","valor":336.19},{"fecha":"2026-05-19","valor":332.86},{"fecha":"2026-05-20","valor":331.05},
+    {"fecha":"2026-05-21","valor":327.87},{"fecha":"2026-05-22","valor":326.01},{"fecha":"2026-05-26","valor":326.37},{"fecha":"2026-05-27","valor":329.08},
+    {"fecha":"2026-05-28","valor":330.26},{"fecha":"2026-05-29","valor":326.09},{"fecha":"2026-06-01","valor":325.86},{"fecha":"2026-06-02","valor":323.25},
+    {"fecha":"2026-06-03","valor":323.7},{"fecha":"2026-06-04","valor":315.64},{"fecha":"2026-06-05","valor":314.55},{"fecha":"2026-06-08","valor":315.75},
+    {"fecha":"2026-06-09","valor":321.45},{"fecha":"2026-06-10","valor":324.61},{"fecha":"2026-06-11","valor":322.13},{"fecha":"2026-06-12","valor":320.22},
+    {"fecha":"2026-06-16","valor":322.58},{"fecha":"2026-06-17","valor":320.47},{"fecha":"2026-06-18","valor":318.28},{"fecha":"2026-06-19","valor":318.17},
+    {"fecha":"2026-06-22","valor":319.4},{"fecha":"2026-06-23","valor":321.16},{"fecha":"2026-06-24","valor":321.6},{"fecha":"2026-06-25","valor":324.98},
+    {"fecha":"2026-06-26","valor":320.62},{"fecha":"2026-06-29","valor":320.51},{"fecha":"2026-06-30","valor":319.01},{"fecha":"2026-07-01","valor":319.89},
+    {"fecha":"2026-07-02","valor":319.38},{"fecha":"2026-07-03","valor":319.95},{"fecha":"2026-07-06","valor":322.05},{"fecha":"2026-07-07","valor":322.92},
+    {"fecha":"2026-07-08","valor":324.56},{"fecha":"2026-07-13","valor":332.99},{"fecha":"2026-07-14","valor":330.96},{"fecha":"2026-07-15","valor":330.62},
+    {"fecha":"2026-07-16","valor":331.53},{"fecha":"2026-07-17","valor":334.23},{"fecha":"2026-07-20","valor":338.41},{"fecha":"2026-07-21","valor":337.15},
+    {"fecha":"2026-07-22","valor":341.05},{"fecha":"2026-07-23","valor":343.69},{"fecha":"2026-07-24","valor":344.02},{"fecha":"2026-07-27","valor":337.12},
+    {"fecha":"2026-07-28","valor":337.9},{"fecha":"2026-07-29","valor":339.38},{"fecha":"2026-07-30","valor":340.07},{"fecha":"2026-07-31","valor":336.7},
+    {"fecha":"2026-08-03","valor":338.24},{"fecha":"2026-08-05","valor":337.5},{"fecha":"2026-08-06","valor":339.01},{"fecha":"2026-08-07","valor":340.91},
+    {"fecha":"2026-08-10","valor":337.09}
+  ],
+  "maiz": [
+    {"fecha":"2025-05-26","valor":181.1},{"fecha":"2025-05-27","valor":182.3},{"fecha":"2025-05-28","valor":181.0},{"fecha":"2025-05-29","valor":177.2},
+    {"fecha":"2025-05-30","valor":175.9},{"fecha":"2025-06-02","valor":173.6},{"fecha":"2025-06-03","valor":173.3},{"fecha":"2025-06-06","valor":171.8},
+    {"fecha":"2025-06-10","valor":172.49},{"fecha":"2025-06-11","valor":173.43},{"fecha":"2025-06-12","valor":173.0},{"fecha":"2025-06-13","valor":173.86},
+    {"fecha":"2025-06-17","valor":173.28},{"fecha":"2025-06-18","valor":173.3},{"fecha":"2025-06-19","valor":172.12},{"fecha":"2025-06-23","valor":172.5},
+    {"fecha":"2025-06-24","valor":170.29},{"fecha":"2025-06-25","valor":168.69},{"fecha":"2025-06-27","valor":167.7},{"fecha":"2025-06-30","valor":166.1},
+    {"fecha":"2025-07-02","valor":165.0},{"fecha":"2025-07-07","valor":165.0},{"fecha":"2025-07-10","valor":168.78},{"fecha":"2025-07-11","valor":168.85},
+    {"fecha":"2025-07-14","valor":168.67},{"fecha":"2025-07-15","valor":173.02},{"fecha":"2025-07-16","valor":174.39},{"fecha":"2025-07-17","valor":173.47},
+    {"fecha":"2025-07-18","valor":172.63},{"fecha":"2025-07-21","valor":170.98},{"fecha":"2025-07-22","valor":171.91},{"fecha":"2025-07-23","valor":180.0},
+    {"fecha":"2025-07-24","valor":177.75},{"fecha":"2025-07-25","valor":177.75},{"fecha":"2025-07-28","valor":175.75},{"fecha":"2025-07-29","valor":179.6},
+    {"fecha":"2025-07-30","valor":180.0},{"fecha":"2025-08-01","valor":180.0},{"fecha":"2025-08-04","valor":177.28},{"fecha":"2025-08-05","valor":177.44},
+    {"fecha":"2025-08-06","valor":174.77},{"fecha":"2025-08-07","valor":174.75},{"fecha":"2025-08-08","valor":175.79},{"fecha":"2025-08-11","valor":173.75},
+    {"fecha":"2025-08-12","valor":172.3},{"fecha":"2025-08-13","valor":172.0},{"fecha":"2025-08-14","valor":172.77},{"fecha":"2025-08-18","valor":175.56},
+    {"fecha":"2025-08-19","valor":174.31},{"fecha":"2025-08-20","valor":174.1},{"fecha":"2025-08-21","valor":174.3},{"fecha":"2025-08-22","valor":174.5},
+    {"fecha":"2025-08-25","valor":174.3},{"fecha":"2025-08-26","valor":173.8},{"fecha":"2025-08-27","valor":172.0},{"fecha":"2025-09-01","valor":174.93},
+    {"fecha":"2025-09-02","valor":174.93},{"fecha":"2025-09-03","valor":174.14},{"fecha":"2025-09-04","valor":174.07},{"fecha":"2025-09-05","valor":174.68},
+    {"fecha":"2025-09-08","valor":178.82},{"fecha":"2025-09-09","valor":175.08},{"fecha":"2025-09-10","valor":174.92},{"fecha":"2025-09-15","valor":178.92},
+    {"fecha":"2025-09-16","valor":183.81},{"fecha":"2025-09-17","valor":188.75},{"fecha":"2025-09-19","valor":180.38},{"fecha":"2025-09-23","valor":181.68},
+    {"fecha":"2025-09-25","valor":175.88},{"fecha":"2025-09-26","valor":175.5},{"fecha":"2025-10-02","valor":175.52},{"fecha":"2025-10-07","valor":175.94},
+    {"fecha":"2025-10-10","valor":175.85},{"fecha":"2025-10-13","valor":175.82},{"fecha":"2025-10-14","valor":175.74},{"fecha":"2025-10-15","valor":175.87},
+    {"fecha":"2025-10-17","valor":178.9},{"fecha":"2025-10-20","valor":177.76},{"fecha":"2025-10-21","valor":177.93},{"fecha":"2025-10-22","valor":178.64},
+    {"fecha":"2025-10-24","valor":178.91},{"fecha":"2025-10-27","valor":178.89},{"fecha":"2025-10-28","valor":180.41},{"fecha":"2025-10-30","valor":182.0},
+    {"fecha":"2025-11-06","valor":179.89},{"fecha":"2025-11-07","valor":181.84},{"fecha":"2025-11-10","valor":181.13},{"fecha":"2025-11-11","valor":179.87},
+    {"fecha":"2025-11-12","valor":182.83},{"fecha":"2025-11-14","valor":183.89},{"fecha":"2025-11-17","valor":180.8},{"fecha":"2025-11-18","valor":183.8},
+    {"fecha":"2025-11-19","valor":183.8},{"fecha":"2025-11-25","valor":188.0},{"fecha":"2025-12-10","valor":190.48},{"fecha":"2025-12-12","valor":188.84},
+    {"fecha":"2025-12-15","valor":188.82},{"fecha":"2025-12-16","valor":189.8},{"fecha":"2025-12-17","valor":188.97},{"fecha":"2025-12-18","valor":188.82},
+    {"fecha":"2025-12-19","valor":190.81},{"fecha":"2025-12-22","valor":193.79},{"fecha":"2025-12-23","valor":193.8},{"fecha":"2025-12-26","valor":193.79},
+    {"fecha":"2025-12-29","valor":198.64},{"fecha":"2025-12-30","valor":198.64},{"fecha":"2026-01-02","valor":198.77},{"fecha":"2026-01-05","valor":198.77},
+    {"fecha":"2026-01-06","valor":198.43},{"fecha":"2026-01-07","valor":198.77},{"fecha":"2026-01-08","valor":198.77},{"fecha":"2026-01-09","valor":193.55},
+    {"fecha":"2026-01-12","valor":191.81},{"fecha":"2026-01-13","valor":191.81},{"fecha":"2026-01-14","valor":191.82},{"fecha":"2026-01-15","valor":188.81},
+    {"fecha":"2026-01-16","valor":186.82},{"fecha":"2026-01-19","valor":186.79},{"fecha":"2026-01-22","valor":186.36},{"fecha":"2026-01-23","valor":187.02},
+    {"fecha":"2026-01-26","valor":187.34},{"fecha":"2026-01-27","valor":188.28},{"fecha":"2026-01-28","valor":188.82},{"fecha":"2026-01-29","valor":188.82},
+    {"fecha":"2026-01-30","valor":188.82},{"fecha":"2026-02-02","valor":182.63},{"fecha":"2026-02-04","valor":180.66},{"fecha":"2026-02-05","valor":180.65},
+    {"fecha":"2026-02-06","valor":181.35},{"fecha":"2026-02-09","valor":178.86},{"fecha":"2026-02-10","valor":178.98},{"fecha":"2026-02-13","valor":180.33},
+    {"fecha":"2026-02-18","valor":180.8},{"fecha":"2026-02-19","valor":181.83},{"fecha":"2026-02-20","valor":182.85},{"fecha":"2026-02-23","valor":182.08},
+    {"fecha":"2026-02-24","valor":181.31},{"fecha":"2026-02-25","valor":176.91},{"fecha":"2026-02-26","valor":175.39},{"fecha":"2026-02-27","valor":173.87},
+    {"fecha":"2026-03-02","valor":169.39},{"fecha":"2026-03-03","valor":171.02},{"fecha":"2026-03-04","valor":170.9},{"fecha":"2026-03-05","valor":174.08},
+    {"fecha":"2026-03-06","valor":177.26},{"fecha":"2026-03-13","valor":179.86},{"fecha":"2026-03-16","valor":175.5},{"fecha":"2026-03-18","valor":173.96},
+    {"fecha":"2026-03-19","valor":174.87},{"fecha":"2026-03-20","valor":175.22},{"fecha":"2026-03-25","valor":171.14},{"fecha":"2026-03-26","valor":170.06},
+    {"fecha":"2026-03-27","valor":170.24},{"fecha":"2026-03-30","valor":171.66},{"fecha":"2026-03-31","valor":172.95},{"fecha":"2026-04-01","valor":177.63},
+    {"fecha":"2026-04-06","valor":181.79},{"fecha":"2026-04-07","valor":181.35},{"fecha":"2026-04-09","valor":184.74},{"fecha":"2026-04-10","valor":182.25},
+    {"fecha":"2026-04-13","valor":183.16},{"fecha":"2026-04-14","valor":184.28},{"fecha":"2026-04-15","valor":185.89},{"fecha":"2026-04-16","valor":185.66},
+    {"fecha":"2026-04-17","valor":184.65},{"fecha":"2026-04-20","valor":186.49},{"fecha":"2026-04-21","valor":188.4},{"fecha":"2026-04-22","valor":187.44},
+    {"fecha":"2026-04-23","valor":187.09},{"fecha":"2026-04-24","valor":184.08},{"fecha":"2026-04-27","valor":188.47},{"fecha":"2026-04-28","valor":190.03},
+    {"fecha":"2026-04-29","valor":190.19},{"fecha":"2026-04-30","valor":187.73},{"fecha":"2026-05-04","valor":189.77},{"fecha":"2026-05-05","valor":189.69},
+    {"fecha":"2026-05-06","valor":188.4},{"fecha":"2026-05-07","valor":187.51},{"fecha":"2026-05-08","valor":189.16},{"fecha":"2026-05-10","valor":189.16},
+    {"fecha":"2026-05-11","valor":188.76},{"fecha":"2026-05-12","valor":188.42},{"fecha":"2026-05-13","valor":188.23},{"fecha":"2026-05-14","valor":182.36},
+    {"fecha":"2026-05-15","valor":178.6},{"fecha":"2026-05-18","valor":183.68},{"fecha":"2026-05-19","valor":183.94},{"fecha":"2026-05-20","valor":184.8},
+    {"fecha":"2026-05-21","valor":180.33},{"fecha":"2026-05-22","valor":180.01},{"fecha":"2026-05-26","valor":180.15},{"fecha":"2026-05-27","valor":180.66},
+    {"fecha":"2026-05-28","valor":181.04},{"fecha":"2026-05-29","valor":178.56},{"fecha":"2026-06-01","valor":179.23},{"fecha":"2026-06-02","valor":177.43},
+    {"fecha":"2026-06-03","valor":179.12},{"fecha":"2026-06-04","valor":177.25},{"fecha":"2026-06-05","valor":176.15},{"fecha":"2026-06-08","valor":178.63},
+    {"fecha":"2026-06-09","valor":179.63},{"fecha":"2026-06-10","valor":178.43},{"fecha":"2026-06-11","valor":178.22},{"fecha":"2026-06-12","valor":177.31},
+    {"fecha":"2026-06-16","valor":178.25},{"fecha":"2026-06-17","valor":177.71},{"fecha":"2026-06-18","valor":177.66},{"fecha":"2026-06-19","valor":178.83},
+    {"fecha":"2026-06-22","valor":177.68},{"fecha":"2026-06-23","valor":177.99},{"fecha":"2026-06-24","valor":178.74},{"fecha":"2026-06-25","valor":178.9},
+    {"fecha":"2026-06-26","valor":179.35},{"fecha":"2026-06-29","valor":178.74},{"fecha":"2026-06-30","valor":177.57},{"fecha":"2026-07-01","valor":178.53},
+    {"fecha":"2026-07-02","valor":177.7},{"fecha":"2026-07-03","valor":178.27},{"fecha":"2026-07-06","valor":180.23},{"fecha":"2026-07-07","valor":181.38},
+    {"fecha":"2026-07-08","valor":180.5},{"fecha":"2026-07-13","valor":181.79},{"fecha":"2026-07-14","valor":179.52},{"fecha":"2026-07-15","valor":180.69},
+    {"fecha":"2026-07-16","valor":180.65},{"fecha":"2026-07-17","valor":183.5},{"fecha":"2026-07-20","valor":184.31},{"fecha":"2026-07-21","valor":185.17},
+    {"fecha":"2026-07-22","valor":187.86},{"fecha":"2026-07-23","valor":187.84},{"fecha":"2026-07-24","valor":185.88},{"fecha":"2026-07-27","valor":185.75},
+    {"fecha":"2026-07-28","valor":188.84},{"fecha":"2026-07-29","valor":188.84},{"fecha":"2026-07-30","valor":188.28},{"fecha":"2026-07-31","valor":186.86},
+    {"fecha":"2026-08-03","valor":184.76},{"fecha":"2026-08-05","valor":184.86},{"fecha":"2026-08-06","valor":185.99},{"fecha":"2026-08-07","valor":185.7},
+    {"fecha":"2026-08-10","valor":178.61}
+  ],
+  "trigo": [
+    {"fecha":"2025-05-26","valor":198.43},{"fecha":"2025-05-27","valor":197.66},{"fecha":"2025-05-28","valor":198.28},{"fecha":"2025-05-29","valor":198.48},
+    {"fecha":"2025-05-30","valor":198.48},{"fecha":"2025-06-02","valor":198.48},{"fecha":"2025-06-03","valor":198.4},{"fecha":"2025-06-06","valor":198.48},
+    {"fecha":"2025-06-10","valor":167.44},{"fecha":"2025-06-11","valor":196.49},{"fecha":"2025-06-12","valor":196.5},{"fecha":"2025-06-13","valor":196.7},
+    {"fecha":"2025-06-17","valor":198.45},{"fecha":"2025-06-18","valor":198.42},{"fecha":"2025-06-19","valor":198.45},{"fecha":"2025-06-23","valor":198.46},
+    {"fecha":"2025-06-24","valor":198.47},{"fecha":"2025-06-25","valor":198.49},{"fecha":"2025-06-27","valor":198.49},{"fecha":"2025-06-30","valor":198.01},
+    {"fecha":"2025-07-02","valor":196.5},{"fecha":"2025-07-07","valor":193.59},{"fecha":"2025-07-10","valor":193.63},{"fecha":"2025-07-11","valor":194.21},
+    {"fecha":"2025-07-14","valor":195.31},{"fecha":"2025-07-15","valor":195.56},{"fecha":"2025-07-16","valor":198.02},{"fecha":"2025-07-17","valor":197.41},
+    {"fecha":"2025-07-18","valor":198.44},{"fecha":"2025-07-21","valor":198.59},{"fecha":"2025-07-22","valor":201.75},{"fecha":"2025-07-23","valor":200.64},
+    {"fecha":"2025-07-24","valor":201.26},{"fecha":"2025-07-25","valor":200.0},{"fecha":"2025-07-28","valor":200.77},{"fecha":"2025-07-29","valor":200.62},
+    {"fecha":"2025-07-30","valor":200.61},{"fecha":"2025-08-01","valor":200.73},{"fecha":"2025-08-04","valor":200.0},{"fecha":"2025-08-05","valor":200.82},
+    {"fecha":"2025-08-06","valor":201.2},{"fecha":"2025-08-07","valor":201.13},{"fecha":"2025-08-08","valor":203.61},{"fecha":"2025-08-11","valor":201.62},
+    {"fecha":"2025-08-12","valor":201.14},{"fecha":"2025-08-13","valor":201.6},{"fecha":"2025-08-14","valor":201.54},{"fecha":"2025-08-18","valor":201.59},
+    {"fecha":"2025-08-19","valor":201.59},{"fecha":"2025-08-20","valor":201.59},{"fecha":"2025-08-21","valor":201.61},{"fecha":"2025-08-22","valor":201.51},
+    {"fecha":"2025-08-25","valor":201.17},{"fecha":"2025-08-26","valor":200.66},{"fecha":"2025-08-27","valor":200.07},{"fecha":"2025-09-01","valor":198.98},
+    {"fecha":"2025-09-02","valor":199.12},{"fecha":"2025-09-03","valor":198.68},{"fecha":"2025-09-04","valor":198.9},{"fecha":"2025-09-05","valor":199.26},
+    {"fecha":"2025-09-08","valor":199.43},{"fecha":"2025-09-09","valor":199.44},{"fecha":"2025-09-10","valor":198.74},{"fecha":"2025-09-15","valor":193.59},
+    {"fecha":"2025-09-16","valor":191.83},{"fecha":"2025-09-17","valor":190.78},{"fecha":"2025-09-19","valor":188.84},{"fecha":"2025-09-23","valor":198.69},
+    {"fecha":"2025-09-25","valor":197.46},{"fecha":"2025-09-26","valor":198.34},{"fecha":"2025-10-02","valor":193.77},{"fecha":"2025-10-07","valor":187.48},
+    {"fecha":"2025-10-10","valor":184.86},{"fecha":"2025-10-13","valor":186.81},{"fecha":"2025-10-14","valor":181.62},{"fecha":"2025-10-15","valor":181.52},
+    {"fecha":"2025-10-17","valor":182.83},{"fecha":"2025-10-20","valor":183.05},{"fecha":"2025-10-21","valor":182.82},{"fecha":"2025-10-22","valor":182.87},
+    {"fecha":"2025-10-24","valor":178.91},{"fecha":"2025-10-27","valor":179.37},{"fecha":"2025-10-28","valor":183.87},{"fecha":"2025-10-30","valor":183.84},
+    {"fecha":"2025-11-06","valor":179.75},{"fecha":"2025-11-07","valor":180.35},{"fecha":"2025-11-10","valor":179.37},{"fecha":"2025-11-11","valor":180.0},
+    {"fecha":"2025-11-12","valor":181.0},{"fecha":"2025-11-14","valor":181.0},{"fecha":"2025-11-17","valor":180.3},{"fecha":"2025-11-18","valor":178.8},
+    {"fecha":"2025-11-19","valor":173.8},{"fecha":"2025-11-25","valor":165.0},{"fecha":"2025-12-10","valor":167.0},{"fecha":"2025-12-12","valor":167.0},
+    {"fecha":"2025-12-15","valor":171.43},{"fecha":"2025-12-16","valor":169.95},{"fecha":"2025-12-17","valor":171.95},{"fecha":"2025-12-18","valor":173.91},
+    {"fecha":"2025-12-19","valor":175.86},{"fecha":"2025-12-22","valor":178.88},{"fecha":"2025-12-23","valor":178.88},{"fecha":"2025-12-26","valor":178.88},
+    {"fecha":"2025-12-29","valor":178.89},{"fecha":"2025-12-30","valor":178.89},{"fecha":"2026-01-02","valor":178.98},{"fecha":"2026-01-05","valor":179.39},
+    {"fecha":"2026-01-06","valor":179.08},{"fecha":"2026-01-07","valor":179.45},{"fecha":"2026-01-08","valor":179.64},{"fecha":"2026-01-09","valor":179.39},
+    {"fecha":"2026-01-12","valor":179.83},{"fecha":"2026-01-13","valor":175.91},{"fecha":"2026-01-14","valor":176.88},{"fecha":"2026-01-15","valor":176.41},
+    {"fecha":"2026-01-16","valor":176.92},{"fecha":"2026-01-19","valor":175.95},{"fecha":"2026-01-22","valor":175.38},{"fecha":"2026-01-23","valor":175.85},
+    {"fecha":"2026-01-26","valor":176.42},{"fecha":"2026-01-27","valor":176.85},{"fecha":"2026-01-28","valor":178.88},{"fecha":"2026-01-29","valor":178.88},
+    {"fecha":"2026-01-30","valor":178.88},{"fecha":"2026-02-02","valor":178.88},{"fecha":"2026-02-04","valor":178.88},{"fecha":"2026-02-05","valor":178.88},
+    {"fecha":"2026-02-06","valor":179.82},{"fecha":"2026-02-09","valor":180.35},{"fecha":"2026-02-10","valor":180.16},{"fecha":"2026-02-13","valor":180.16},
+    {"fecha":"2026-02-18","valor":179.84},{"fecha":"2026-02-19","valor":179.84},{"fecha":"2026-02-20","valor":180.23},{"fecha":"2026-02-23","valor":180.48},
+    {"fecha":"2026-02-24","valor":180.73},{"fecha":"2026-02-25","valor":179.84},{"fecha":"2026-02-26","valor":179.4},{"fecha":"2026-02-27","valor":178.95},
+    {"fecha":"2026-03-02","valor":179.86},{"fecha":"2026-03-03","valor":179.86},{"fecha":"2026-03-04","valor":179.83},{"fecha":"2026-03-05","valor":181.73},
+    {"fecha":"2026-03-06","valor":183.62},{"fecha":"2026-03-13","valor":181.82},{"fecha":"2026-03-16","valor":181.82},{"fecha":"2026-03-18","valor":182.9},
+    {"fecha":"2026-03-19","valor":183.81},{"fecha":"2026-03-20","valor":185.2},{"fecha":"2026-03-25","valor":182.67},{"fecha":"2026-03-26","valor":181.17},
+    {"fecha":"2026-03-27","valor":183.11},{"fecha":"2026-03-30","valor":185.17},{"fecha":"2026-03-31","valor":181.09},{"fecha":"2026-04-01","valor":186.13},
+    {"fecha":"2026-04-06","valor":184.96},{"fecha":"2026-04-07","valor":183.5},{"fecha":"2026-04-09","valor":189.74},{"fecha":"2026-04-10","valor":188.22},
+    {"fecha":"2026-04-13","valor":188.44},{"fecha":"2026-04-14","valor":189.78},{"fecha":"2026-04-15","valor":193.65},{"fecha":"2026-04-16","valor":193.45},
+    {"fecha":"2026-04-17","valor":192.55},{"fecha":"2026-04-20","valor":193.44},{"fecha":"2026-04-21","valor":198.31},{"fecha":"2026-04-22","valor":197.31},
+    {"fecha":"2026-04-23","valor":197.97},{"fecha":"2026-04-24","valor":196.82},{"fecha":"2026-04-27","valor":199.98},{"fecha":"2026-04-28","valor":202.83},
+    {"fecha":"2026-04-29","valor":205.21},{"fecha":"2026-04-30","valor":202.61},{"fecha":"2026-05-04","valor":206.42},{"fecha":"2026-05-05","valor":207.6},
+    {"fecha":"2026-05-06","valor":207.24},{"fecha":"2026-05-07","valor":207.85},{"fecha":"2026-05-08","valor":212.12},{"fecha":"2026-05-10","valor":212.12},
+    {"fecha":"2026-05-11","valor":212.65},{"fecha":"2026-05-12","valor":213.22},{"fecha":"2026-05-13","valor":213.0},{"fecha":"2026-05-14","valor":215.06},
+    {"fecha":"2026-05-15","valor":214.75},{"fecha":"2026-05-18","valor":215.45},{"fecha":"2026-05-19","valor":215.75},{"fecha":"2026-05-20","valor":214.77},
+    {"fecha":"2026-05-21","valor":207.63},{"fecha":"2026-05-22","valor":207.47},{"fecha":"2026-05-26","valor":211.47},{"fecha":"2026-05-27","valor":212.02},
+    {"fecha":"2026-05-28","valor":211.93},{"fecha":"2026-05-29","valor":209.89},{"fecha":"2026-06-01","valor":212.5},{"fecha":"2026-06-02","valor":211.82},
+    {"fecha":"2026-06-03","valor":213.02},{"fecha":"2026-06-04","valor":210.89},{"fecha":"2026-06-05","valor":210.16},{"fecha":"2026-06-08","valor":204.51},
+    {"fecha":"2026-06-09","valor":205.14},{"fecha":"2026-06-10","valor":203.71},{"fecha":"2026-06-11","valor":204.83},{"fecha":"2026-06-12","valor":202.51},
+    {"fecha":"2026-06-16","valor":203.01},{"fecha":"2026-06-17","valor":202.38},{"fecha":"2026-06-18","valor":202.33},{"fecha":"2026-06-19","valor":203.67},
+    {"fecha":"2026-06-22","valor":202.35},{"fecha":"2026-06-23","valor":202.7},{"fecha":"2026-06-24","valor":199.05},{"fecha":"2026-06-25","valor":198.78},
+    {"fecha":"2026-06-26","valor":198.18},{"fecha":"2026-06-29","valor":198.72},{"fecha":"2026-06-30","valor":196.37},{"fecha":"2026-07-01","valor":198.23},
+    {"fecha":"2026-07-02","valor":195.75},{"fecha":"2026-07-03","valor":196.07},{"fecha":"2026-07-06","valor":195.11},{"fecha":"2026-07-07","valor":196.24},
+    {"fecha":"2026-07-08","valor":196.56},{"fecha":"2026-07-13","valor":197.21},{"fecha":"2026-07-14","valor":194.4},{"fecha":"2026-07-15","valor":193.63},
+    {"fecha":"2026-07-16","valor":193.55},{"fecha":"2026-07-17","valor":198.38},{"fecha":"2026-07-20","valor":199.26},{"fecha":"2026-07-21","valor":202.97},
+    {"fecha":"2026-07-22","valor":208.58},{"fecha":"2026-07-23","valor":211.56},{"fecha":"2026-07-24","valor":208.08},{"fecha":"2026-07-27","valor":203.63},
+    {"fecha":"2026-07-28","valor":204.04},{"fecha":"2026-07-29","valor":206.85},{"fecha":"2026-07-30","valor":209.15},{"fecha":"2026-07-31","valor":205.74},
+    {"fecha":"2026-08-03","valor":205.61},{"fecha":"2026-08-05","valor":213.73},{"fecha":"2026-08-06","valor":213.81},{"fecha":"2026-08-07","valor":214.04},
+    {"fecha":"2026-08-10","valor":213.34}
+  ]
+};
+const CRUCE_COLOR={soja:'#2e7d32',maiz:'#e65100',trigo:'#1565c0'};
+const CRUCE_LABEL={soja:'Soja',maiz:'Maíz',trigo:'Trigo'};
+function _cruceRatioSeries(cultA,cultB){
+  const serieA=HIST_CRUCES_DATA[cultA]||[],serieB=HIST_CRUCES_DATA[cultB]||[];
+  const mapB={};serieB.forEach(p=>{mapB[p.fecha]=p.valor;});
+  return serieA.filter(p=>mapB[p.fecha]!=null).map(p=>({fecha:p.fecha,valor:p.valor/mapB[p.fecha]}));
+}
+function _showCruceChart(cultA,cultB){
+  let modal=document.getElementById('cruce-chart-modal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='cruce-chart-modal';
+    modal.style.cssText='display:none;position:fixed;inset:0;background:rgba(20,20,30,0.55);z-index:9999;align-items:center;justify-content:center;padding:20px;';
+    modal.innerHTML=`<div style="background:white;border-radius:14px;max-width:760px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;">
+      <button onclick="_closeCruceChart()" style="position:absolute;top:14px;right:16px;border:none;background:#f0f2f5;color:#555;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:700;">✕</button>
+      <h3 id="cruce-chart-title" style="margin:0 0 4px"></h3>
+      <div id="cruce-chart-sub" style="font-size:0.78rem;color:#888;margin-bottom:14px"></div>
+      <div class="canvas-wrap" style="height:320px"><canvas id="cruce-chart-canvas"></canvas></div>
+    </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click',e=>{if(e.target===modal)_closeCruceChart();});
+  }
+  const labelA=CRUCE_LABEL[cultA],labelB=CRUCE_LABEL[cultB];
+  document.getElementById('cruce-chart-title').textContent=`Evolución ${labelA} / ${labelB}`;
+  document.getElementById('cruce-chart-sub').textContent='Cociente entre el disponible en USD de ambos cultivos, serie diaria';
+  modal.style.display='flex';
+  const series=_cruceRatioSeries(cultA,cultB);
+  const el=document.getElementById('cruce-chart-canvas');
+  if(window._cruceChart){try{window._cruceChart.destroy();}catch(e){}}
+  window._cruceChart=new Chart(el,{type:'line',data:{labels:series.map(p=>p.fecha),datasets:[{label:`${labelA}/${labelB}`,data:series.map(p=>p.valor),borderColor:CRUCE_COLOR[cultA],backgroundColor:CRUCE_COLOR[cultA]+'14',borderWidth:2,pointRadius:0,pointHoverRadius:5,fill:true,tension:0.15}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:14}}}}});
+}
+function _closeCruceChart(){
+  const modal=document.getElementById('cruce-chart-modal');
+  if(modal)modal.style.display='none';
+}
 function injectPriceCrossPanel(panelId){
   const panel=document.getElementById('panel-'+panelId);
   if(!panel)return;
@@ -1230,16 +1461,17 @@ function injectPriceCrossPanel(panelId){
   function ratio(a,b){return(a&&b)?a/b:null;}
   function fmtRatio(v){return v===null?'—':v.toFixed(2);}
   const spotPairs=[
-    {a:'Soja',b:'Maíz',va:sSoja,vb:sMaiz},
-    {a:'Soja',b:'Trigo',va:sSoja,vb:sTrigo},
-    {a:'Maíz',b:'Trigo',va:sMaiz,vb:sTrigo},
+    {a:'Soja',b:'Maíz',va:sSoja,vb:sMaiz,ca:'soja',cb:'maiz'},
+    {a:'Soja',b:'Trigo',va:sSoja,vb:sTrigo,ca:'soja',cb:'trigo'},
+    {a:'Maíz',b:'Trigo',va:sMaiz,vb:sTrigo,ca:'maiz',cb:'trigo'},
   ];
   const spotCardsHtml=spotPairs.map(p=>{
     const r=ratio(p.va,p.vb);
-    return `<div style="flex:1;min-width:200px;background:#f7f8fa;border-radius:12px;padding:16px 18px;border:1px solid #e8eaed;">
+    return `<div onclick="_showCruceChart('${p.ca}','${p.cb}')" style="flex:1;min-width:200px;background:#f7f8fa;border-radius:12px;padding:16px 18px;border:1px solid #e8eaed;cursor:pointer;transition:box-shadow 0.15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
       <div style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">${p.a} / ${p.b} · Disponible</div>
       <div style="font-size:1.5rem;font-weight:800;color:#1a1a2e;">${fmtRatio(r)}</div>
       <div style="font-size:0.76rem;color:#666;margin-top:4px;">${r?`1 tn de ${p.a} equivale a ${fmtRatio(r)} tn de ${p.b}`:'Sin datos disponibles'}</div>
+      <div style="font-size:0.68rem;color:#aaa;margin-top:6px;">📈 Ver evolución</div>
     </div>`;
   }).join('');
   function mapByVenc(rows){const m={};(rows||[]).forEach(r=>{const v=parseFloat(r.ajuste);if(!r.is_disp&&r.venc_display&&!isNaN(v))m[r.venc_display]=v;});return m;}
@@ -2306,14 +2538,19 @@ function _opcionesSetGrain(c){
 }
 // ── Girasol y Maní ──────────────────────────────────────────────
 /* GIRASOL_MANI_DATA — actualizado por scripts/update_girasol_mani.py (semanal).
-   girasol.hist_usd_oficial: serie mensual (precio disponible / TC oficial A3500 del mismo mes).
+   girasol.hist_usd_oficial: serie mensual (precio disponible / TC oficial A3500 del mismo mes) — el
+   "Disponible (equiv. USD)" de la tarjeta se lee siempre del último punto de esta serie, no de un
+   campo aparte, para que no puedan desincronizarse.
+   mani.hist_industria_ars / mani.hist_runner_ars: series mensuales del disponible de maní en pesos,
+   se van construyendo solas semana a semana (mismo mecanismo que girasol) para poder armar el
+   gráfico de evolución de maní más adelante.
    mani.usda: Weekly National Posted Prices for Peanuts (FSA/USDA), referencia del competidor principal.
-   mani.fob_implicito: valor unitario de exportación (USD exportado / tn exportada, INDEC) — mensual, con rezago; null hasta confirmar fuente automatizable. */
+   No existe FOB ni cotización internacional oficial de maní publicada de forma automatizable
+   (INDEC comex es un SPA protegido con captcha) — no se muestra esa tarjeta. */
 const GIRASOL_MANI_DATA = {
   "girasol": {
     "fecha": "2026-08-12",
     "disponible_rosario_ars": 743250.0,
-    "disponible_usd": 500,
     "fob_oficial_usd": 532.0,
     "fob_posicion": "spot",
     "fas_ars": 620481,
@@ -2429,6 +2666,14 @@ const GIRASOL_MANI_DATA = {
         "valor": 421.4
       },
       {
+        "mes": "2026-06",
+        "valor": null
+      },
+      {
+        "mes": "2026-07",
+        "valor": null
+      },
+      {
         "mes": "2026-08",
         "valor": 498.1
       }
@@ -2448,8 +2693,12 @@ const GIRASOL_MANI_DATA = {
       "valencia": 432.25,
       "virginia": 432.25
     },
-    "fob_implicito": null,
-    "fob_implicito_periodo": null
+    "hist_industria_ars": [
+      { "mes": "2026-08", "valor": 639547.5 }
+    ],
+    "hist_runner_ars": [
+      { "mes": "2026-08", "valor": 980097.0 }
+    ]
   }
 };
 
@@ -2488,9 +2737,12 @@ function _gmRenderBody(){
 }
 function _gmGirasolHtml(){
   const g=GIRASOL_MANI_DATA.girasol;
+  const histG=g.hist_usd_oficial||[];
+  const ultimoUsdOficial=[...histG].reverse().find(h=>h.valor!=null);
+  const dispUsd=ultimoUsdOficial?ultimoUsdOficial.valor:null;
   const cards=[
     _gmKpiCard('Disponible Rosario','$'+g.disponible_rosario_ars.toLocaleString('es-AR'),'Cámara Arbitral · '+g.fecha,'#ca8a04'),
-    _gmKpiCard('Disponible (equiv. USD)','USD '+g.disponible_usd,'por tonelada · '+g.fecha,'#ca8a04'),
+    _gmKpiCard('Disponible (equiv. USD)',dispUsd!=null?('USD '+dispUsd):'—',(dispUsd!=null?('mes '+ultimoUsdOficial.mes+' · '):'')+'disponible ÷ TC oficial A3500','#ca8a04'),
     _gmKpiCard('FOB oficial (Ley 21.453)','USD '+g.fob_oficial_usd,'posición '+g.fob_posicion,'#ca8a04'),
     _gmKpiCard(g.internacional_label,'USD '+g.internacional_usd,'referencia internacional','#ca8a04')
   ].join('');
@@ -2521,8 +2773,7 @@ function _gmManiHtml(){
   const cards=[
     _gmKpiCard('Disponible Industria','$'+m.disponible_industria_ars.toLocaleString('es-AR'),'Bolsa de Cereales de Córdoba · '+m.fecha,'#92400e'),
     _gmKpiCard('Disponible Runner','$'+m.disponible_runner_ars.toLocaleString('es-AR'),'USD '+m.disponible_runner_usd+' · '+m.fecha,'#92400e'),
-    _gmKpiCard('Ref. USDA (Runner)','USD '+m.usda.runner.toFixed(0)+'/tn','Weekly Posted Price · '+m.usda.fecha,'#92400e'),
-    _gmKpiCard('FOB implícito (INDEC)',m.fob_implicito!=null?('USD '+m.fob_implicito+'/tn'):'—',m.fob_implicito_periodo?('mensual, '+m.fob_implicito_periodo):'dato mensual con rezago, aún sin cargar','#92400e')
+    _gmKpiCard('Ref. USDA (Runner)','USD '+m.usda.runner.toFixed(0)+'/tn','Weekly Posted Price · '+m.usda.fecha,'#92400e')
   ].join('');
   const paridadHtml=`<div class="full-card">
     <h3 style="margin-top:0">Paridad maní / soja</h3>
@@ -2540,7 +2791,7 @@ function _gmManiHtml(){
     ${sojaArs?'':'<div style="font-size:0.72rem;color:#bbb;margin-top:10px">Todavía no cargó el precio de soja disponible en esta sesión — la paridad se completa apenas esté disponible.</div>'}
   </div>`;
   return `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">${cards}</div>${paridadHtml}
-    <div style="font-size:0.72rem;color:#bbb;margin-top:10px;font-style:italic">No existe FOB ni cotización internacional oficial de maní: no es un commodity homogéneo. El FOB implícito surge de dividir el valor exportado (USD) por las toneladas exportadas según INDEC, se actualiza una vez por mes y llega con 1-2 meses de rezago respecto del mes de referencia.</div>`;
+    <div style="font-size:0.72rem;color:#bbb;margin-top:10px;font-style:italic">No existe FOB ni cotización internacional oficial de maní: no es un commodity homogéneo, y la fuente de valor de exportación (INDEC comex) no tiene una vía pública automatizable para incorporarla acá.</div>`;
 }
 
 function showTab(id){
