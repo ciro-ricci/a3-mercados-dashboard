@@ -1889,13 +1889,46 @@ const DS_STORAGE_KEY='ds_state_v1';
 const DS_GRAIN_LABEL={soja:'Soja',maiz:'Maíz',trigo:'Trigo'};
 const DS_GRAIN_COLOR={soja:'#2e7d32',maiz:'#e65100',trigo:'#1565c0'};
 const DS_GRAIN_BADGE={soja:'ds-badge-soja',maiz:'ds-badge-maiz',trigo:'ds-badge-trigo'};
+const DS_MONEDA_LABEL={usd:'USD',ars:'ARS',soja:'Soja (tn)',maiz:'Maíz (tn)',trigo:'Trigo (tn)'};
+const DS_MONEDAS=['usd','ars','soja','maiz','trigo'];
+
+function dsTc(){
+  return(typeof SPOT!=='undefined'&&SPOT&&SPOT.tc)?SPOT.tc:null;
+}
+function dsSpotPrice(cult){
+  const tc=dsTc();
+  const arsVal=(typeof SPOT!=='undefined'&&SPOT)?SPOT[cult+'_ars']:null;
+  if(!tc||!arsVal)return null;
+  const stockPrecioPropio=window.DS_STATE&&window.DS_STATE.stock[cult]&&window.DS_STATE.stock[cult].precio;
+  return stockPrecioPropio||(arsVal/tc);
+}
+// Convierte un monto denominado en cualquier moneda/grano a su equivalente en USD,
+// usando el TC oficial y el disponible en USD de cada grano. Devuelve null si no hay
+// datos suficientes para convertir (ej: sin TC o sin spot cargado todavía).
+function dsMontoUsd(moneda,monto){
+  if(!monto)return 0;
+  if(moneda==='usd'||!moneda)return monto;
+  if(moneda==='ars'){
+    const tc=dsTc();
+    return tc?monto/tc:null;
+  }
+  if(DS_GRAIN_LABEL[moneda]){
+    const precio=dsSpotPrice(moneda);
+    return precio?monto*precio:null;
+  }
+  return monto;
+}
 
 function dsDefaultState(){
   return{
     vencimientos:[],
     cxc:[],
     considerarCxc:false,
-    stock:{soja:{cantidad:0,precio:null},maiz:{cantidad:0,precio:null},trigo:{cantidad:0,precio:null}},
+    stock:{
+      soja:{cantidad:0,precio:null,cosechaCantidad:0,cosechaFecha:''},
+      maiz:{cantidad:0,precio:null,cosechaCantidad:0,cosechaFecha:''},
+      trigo:{cantidad:0,precio:null,cosechaCantidad:0,cosechaFecha:''}
+    },
     sens:{soja:0,maiz:0,trigo:0,tc:0}
   };
 }
@@ -1906,7 +1939,7 @@ function dsLoadState(){
       const parsed=JSON.parse(raw);
       if(parsed._savedAt)window.DS_LAST_SAVED=new Date(parsed._savedAt);
       const base=dsDefaultState();
-      base.vencimientos=parsed.vencimientos||[];
+      base.vencimientos=(parsed.vencimientos||[]).map(function(v){return Object.assign({fecha:'',monto:0,moneda:'usd'},v);});
       base.cxc=parsed.cxc||[];
       base.considerarCxc=!!parsed.considerarCxc;
       if(parsed.stock){
@@ -2038,9 +2071,20 @@ function dsOptimizar(sensOverride){
     trigo:(st.stock.trigo&&st.stock.trigo.cantidad)||0
   };
 
-  const compromisos=(st.vencimientos||[]).map(function(v){return{monto:v.monto,fecha:dsParseFecha(v.fecha),fechaStr:v.fecha};})
-    .filter(function(v){return v.fecha&&v.monto>0;})
-    .sort(function(a,b){return a.fecha-b.fecha;});
+  // Cosecha esperada: se suma al stock disponible recién a partir de su fecha esperada,
+  // no desde ya (todavía no está físicamente en la tranquera).
+  const cosechaEventos=['soja','maiz','trigo'].map(function(cult){
+    const s=st.stock[cult]||{};
+    const cantidad=s.cosechaCantidad||0;
+    const fecha=dsParseFecha(s.cosechaFecha);
+    return{cult:cult,cantidad:cantidad,fecha:fecha};
+  }).filter(function(e){return e.cantidad>0&&e.fecha;}).sort(function(a,b){return a.fecha-b.fecha;});
+  let cosechaIdx=0;
+
+  const compromisos=(st.vencimientos||[]).map(function(v){
+    const monto=dsMontoUsd(v.moneda,v.monto);
+    return{monto:monto||0,montoOrig:v.monto,moneda:v.moneda||'usd',fecha:dsParseFecha(v.fecha),fechaStr:v.fecha,sinConvertir:v.monto>0&&monto==null};
+  }).filter(function(v){return v.fecha&&v.montoOrig>0;}).sort(function(a,b){return a.fecha-b.fecha;});
   const cobros=st.considerarCxc?(st.cxc||[]).map(function(c){return{monto:c.monto,fecha:dsParseFecha(c.fecha),fechaStr:c.fecha};}).filter(function(c){return c.fecha&&c.monto>0;}).sort(function(a,b){return a.fecha-b.fecha;}):[];
 
   let deudaAcum=0,ingresosAcum=0,cobrosAcum=0,cIdx=0;
@@ -2051,6 +2095,10 @@ function dsOptimizar(sensOverride){
     while(cIdx<cobros.length&&cobros[cIdx].fecha<=comp.fecha){
       cobrosAcum+=cobros[cIdx].monto;
       cIdx++;
+    }
+    while(cosechaIdx<cosechaEventos.length&&cosechaEventos[cosechaIdx].fecha<=comp.fecha){
+      stockRestante[cosechaEventos[cosechaIdx].cult]+=cosechaEventos[cosechaIdx].cantidad;
+      cosechaIdx++;
     }
     deudaAcum+=comp.monto;
     let necesidad=deudaAcum-(ingresosAcum+cobrosAcum);
@@ -2090,17 +2138,40 @@ function dsOptimizar(sensOverride){
   const coberturaFinal=deudaTotal>0?Math.min(100,((ingresoProyectado+cxcTotal)/deudaTotal)*100):100;
   const tnVendidas=ventas.reduce(function(a,v){return a+v.toneladas;},0);
   const precioPromedio=tnVendidas>0?ingresoProyectado/tnVendidas:null;
+  const hayDeudaSinConvertir=compromisos.some(function(c){return c.sinConvertir;});
+
+  // ── Posición neta de granos: stock disponible + cosecha esperada − deuda tomada en ese grano ──
+  const deudaEnGranoTn={soja:0,maiz:0,trigo:0};
+  (st.vencimientos||[]).forEach(function(v){
+    if(DS_GRAIN_LABEL[v.moneda]&&v.monto>0)deudaEnGranoTn[v.moneda]+=v.monto;
+  });
+  const posicionNetaGranos={};
+  ['soja','maiz','trigo'].forEach(function(cult){
+    const s=st.stock[cult]||{};
+    posicionNetaGranos[cult]=(s.cantidad||0)+(s.cosechaCantidad||0)-deudaEnGranoTn[cult];
+  });
+
+  // ── Deuda neta consolidada, expresada en distintas unidades ──
+  const tc=dsTc();
+  const precioSoja=dsSpotPrice('soja');
+  const precioMaiz=dsSpotPrice('maiz');
+  const deudaNetaUsd=exposicionNeta;
+  const deudaNetaArs=tc!=null?deudaNetaUsd*tc:null;
+  const deudaNetaSojaTn=precioSoja?deudaNetaUsd/precioSoja:null;
+  const deudaNetaMaizTn=precioMaiz?deudaNetaUsd/precioMaiz:null;
 
   return{
     ventas:ventas,stockRestante:stockRestante,compromisos:compromisos,cobros:cobros,
     coberturaTimeline:coberturaTimeline,deudaTotal:deudaTotal,cxcTotal:cxcTotal,
     exposicionNeta:exposicionNeta,ingresoProyectado:ingresoProyectado,excedente:excedente,
-    coberturaFinal:coberturaFinal,precioPromedio:precioPromedio
+    coberturaFinal:coberturaFinal,precioPromedio:precioPromedio,hayDeudaSinConvertir:hayDeudaSinConvertir,
+    posicionNetaGranos:posicionNetaGranos,deudaNetaUsd:deudaNetaUsd,deudaNetaArs:deudaNetaArs,
+    deudaNetaSojaTn:deudaNetaSojaTn,deudaNetaMaizTn:deudaNetaMaizTn
   };
 }
 
 function dsAddVenc(){
-  window.DS_STATE.vencimientos.push({fecha:'',monto:0});
+  window.DS_STATE.vencimientos.push({fecha:'',monto:0,moneda:'usd'});
   dsSaveState();dsRenderInputs();dsRefresh();
 }
 function dsRemoveVenc(i){
@@ -2128,7 +2199,13 @@ function dsToggleCxc(){
   dsSaveState();dsRenderInputs();dsRefresh();
 }
 function dsUpdateStock(cult,field,val){
-  window.DS_STATE.stock[cult][field]=field==='cantidad'?dsParseNum(val):(val===''?null:dsParseNum(val));
+  if(field==='cosechaFecha'){
+    window.DS_STATE.stock[cult][field]=val;
+  }else if(field==='cantidad'||field==='cosechaCantidad'){
+    window.DS_STATE.stock[cult][field]=dsParseNum(val);
+  }else{
+    window.DS_STATE.stock[cult][field]=val===''?null:dsParseNum(val);
+  }
   dsSaveState();dsRenderInputs();dsRefresh();
 }
 function dsUpdateSens(key,val){
@@ -2164,9 +2241,14 @@ function dsRenderInputs(){
   const vencRows=document.getElementById('ds-venc-rows');
   if(vencRows){
     vencRows.innerHTML=(st.vencimientos.length?st.vencimientos.map(function(v,i){
+      const moneda=v.moneda||'usd';
+      const placeholder=DS_GRAIN_LABEL[moneda]?'Toneladas':'Monto '+DS_MONEDA_LABEL[moneda];
       return'<div class="ds-row">'+
         '<input type="month" value="'+(v.fecha||'')+'" onchange="dsUpdateVenc('+i+',\'fecha\',this.value)">'+
-        '<input type="text" inputmode="decimal" placeholder="Monto USD" value="'+dsFmtNumInput(v.monto)+'" onchange="dsUpdateVenc('+i+',\'monto\',this.value)">'+
+        '<select class="ds-moneda-sel" onchange="dsUpdateVenc('+i+',\'moneda\',this.value)">'+
+          DS_MONEDAS.map(function(m){return'<option value="'+m+'"'+(m===moneda?' selected':'')+'>'+DS_MONEDA_LABEL[m]+'</option>';}).join('')+
+        '</select>'+
+        '<input type="text" inputmode="decimal" placeholder="'+placeholder+'" value="'+dsFmtNumInput(v.monto)+'" onchange="dsUpdateVenc('+i+',\'monto\',this.value)">'+
         '<button class="ds-del" onclick="dsRemoveVenc('+i+')">✕</button>'+
       '</div>';
     }).join(''):'<div class="ds-empty">Sin vencimientos cargados.</div>');
@@ -2196,7 +2278,9 @@ function dsRenderInputs(){
       const s=st.stock[cult];
       return'<div class="ds-stock-card">'+
         '<div class="ds-badge '+DS_GRAIN_BADGE[cult]+'">'+DS_GRAIN_LABEL[cult]+'</div>'+
-        '<label>Cantidad (tn)<input type="text" inputmode="decimal" placeholder="0" value="'+dsFmtNumInput(s.cantidad)+'" onchange="dsUpdateStock(\''+cult+'\',\'cantidad\',this.value)"></label>'+
+        '<label>Disponible ahora (tn)<input type="text" inputmode="decimal" placeholder="0" value="'+dsFmtNumInput(s.cantidad)+'" onchange="dsUpdateStock(\''+cult+'\',\'cantidad\',this.value)"></label>'+
+        '<label>Cosecha esperada (tn)<input type="text" inputmode="decimal" placeholder="0" value="'+dsFmtNumInput(s.cosechaCantidad)+'" onchange="dsUpdateStock(\''+cult+'\',\'cosechaCantidad\',this.value)"></label>'+
+        '<label>Fecha esperada<input type="month" value="'+(s.cosechaFecha||'')+'" onchange="dsUpdateStock(\''+cult+'\',\'cosechaFecha\',this.value)"></label>'+
       '</div>';
     }).join('');
   }
@@ -2214,6 +2298,34 @@ function dsRenderInputs(){
   }
 }
 
+function dsFmtArs(n){
+  if(n===null||n===undefined||isNaN(n))return'—';
+  return'$'+Math.round(n).toLocaleString('es-AR');
+}
+function dsFmtTnSigned(n){
+  if(n===null||n===undefined||isNaN(n))return'—';
+  const sign=n>0?'+':'';
+  return sign+n.toLocaleString('es-AR',{maximumFractionDigits:1})+' tn';
+}
+function dsRenderPosicionNeta(res){
+  const wrap=document.getElementById('ds-kpis-neta');
+  if(!wrap)return;
+  const posHtml='<div class="ds-stock-remanente">'+['soja','maiz','trigo'].map(function(c){
+    const v=res.posicionNetaGranos[c];
+    return'<span class="ds-badge '+DS_GRAIN_BADGE[c]+'">'+DS_GRAIN_LABEL[c]+' <b>'+dsFmtTnSigned(v)+'</b></span>';
+  }).join('')+'</div>';
+  const kpis=[
+    {label:'Posición neta de granos',val:posHtml,raw:true},
+    {label:'Deuda neta en USD',val:dsFmtUsd(res.deudaNetaUsd),cls:res.deudaNetaUsd>=0?'neg-accent':'pos-accent'},
+    {label:'Deuda neta en ARS',val:dsFmtArs(res.deudaNetaArs),cls:res.deudaNetaUsd>=0?'neg-accent':'pos-accent'},
+    {label:'Deuda neta en soja (equiv.)',val:dsFmtTn(res.deudaNetaSojaTn)},
+    {label:'Deuda neta en maíz (equiv.)',val:dsFmtTn(res.deudaNetaMaizTn)}
+  ];
+  wrap.innerHTML=kpis.map(function(k){
+    return'<div class="ds-kpi'+(k.cls?' '+k.cls:'')+(k.raw?' ds-kpi-raw':'')+'"><div class="ds-kpi-label">'+k.label+'</div><div class="ds-kpi-val">'+k.val+'</div></div>';
+  }).join('')+(res.hayDeudaSinConvertir?'<div class="ds-alert" style="grid-column:1/-1">⚠️ Hay deuda cargada en una moneda que todavía no se puede convertir (falta el tipo de cambio o el disponible de ese grano) — no está incluida en estos totales hasta que esos datos carguen.</div>':'');
+}
+
 function dsRenderKPIs(res){
   const wrap=document.getElementById('ds-kpis');
   if(!wrap)return;
@@ -2222,7 +2334,7 @@ function dsRenderKPIs(res){
     return'<span class="ds-badge '+DS_GRAIN_BADGE[c]+'">'+DS_GRAIN_LABEL[c]+' <b>'+dsFmtTn(res.stockRestante[c])+'</b></span>';
   }).join('')+'</div>';
   const kpis=[
-    {label:'Deuda total',val:dsFmtUsd(res.deudaTotal),cls:'neg-accent'},
+    {label:'Deuda total (USD equiv.)',val:dsFmtUsd(res.deudaTotal),cls:'neg-accent'},
     {label:'Cuentas por cobrar',val:dsFmtUsd(res.cxcTotal),cls:'accent'},
     {label:'Exposición neta',val:dsFmtUsd(res.exposicionNeta)},
     {label:'Ingreso proyectado',val:dsFmtUsd(res.ingresoProyectado),cls:'pos-accent'},
@@ -2313,7 +2425,8 @@ function dsCapacidadMaxima(sens){
   const st=window.DS_STATE;
   let total=0;
   ['soja','maiz','trigo'].forEach(function(cult){
-    const cantidad=(st.stock[cult]&&st.stock[cult].cantidad)||0;
+    const s=st.stock[cult]||{};
+    const cantidad=(s.cantidad||0)+(s.cosechaCantidad||0);
     if(cantidad<=0)return;
     const pct=(sens[cult]||0)/100;
     const tcPct=(sens.tc||0)/100;
@@ -2372,6 +2485,7 @@ function dsRenderSensChart(sens){
 
 function dsRefresh(){
   const res=dsOptimizar();
+  dsRenderPosicionNeta(res);
   dsRenderKPIs(res);
   dsRenderTablaVentas(res);
   dsRenderCronograma(res);
@@ -2408,6 +2522,8 @@ function buildDeudaStockPanel(){
       .ds-row input[type=month]{flex:1;padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.82rem;color:#1e293b;background:#fff;transition:border-color 0.15s,box-shadow 0.15s;}
       .ds-row input[type=number],.ds-row input[type=text]{flex:1;padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.82rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#1e293b;background:#fff;transition:border-color 0.15s,box-shadow 0.15s;}
       .ds-row input:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
+      .ds-moneda-sel{flex:0 0 108px;padding:9px 8px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.78rem;color:#1e293b;background:#fff;transition:border-color 0.15s,box-shadow 0.15s;}
+      .ds-moneda-sel:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
       .ds-del{background:#fff1f2;color:#e11d48;border:1px solid #ffe4e6;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:0.8rem;flex-shrink:0;transition:background 0.15s;}
       .ds-del:hover{background:#ffe4e6;}
       .ds-empty{color:#94a3b8;font-size:0.82rem;padding:10px 0;}
@@ -2418,7 +2534,7 @@ function buildDeudaStockPanel(){
       .ds-switch-track.on{background:#10b981;}
       .ds-switch-track::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:white;transition:left 0.2s;box-shadow:0 1px 2px rgba(0,0,0,0.15);}
       .ds-switch-track.on::after{left:18px;}
-      .ds-stock-card{display:inline-flex;flex-direction:column;gap:10px;width:220px;vertical-align:top;background:#f8fafc;border:1px solid #eef1f5;border-radius:12px;padding:14px 16px;margin:0 12px 12px 0;}
+      .ds-stock-card{display:inline-flex;flex-direction:column;gap:10px;width:230px;vertical-align:top;background:#f8fafc;border:1px solid #eef1f5;border-radius:12px;padding:14px 16px;margin:0 12px 12px 0;}
       .ds-stock-card label{display:block;font-size:0.7rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:0;}
       .ds-stock-card input{width:100%;margin-top:6px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.88rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;box-sizing:border-box;background:#fff;}
       .ds-stock-card input:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
@@ -2464,7 +2580,7 @@ function buildDeudaStockPanel(){
     <div class="ds-wrap">
     <div class="ds-header">
       <h2>💳 Deuda / Stock</h2>
-      <p>Cargá cuánto debés (y cuándo), cuánto tenés para cobrar y cuánto stock te queda. El tablero calcula solo, con la curva de futuros vigente, qué conviene vender para cubrir todo con el mejor precio.</p>
+      <p>Cargá cuánto debés (en USD, en pesos o en granos, y cuándo), cuánto tenés para cobrar, cuánto stock te queda y cuánto esperás cosechar. El tablero calcula solo la posición neta y, con la curva de futuros vigente, qué conviene vender para cubrir todo con el mejor precio.</p>
       <div class="ds-save-bar">
         <div class="ds-save-info"><span class="ds-save-dot"></span><span>Tus datos se guardan solos en este navegador <span id="ds-save-time" class="ds-save-time"></span></span></div>
         <div class="ds-save-actions">
@@ -2491,8 +2607,13 @@ function buildDeudaStockPanel(){
     </div>
 
     <div class="full-card ds-card">
-      <h3>¿Cuánto stock te queda?</h3>
+      <h3>¿Cuánto stock te queda y cuánto esperás cosechar?</h3>
       <div id="ds-stock-inputs"></div>
+    </div>
+
+    <div class="full-card ds-card">
+      <h3>Posición neta</h3>
+      <div id="ds-kpis-neta" class="ds-kpis-grid"></div>
     </div>
 
     <div id="ds-kpis" class="ds-kpis-grid"></div>
