@@ -393,6 +393,29 @@ canvas { max-height: 100%; }
 #panel-usda .u-map img { width:100%; height:auto; border:1px solid #e5e7eb; border-radius:8px; display:block; background:#fff; }
 #panel-usda .u-map .md { font-size:0.74rem; color:#777; margin-top:6px; line-height:1.45; }
 
+/* ENSO impacto por region */
+#panel-usda .enso-idx { display:flex; gap:14px; flex-wrap:wrap; align-items:stretch; margin-bottom:16px; }
+#panel-usda .ei { background:#f5f8fc; border:1px solid #dde6f0; border-radius:10px; padding:10px 16px; min-width:120px; }
+#panel-usda .ei-l { font-size:0.72rem; font-weight:700; color:#5a6b7f; text-transform:uppercase; letter-spacing:.4px; }
+#panel-usda .ei-l span { font-weight:400; text-transform:none; letter-spacing:0; color:#95a3b3; }
+#panel-usda .ei-v { font-size:1.5rem; font-weight:700; color:#1a1a2e; line-height:1.15; }
+#panel-usda .ei-p { font-size:0.7rem; color:#95a3b3; }
+#panel-usda .ei-exp { flex:1; min-width:260px; font-size:0.76rem; color:#4b5563; line-height:1.55; align-self:center; }
+#panel-usda .enso-sel { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+#panel-usda .u-ensobtn { font-size:0.78rem; font-weight:600; padding:5px 14px; border-radius:999px; cursor:pointer; color:#888; background:#f2f2f0; }
+#panel-usda .u-ensobtn:hover { color:#444; }
+#panel-usda .u-ensobtn.active { background:#1a1a2e; color:#fff; }
+#panel-usda .enso-mundial { background:#fafbfc; border-left:5px solid #9e9e9e; border-radius:8px; padding:12px 16px; margin-bottom:14px; }
+#panel-usda .enso-mundial .em-t { font-size:0.72rem; text-transform:uppercase; letter-spacing:.5px; color:#7a8794; font-weight:700; }
+#panel-usda .enso-mundial .em-v { font-size:1.35rem; font-weight:700; margin:2px 0 4px; }
+#panel-usda .enso-mundial .em-u { font-size:0.78rem; font-weight:400; color:#6b7280; }
+#panel-usda .enso-mundial .em-d { font-size:0.8rem; color:#4b5563; line-height:1.5; }
+#panel-usda .enso-tabla td { vertical-align:top; }
+#panel-usda .enso-nota { font-size:0.68rem; color:#a0a0a0; font-weight:400; margin-top:2px; }
+#panel-usda .enso-n { font-size:0.66rem; color:#a0a0a0; }
+#panel-usda .enso-n.pocos { color:#c9a227; font-weight:700; }
+#panel-usda .enso-chip { display:inline-block; font-size:0.68rem; font-weight:700; color:#fff; padding:3px 9px; border-radius:999px; }
+
 </style>
 <!-- Landing pública (Gemini design) — Tailwind scope-limited a #landing-gate -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -3456,6 +3479,190 @@ function usdaDrawConditionCharts() {
   }
 }
 
+// ENSO_MATRIZ:START — cruce historico fijo, regenerar solo para extender el periodo
+const ENSO_MATRIZ = {"meta":{"periodo":"1995-2026","metodo":"desvío del rinde (t/ha) respecto de su tendencia lineal, en %","indice":"ONI (NOAA CPC), ventana crítica por cultivo y región","fuente_rinde":"USDA PSD Online","intensidad_no_robusta":true,"nota_intensidad":"El desglose por intensidad del evento (débil/moderado/fuerte) tiene entre 1 y 3 casos por celda y no es estadísticamente utilizable. La señal confiable es la agrupación Niño vs. Niña."},"actual":{"oni":{"periodo":"MJJ 2026","valor":1.39},"roni":{"periodo":"MJJ 2026","valor":0.98}},"cruces":[{"cultivo":"soja","region":"Argentina","pais_psd":"Argentina","ventana":"DJF","nota":"Floración y llenado dic-feb","n_campanias":31,"rinde_medio":2.67,"grupos":{"nino":{"n":10,"media":10.9,"sd":5.2,"pos":10,"semaforo":"muy_positivo","precio":"bajista"},"nina":{"n":13,"media":-7.4,"sd":13.1,"pos":4,"semaforo":"muy_negativo","precio":"alcista"},"neutral":{"n":8,"media":-1.6,"sd":11.3,"pos":5}},"categorias":{"nina_debil":{"n":9,"media":-11.4,"sd":13.7,"pos":2},"neutral":{"n":8,"media":-1.6,"sd":11.3,"pos":5},"nino_fuerte":{"n":3,"media":9.1,"sd":4.8,"pos":3},"nina_fuerte":{"n":2,"media":3.4,"sd":4.3,"pos":1},"nina_moderada":{"n":2,"media":-0.1,"sd":0.6,"pos":1},"nino_debil":{"n":6,"media":11.8,"sd":5.6,"pos":6},"nino_moderado":{"n":1,"media":10.6,"sd":0.0,"pos":1}},"peso_mundial":10.8},{"cultivo":"soja","region":"Brasil","pais_psd":"Brazil","ventana":"DJF","nota":"Llenado dic-feb (centro-sur)","n_campanias":31,"rinde_medio":2.96,"grupos":{"nino":{"n":10,"media":-0.6,"sd":6.6,"pos":6,"semaforo":"neutro","precio":"neutral"},"nina":{"n":13,"media":0.6,"sd":6.9,"pos":8,"semaforo":"neutro","precio":"neutral"},"neutral":{"n":8,"media":-0.4,"sd":5.2,"pos":4}},"categorias":{"nina_debil":{"n":9,"media":-0.6,"sd":7.9,"pos":4},"neutral":{"n":8,"media":-0.4,"sd":5.2,"pos":4},"nino_fuerte":{"n":3,"media":-2.7,"sd":6.2,"pos":1},"nina_fuerte":{"n":2,"media":1.4,"sd":0.5,"pos":2},"nina_moderada":{"n":2,"media":4.9,"sd":1.0,"pos":2},"nino_debil":{"n":6,"media":0.2,"sd":7.1,"pos":4},"nino_moderado":{"n":1,"media":1.6,"sd":0.0,"pos":1}},"peso_mundial":41.2},{"cultivo":"soja","region":"Estados Unidos","pais_psd":"United States","ventana":"JAS","nota":"Llenado de vainas ago-sep","n_campanias":31,"rinde_medio":2.97,"grupos":{"nino":{"n":6,"media":1.7,"sd":3.3,"pos":4,"semaforo":"neutro","precio":"neutral"},"nina":{"n":7,"media":-1.2,"sd":3.0,"pos":1,"semaforo":"neutro","precio":"neutral"},"neutral":{"n":18,"media":-0.1,"sd":6.0,"pos":11}},"categorias":{"nina_debil":{"n":6,"media":-1.2,"sd":3.3,"pos":1},"neutral":{"n":18,"media":-0.1,"sd":6.0,"pos":11},"nino_fuerte":{"n":2,"media":4.7,"sd":1.9,"pos":2},"nino_debil":{"n":3,"media":0.8,"sd":3.1,"pos":2},"nina_moderada":{"n":1,"media":-1.1,"sd":0.0,"pos":0},"nino_moderado":{"n":1,"media":-1.4,"sd":0.0,"pos":0}},"peso_mundial":28.3},{"cultivo":"soja","region":"Paraguay","pais_psd":"Paraguay","ventana":"DJF","nota":"Llenado dic-feb","n_campanias":31,"rinde_medio":2.47,"grupos":{"nino":{"n":10,"media":5.2,"sd":12.2,"pos":6,"semaforo":"muy_positivo","precio":"bajista"},"nina":{"n":13,"media":-8.4,"sd":23.3,"pos":8,"semaforo":"muy_negativo","precio":"alcista"},"neutral":{"n":8,"media":6.1,"sd":10.0,"pos":7}},"categorias":{"nina_debil":{"n":9,"media":-13.0,"sd":26.5,"pos":5},"neutral":{"n":8,"media":6.1,"sd":10.0,"pos":7},"nino_fuerte":{"n":3,"media":11.4,"sd":2.1,"pos":3},"nina_fuerte":{"n":2,"media":0.9,"sd":7.4,"pos":1},"nina_moderada":{"n":2,"media":3.1,"sd":2.4,"pos":2},"nino_debil":{"n":6,"media":3.3,"sd":14.7,"pos":3},"nino_moderado":{"n":1,"media":-1.5,"sd":0.0,"pos":0}},"peso_mundial":2.6},{"cultivo":"maiz","region":"Argentina","pais_psd":"Argentina","ventana":"DJF","nota":"Floración dic-ene","n_campanias":31,"rinde_medio":6.73,"grupos":{"nino":{"n":10,"media":12.1,"sd":10.6,"pos":9,"semaforo":"muy_positivo","precio":"bajista"},"nina":{"n":13,"media":-8.9,"sd":10.8,"pos":3,"semaforo":"muy_negativo","precio":"alcista"},"neutral":{"n":8,"media":0.5,"sd":9.7,"pos":4}},"categorias":{"nina_debil":{"n":9,"media":-11.2,"sd":12.0,"pos":2},"neutral":{"n":8,"media":0.5,"sd":9.7,"pos":4},"nino_fuerte":{"n":3,"media":2.8,"sd":11.3,"pos":2},"nina_fuerte":{"n":2,"media":-4.6,"sd":4.0,"pos":0},"nina_moderada":{"n":2,"media":-3.1,"sd":3.5,"pos":1},"nino_debil":{"n":6,"media":14.5,"sd":6.6,"pos":6},"nino_moderado":{"n":1,"media":25.7,"sd":0.0,"pos":1}},"peso_mundial":4.1},{"cultivo":"maiz","region":"Brasil","pais_psd":"Brazil","ventana":"MAM","nota":"Safrinha mar-may","n_campanias":31,"rinde_medio":4.3,"grupos":{"nino":{"n":5,"media":1.1,"sd":10.2,"pos":3,"semaforo":"neutro","precio":"neutral"},"nina":{"n":6,"media":-6.5,"sd":7.7,"pos":1,"semaforo":"muy_negativo","precio":"alcista"},"neutral":{"n":20,"media":1.7,"sd":7.4,"pos":12}},"categorias":{"neutral":{"n":20,"media":1.7,"sd":7.4,"pos":12},"nino_moderado":{"n":2,"media":-6.4,"sd":7.4,"pos":1},"nina_debil":{"n":5,"media":-8.4,"sd":7.0,"pos":0},"nina_moderada":{"n":1,"media":3.2,"sd":0.0,"pos":1},"nino_debil":{"n":3,"media":6.1,"sd":8.7,"pos":2}},"peso_mundial":10.7},{"cultivo":"maiz","region":"Estados Unidos","pais_psd":"United States","ventana":"JJA","nota":"Polinización jul","n_campanias":31,"rinde_medio":9.75,"grupos":{"nino":{"n":5,"media":0.1,"sd":4.9,"pos":2,"semaforo":"neutro","precio":"neutral"},"nina":{"n":4,"media":-0.0,"sd":1.9,"pos":2,"semaforo":"indeterminado","precio":"neutral"},"neutral":{"n":22,"media":0.0,"sd":6.4,"pos":15}},"categorias":{"neutral":{"n":22,"media":0.0,"sd":6.4,"pos":15},"nino_moderado":{"n":3,"media":-0.2,"sd":2.0,"pos":1},"nina_debil":{"n":4,"media":-0.0,"sd":1.9,"pos":2},"nino_debil":{"n":2,"media":0.5,"sd":7.3,"pos":1}},"peso_mundial":31.2},{"cultivo":"maiz","region":"Sudáfrica","pais_psd":"South Africa","ventana":"DJF","nota":"Floración dic-feb","n_campanias":31,"rinde_medio":4.01,"grupos":{"nino":{"n":10,"media":-8.7,"sd":13.0,"pos":3,"semaforo":"muy_negativo","precio":"alcista"},"nina":{"n":13,"media":4.5,"sd":9.7,"pos":9,"semaforo":"muy_positivo","precio":"bajista"},"neutral":{"n":8,"media":4.5,"sd":10.5,"pos":5}},"categorias":{"nina_debil":{"n":9,"media":5.7,"sd":9.1,"pos":7},"neutral":{"n":8,"media":4.5,"sd":10.5,"pos":5},"nino_fuerte":{"n":3,"media":-15.8,"sd":3.2,"pos":0},"nina_fuerte":{"n":2,"media":-0.9,"sd":11.7,"pos":1},"nina_moderada":{"n":2,"media":4.5,"sd":7.9,"pos":1},"nino_debil":{"n":6,"media":-7.8,"sd":14.5,"pos":2},"nino_moderado":{"n":1,"media":7.1,"sd":0.0,"pos":1}},"peso_mundial":1.3},{"cultivo":"maiz","region":"China","pais_psd":"China","ventana":"JJA","nota":"Ciclo estival jun-ago","n_campanias":31,"rinde_medio":5.64,"grupos":{"nino":{"n":5,"media":-3.0,"sd":2.8,"pos":1,"semaforo":"negativo","precio":"alcista"},"nina":{"n":4,"media":2.3,"sd":4.7,"pos":3,"semaforo":"indeterminado","precio":"bajista"},"neutral":{"n":22,"media":0.2,"sd":4.0,"pos":12}},"categorias":{"neutral":{"n":22,"media":0.2,"sd":4.0,"pos":12},"nino_moderado":{"n":3,"media":-2.4,"sd":3.3,"pos":1},"nina_debil":{"n":4,"media":2.3,"sd":4.7,"pos":3},"nino_debil":{"n":2,"media":-3.9,"sd":1.1,"pos":0}},"peso_mundial":23.5},{"cultivo":"maiz","region":"Unión Europea","pais_psd":"European Union","ventana":"JJA","nota":"Llenado jul-ago","n_campanias":27,"rinde_medio":6.78,"grupos":{"nino":{"n":4,"media":0.1,"sd":4.7,"pos":3,"semaforo":"indeterminado","precio":"neutral"},"nina":{"n":3,"media":-3.0,"sd":10.8,"pos":2,"semaforo":"indeterminado","precio":"alcista"},"neutral":{"n":20,"media":0.7,"sd":8.7,"pos":11}},"categorias":{"nina_debil":{"n":3,"media":-3.0,"sd":10.8,"pos":2},"neutral":{"n":20,"media":0.7,"sd":8.7,"pos":11},"nino_debil":{"n":2,"media":2.9,"sd":1.1,"pos":2},"nino_moderado":{"n":2,"media":-2.7,"sd":5.3,"pos":1}},"peso_mundial":4.5},{"cultivo":"maiz","region":"Ucrania","pais_psd":"Ukraine","ventana":"JJA","nota":"Llenado jul-ago","n_campanias":31,"rinde_medio":5.09,"grupos":{"nino":{"n":5,"media":8.9,"sd":15.9,"pos":3,"semaforo":"muy_positivo","precio":"bajista"},"nina":{"n":4,"media":-12.8,"sd":5.9,"pos":0,"semaforo":"indeterminado","precio":"alcista"},"neutral":{"n":22,"media":0.7,"sd":12.5,"pos":11}},"categorias":{"neutral":{"n":22,"media":0.7,"sd":12.5,"pos":11},"nino_moderado":{"n":3,"media":15.1,"sd":17.8,"pos":2},"nina_debil":{"n":4,"media":-12.8,"sd":5.9,"pos":0},"nino_debil":{"n":2,"media":-0.2,"sd":3.9,"pos":1}},"peso_mundial":2.4},{"cultivo":"trigo","region":"Estados Unidos","pais_psd":"United States","ventana":"MAM","nota":"Llenado del trigo de invierno","n_campanias":32,"rinde_medio":2.99,"grupos":{"nino":{"n":5,"media":5.4,"sd":6.5,"pos":4,"semaforo":"muy_positivo","precio":"bajista"},"nina":{"n":6,"media":-0.3,"sd":5.7,"pos":3,"semaforo":"neutro","precio":"neutral"},"neutral":{"n":21,"media":-1.2,"sd":5.2,"pos":10}},"categorias":{"neutral":{"n":21,"media":-1.2,"sd":5.2,"pos":10},"nino_moderado":{"n":2,"media":11.2,"sd":1.6,"pos":2},"nina_debil":{"n":5,"media":-1.0,"sd":6.0,"pos":2},"nina_moderada":{"n":1,"media":3.1,"sd":0.0,"pos":1},"nino_debil":{"n":3,"media":1.5,"sd":5.6,"pos":2}},"peso_mundial":6.0},{"cultivo":"trigo","region":"Australia","pais_psd":"Australia","ventana":"ASO","nota":"Llenado ago-oct","n_campanias":31,"rinde_medio":1.98,"grupos":{"nino":{"n":8,"media":-18.7,"sd":20.4,"pos":1,"semaforo":"muy_negativo","precio":"alcista"},"nina":{"n":9,"media":10.5,"sd":20.7,"pos":8,"semaforo":"muy_positivo","precio":"bajista"},"neutral":{"n":14,"media":4.1,"sd":18.4,"pos":8}},"categorias":{"nina_debil":{"n":5,"media":19.0,"sd":9.3,"pos":5},"neutral":{"n":14,"media":4.1,"sd":18.4,"pos":8},"nino_fuerte":{"n":3,"media":-0.5,"sd":11.9,"pos":1},"nina_moderada":{"n":4,"media":-0.1,"sd":25.5,"pos":3},"nino_debil":{"n":5,"media":-29.7,"sd":16.1,"pos":0}},"peso_mundial":4.1},{"cultivo":"trigo","region":"Argentina","pais_psd":"Argentina","ventana":"SON","nota":"Llenado sep-nov","n_campanias":31,"rinde_medio":2.78,"grupos":{"nino":{"n":10,"media":-0.4,"sd":9.7,"pos":4,"semaforo":"neutro","precio":"neutral"},"nina":{"n":12,"media":4.1,"sd":15.4,"pos":9,"semaforo":"muy_positivo","precio":"bajista"},"neutral":{"n":9,"media":-5.1,"sd":8.2,"pos":2}},"categorias":{"nina_debil":{"n":7,"media":1.6,"sd":16.7,"pos":5},"neutral":{"n":9,"media":-5.1,"sd":8.2,"pos":2},"nino_fuerte":{"n":3,"media":1.5,"sd":11.9,"pos":1},"nina_moderada":{"n":4,"media":2.4,"sd":8.0,"pos":3},"nino_debil":{"n":7,"media":-1.2,"sd":8.5,"pos":3},"nina_fuerte":{"n":1,"media":28.3,"sd":0.0,"pos":1}},"peso_mundial":2.4},{"cultivo":"trigo","region":"Rusia","pais_psd":"Russia","ventana":"MJJ","nota":"Llenado may-jul","n_campanias":32,"rinde_medio":2.32,"grupos":{"nino":{"n":5,"media":4.5,"sd":10.5,"pos":3,"semaforo":"muy_positivo","precio":"bajista"},"nina":{"n":5,"media":-1.3,"sd":9.9,"pos":2,"semaforo":"neutro","precio":"neutral"},"neutral":{"n":22,"media":-0.5,"sd":9.7,"pos":10}},"categorias":{"neutral":{"n":22,"media":-0.5,"sd":9.7,"pos":10},"nino_moderado":{"n":3,"media":7.8,"sd":12.1,"pos":2},"nina_debil":{"n":5,"media":-1.3,"sd":9.9,"pos":2},"nino_debil":{"n":2,"media":-0.5,"sd":3.9,"pos":1}},"peso_mundial":11.0},{"cultivo":"trigo","region":"Ucrania","pais_psd":"Ukraine","ventana":"MJJ","nota":"Llenado may-jul","n_campanias":32,"rinde_medio":3.32,"grupos":{"nino":{"n":5,"media":8.6,"sd":6.5,"pos":5,"semaforo":"muy_positivo","precio":"bajista"},"nina":{"n":5,"media":-7.9,"sd":13.7,"pos":1,"semaforo":"muy_negativo","precio":"alcista"},"neutral":{"n":22,"media":0.1,"sd":16.3,"pos":11}},"categorias":{"neutral":{"n":22,"media":0.1,"sd":16.3,"pos":11},"nino_moderado":{"n":3,"media":9.9,"sd":8.1,"pos":3},"nina_debil":{"n":5,"media":-7.9,"sd":13.7,"pos":1},"nino_debil":{"n":2,"media":6.8,"sd":1.4,"pos":2}},"peso_mundial":2.9},{"cultivo":"trigo","region":"Unión Europea","pais_psd":"European Union","ventana":"MJJ","nota":"Llenado may-jul","n_campanias":28,"rinde_medio":5.37,"grupos":{"nino":{"n":4,"media":2.4,"sd":4.6,"pos":2,"semaforo":"indeterminado","precio":"bajista"},"nina":{"n":5,"media":1.0,"sd":3.8,"pos":2,"semaforo":"neutro","precio":"neutral"},"neutral":{"n":19,"media":-0.8,"sd":5.3,"pos":8}},"categorias":{"nina_debil":{"n":5,"media":1.0,"sd":3.8,"pos":2},"neutral":{"n":19,"media":-0.8,"sd":5.3,"pos":8},"nino_moderado":{"n":2,"media":4.7,"sd":5.2,"pos":1},"nino_debil":{"n":2,"media":0.1,"sd":2.3,"pos":1}},"peso_mundial":16.6},{"cultivo":"trigo","region":"Canadá","pais_psd":"Canada","ventana":"JJA","nota":"Llenado jun-ago","n_campanias":31,"rinde_medio":2.84,"grupos":{"nino":{"n":5,"media":-8.6,"sd":8.9,"pos":1,"semaforo":"muy_negativo","precio":"alcista"},"nina":{"n":4,"media":3.4,"sd":5.2,"pos":2,"semaforo":"indeterminado","precio":"bajista"},"neutral":{"n":22,"media":1.5,"sd":10.6,"pos":15}},"categorias":{"neutral":{"n":22,"media":1.5,"sd":10.6,"pos":15},"nino_moderado":{"n":3,"media":-6.1,"sd":2.0,"pos":0},"nina_debil":{"n":4,"media":3.4,"sd":5.2,"pos":2},"nino_debil":{"n":2,"media":-12.4,"sd":13.0,"pos":1}},"peso_mundial":4.4},{"cultivo":"trigo","region":"India","pais_psd":"India","ventana":"OND","nota":"Siembra oct-dic","n_campanias":31,"rinde_medio":2.99,"grupos":{"nino":{"n":10,"media":0.1,"sd":5.9,"pos":6,"semaforo":"neutro","precio":"neutral"},"nina":{"n":14,"media":0.0,"sd":4.0,"pos":6,"semaforo":"neutro","precio":"neutral"},"neutral":{"n":7,"media":-0.3,"sd":4.5,"pos":5}},"categorias":{"nina_moderada":{"n":5,"media":1.6,"sd":2.7,"pos":3},"neutral":{"n":7,"media":-0.3,"sd":4.5,"pos":5},"nino_fuerte":{"n":3,"media":-1.1,"sd":8.7,"pos":2},"nina_debil":{"n":7,"media":0.3,"sd":4.2,"pos":3},"nino_moderado":{"n":3,"media":1.8,"sd":1.9,"pos":2},"nino_debil":{"n":4,"media":-0.2,"sd":5.0,"pos":2},"nina_fuerte":{"n":2,"media":-4.8,"sd":0.4,"pos":0}},"peso_mundial":14.0}],"agregado_mundial":{"soja":{"cobertura_pct":82.9,"nino":{"media":1.9,"confianza_pct":100.0,"semaforo":"neutro","precio":"bajista","cobertura_pct":82.9},"nina":{"media":-1.3,"confianza_pct":100.0,"semaforo":"neutro","precio":"alcista","cobertura_pct":82.9}},"maiz":{"cobertura_pct":77.7,"nino":{"media":0.1,"confianza_pct":94.0,"semaforo":"neutro","precio":"neutral","cobertura_pct":77.7},"nina":{"media":-1.2,"confianza_pct":21.0,"semaforo":"indeterminado","precio":"alcista","cobertura_pct":77.7}},"trigo":{"cobertura_pct":61.4,"nino":{"media":0.5,"confianza_pct":73.0,"semaforo":"neutro","precio":"neutral","cobertura_pct":61.4},"nina":{"media":0.7,"confianza_pct":93.0,"semaforo":"neutro","precio":"neutral","cobertura_pct":61.4}}}};
+// ENSO_MATRIZ:END
+
+// ── ENSO: impacto histórico por región productora ─────────────────
+// La matriz ENSO_MATRIZ es un cruce fijo (30 campañas) que NO cambia mes a mes.
+// Lo único que se actualiza es el nivel ENSO vigente, que decide qué columna
+// de la matriz se muestra. Por eso el semáforo se recalcula solo.
+
+var _ensoCrop = 'soja';
+
+function _ensoNivelVigente() {
+  // El nivel ENSO se lee EN VIVO de USDA_DATA.enso, que el workflow
+  // "Actualizar datos USDA" refresca cada semana. La matriz histórica es fija;
+  // lo único que cambia es qué columna se muestra. Si por algún motivo no
+  // hubiera dato en vivo, se cae al que quedó guardado en la matriz.
+  var vivo = (typeof USDA_DATA !== 'undefined' && USDA_DATA.enso) ? USDA_DATA.enso : null;
+  var m = (typeof ENSO_MATRIZ !== 'undefined') ? ENSO_MATRIZ : null;
+  var oni = null, roni = null, per = null, perR = null;
+
+  if (vivo && vivo.ultimo) {
+    oni = vivo.ultimo.valor; per = vivo.ultimo.periodo;
+    if (vivo.roni) { roni = vivo.roni.valor; perR = vivo.roni.periodo; }
+  }
+  if (oni === null && m && m.actual && m.actual.oni) {
+    oni = m.actual.oni.valor; per = m.actual.oni.periodo;
+  }
+  if (roni === null && m && m.actual && m.actual.roni) {
+    roni = m.actual.roni.valor; perR = m.actual.roni.periodo;
+  }
+  return { oni: oni, roni: roni, periodo: per, periodoRoni: perR };
+}
+
+function _ensoFaseActual() {
+  // Prioriza el RONI para la lectura de impacto: la respuesta atmosférica
+  // depende del gradiente de temperatura, no del valor absoluto. El ONI se
+  // mantiene como referencia oficial de clasificación.
+  var n = _ensoNivelVigente();
+  var ref = (n.roni !== null && n.roni !== undefined) ? n.roni : n.oni;
+  if (ref === null || ref === undefined) return null;
+  var fase = ref >= 0.5 ? 'nino' : (ref <= -0.5 ? 'nina' : 'neutral');
+  return { fase: fase, oni: n.oni, roni: n.roni, ref: ref,
+           periodo: n.periodo, periodoRoni: n.periodoRoni };
+}
+
+function _ensoColor(sem) {
+  return {
+    muy_positivo: '#1e7e34', positivo: '#5fb96b', neutro: '#9e9e9e',
+    negativo: '#d97706', muy_negativo: '#9b1c1c', indeterminado: '#c8c8c8'
+  }[sem] || '#9e9e9e';
+}
+
+function _ensoTxt(sem) {
+  return {
+    muy_positivo: 'Producción muy favorecida', positivo: 'Producción favorecida',
+    neutro: 'Sin efecto claro', negativo: 'Producción perjudicada',
+    muy_negativo: 'Producción muy perjudicada', indeterminado: 'Datos insuficientes'
+  }[sem] || '—';
+}
+
+function ensoSetCrop(c) {
+  _ensoCrop = c;
+  document.querySelectorAll('#panel-usda .u-ensobtn').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.crop === c);
+  });
+  var cont = document.getElementById('enso-impacto-body');
+  if (cont) cont.innerHTML = _ensoImpactoHTML(c);
+}
+
+function _ensoImpactoHTML(crop) {
+  var m = ENSO_MATRIZ;
+  var est = _ensoFaseActual();
+  if (!m || !est) return '<div class="u-note">Sin datos de ENSO disponibles.</div>';
+
+  var nombres = { nino: 'El Niño', nina: 'La Niña', neutral: 'Neutral' };
+  var filas = m.cruces.filter(function (c) { return c.cultivo === crop; })
+                      .sort(function (a, b) { return b.peso_mundial - a.peso_mundial; });
+
+  var html = '';
+
+  // ── Conclusión del agregado mundial
+  var ag = m.agregado_mundial ? m.agregado_mundial[crop] : null;
+  if (ag && est.fase !== 'neutral' && ag[est.fase]) {
+    var g = ag[est.fase];
+    var signo = g.media > 0 ? '+' : '';
+    var col = _ensoColor(g.semaforo);
+    html += '<div class="enso-mundial" style="border-left-color:' + col + '">' +
+      '<div class="em-t">Agregado mundial — con ' + nombres[est.fase] + ' vigente</div>' +
+      '<div class="em-v" style="color:' + col + '">' + signo + g.media + '% ' +
+      '<span class="em-u">en el rinde mundial ponderado</span></div>' +
+      '<div class="em-d">Cubre el ' + g.cobertura_pct + '% de la producción mundial. ' +
+      'Para el <b>precio</b> la lectura es <b>' + g.precio + '</b>' +
+      (g.precio === 'neutral' ? ', porque los efectos regionales se compensan entre sí.' : '.') +
+      '</div></div>';
+  } else if (est.fase === 'neutral') {
+    html += '<div class="enso-mundial" style="border-left-color:#9e9e9e">' +
+      '<div class="em-t">ENSO en fase neutral</div>' +
+      '<div class="em-d">Sin señal ENSO, el clima de cada región responde a otros factores. ' +
+      'La tabla muestra, a modo de referencia, qué pasaría en cada fase.</div></div>';
+  }
+
+  // ── Tabla por región
+  html += '<table class="u-table enso-tabla"><thead><tr>' +
+    '<th>Región</th><th>Peso mundial</th>' +
+    '<th>Con El Niño</th><th>Con La Niña</th>' +
+    '<th>Lectura con la fase vigente</th></tr></thead><tbody>';
+
+  filas.forEach(function (c) {
+    var gi = c.grupos.nino, ga = c.grupos.nina;
+    var act = (est.fase !== 'neutral') ? c.grupos[est.fase] : null;
+    var col = act ? _ensoColor(act.semaforo) : '#c8c8c8';
+
+    function celda(g) {
+      if (!g) return '<td>—</td>';
+      var s = g.media > 0 ? '+' : '';
+      var baja = g.n < 5;
+      return '<td><span style="color:' + _ensoColor(g.semaforo) + ';font-weight:700">' +
+        s + g.media + '%</span> <span class="enso-n' + (baja ? ' pocos' : '') + '">n=' + g.n + '</span></td>';
+    }
+
+    html += '<tr>' +
+      '<td>' + c.region + '<div class="enso-nota">' + c.nota + ' · ventana ' + c.ventana + '</div></td>' +
+      '<td>' + c.peso_mundial + '%</td>' +
+      celda(gi) + celda(ga) +
+      '<td><span class="enso-chip" style="background:' + col + '">' +
+      (act ? _ensoTxt(act.semaforo) : 'Fase neutral') + '</span></td></tr>';
+  });
+
+  html += '</tbody></table>';
+  html += '<div class="u-note">' +
+    'Cifras: desvío del <b>rinde</b> respecto de su tendencia de largo plazo, promedio de las campañas ' +
+    'de cada fase (' + m.meta.periodo + '). Se usa rinde y no producción porque la producción crece ' +
+    'por área y tecnología, lo que taparía la señal climática. Cada región se clasifica según el ONI ' +
+    'en su <b>ventana crítica</b> de cultivo, no por año calendario. ' +
+    '<b>n</b> es la cantidad de campañas; en gris cuando son menos de 5 y el promedio es poco confiable. ' +
+    m.meta.nota_intensidad + '</div>';
+
+  return html;
+}
+
+function ensoImpactoHTML() {
+  var est = _ensoFaseActual();
+  if (!est) return '';
+  var m = ENSO_MATRIZ;
+  var nombres = { nino: 'El Niño', nina: 'La Niña', neutral: 'Neutral' };
+  var nombresCrop = { soja: '🫘 Soja', maiz: '🌽 Maíz', trigo: '🌾 Trigo' };
+
+  var html = '<div class="u-card"><h3>Impacto histórico del ENSO por región productora</h3>';
+
+  // Encabezado con los dos índices
+  html += '<div class="enso-idx">';
+  if (est.oni !== null && est.oni !== undefined) {
+    html += '<div class="ei"><div class="ei-l">ONI <span>oficial</span></div>' +
+      '<div class="ei-v">' + (est.oni > 0 ? '+' : '') + est.oni.toFixed(2) + '</div>' +
+      '<div class="ei-p">' + (est.periodo || '') + '</div></div>';
+  }
+  if (est.roni !== null && est.roni !== undefined) {
+    html += '<div class="ei"><div class="ei-l">RONI <span>relativo</span></div>' +
+      '<div class="ei-v">' + (est.roni > 0 ? '+' : '') + est.roni.toFixed(2) + '</div>' +
+      '<div class="ei-p">' + (est.periodoRoni || '') + '</div></div>';
+  }
+  html += '<div class="ei-exp">El <b>RONI</b> le resta a la temperatura del Pacífico el calentamiento ' +
+    'medio de los trópicos. Como la circulación atmosférica responde al <b>gradiente</b> de temperatura ' +
+    'y no a su nivel absoluto, es el que mejor anticipa el efecto sobre las lluvias. ' +
+    'Con la base de comparación cada vez más cálida, el ONI tiende a exagerar la intensidad de El Niño' +
+    ((est.oni !== null && est.roni !== null)
+      ? ': hoy la diferencia entre ambos es de ' + Math.abs(est.oni - est.roni).toFixed(2) + ' °C.'
+      : '.') +
+    ' La fase que se usa abajo se define por el RONI.</div>';
+  html += '</div>';
+
+  // Selector de cultivo
+  html += '<div class="enso-sel">';
+  ['soja', 'maiz', 'trigo'].forEach(function (c) {
+    html += '<span class="u-ensobtn' + (c === _ensoCrop ? ' active' : '') + '" data-crop="' + c +
+      '" onclick="ensoSetCrop(\'' + c + '\')">' + nombresCrop[c] + '</span>';
+  });
+  html += '</div>';
+
+  html += '<div id="enso-impacto-body">' + _ensoImpactoHTML(_ensoCrop) + '</div>';
+  html += '</div>';
+  return html;
+}
+
 function buildUsdaPanel() {
   var panel = document.getElementById('panel-usda');
   if (!panel) return;
@@ -3596,6 +3803,9 @@ function buildUsdaPanel() {
       'Fuente: <a class="u-src" href="https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt" target="_blank" rel="noopener">NOAA CPC</a>. ' +
       'En general El Niño favorece lluvias en Argentina y sequía en el sudeste asiático; La Niña, lo inverso.</div></div>';
   }
+
+  // ── Impacto histórico del ENSO por región
+  if (typeof ensoImpactoHTML === 'function') { html += ensoImpactoHTML(); }
 
   // ── Mapas de sequía
   var sq = USDA_DATA.sequia;
