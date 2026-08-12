@@ -2538,9 +2538,11 @@ function _opcionesSetGrain(c){
 }
 // ── Girasol y Maní ──────────────────────────────────────────────
 /* GIRASOL_MANI_DATA — actualizado por scripts/update_girasol_mani.py (semanal).
-   girasol.hist_usd_oficial: serie mensual (precio disponible / TC oficial A3500 del mismo mes) — el
-   "Disponible (equiv. USD)" de la tarjeta se lee siempre del último punto de esta serie, no de un
-   campo aparte, para que no puedan desincronizarse.
+   girasol.hist_usd: serie diaria (precio pizarra Rosario, ya en USD) — backfill inicial cargado desde
+   planilla externa (25/08/2025 a 10/08/2026), y a partir de ahí el script agrega/actualiza un punto
+   por semana (fecha de hoy, disponible ÷ TC oficial A3500). El "Disponible (equiv. USD)" de la
+   tarjeta se lee siempre del último punto de esta serie, no de un campo aparte, para que no puedan
+   desincronizarse.
    mani.hist_industria_ars / mani.hist_runner_ars: series mensuales del disponible de maní en pesos,
    se van construyendo solas semana a semana (mismo mecanismo que girasol) para poder armar el
    gráfico de evolución de maní más adelante.
@@ -2556,127 +2558,27 @@ const GIRASOL_MANI_DATA = {
     "fas_ars": 620481,
     "internacional_usd": 1365.0,
     "internacional_label": "Aceite de girasol FOB (BCR)",
-    "hist_usd_oficial": [
-      {
-        "mes": "2024-03",
-        "valor": 291.6
-      },
-      {
-        "mes": "2024-04",
-        "valor": 290.6
-      },
-      {
-        "mes": "2024-05",
-        "valor": 302.2
-      },
-      {
-        "mes": "2024-06",
-        "valor": 318.1
-      },
-      {
-        "mes": "2024-07",
-        "valor": 335.6
-      },
-      {
-        "mes": "2024-08",
-        "valor": null
-      },
-      {
-        "mes": "2024-09",
-        "valor": null
-      },
-      {
-        "mes": "2024-10",
-        "valor": null
-      },
-      {
-        "mes": "2024-11",
-        "valor": 359.5
-      },
-      {
-        "mes": "2024-12",
-        "valor": 372.7
-      },
-      {
-        "mes": "2025-01",
-        "valor": 345.0
-      },
-      {
-        "mes": "2025-02",
-        "valor": 345.2
-      },
-      {
-        "mes": "2025-03",
-        "valor": 314.8
-      },
-      {
-        "mes": "2025-04",
-        "valor": 299.1
-      },
-      {
-        "mes": "2025-05",
-        "valor": 337.4
-      },
-      {
-        "mes": "2025-06",
-        "valor": 342.8
-      },
-      {
-        "mes": "2025-07",
-        "valor": 335.0
-      },
-      {
-        "mes": "2025-08",
-        "valor": 363.6
-      },
-      {
-        "mes": "2025-09",
-        "valor": null
-      },
-      {
-        "mes": "2025-10",
-        "valor": null
-      },
-      {
-        "mes": "2025-11",
-        "valor": 344.7
-      },
-      {
-        "mes": "2025-12",
-        "valor": 341.7
-      },
-      {
-        "mes": "2026-01",
-        "valor": 345.8
-      },
-      {
-        "mes": "2026-02",
-        "valor": 371.7
-      },
-      {
-        "mes": "2026-03",
-        "valor": 384.0
-      },
-      {
-        "mes": "2026-04",
-        "valor": 401.4
-      },
-      {
-        "mes": "2026-05",
-        "valor": 421.4
-      },
-      {
-        "mes": "2026-06",
-        "valor": null
-      },
-      {
-        "mes": "2026-07",
-        "valor": null
-      },
-      {
-        "mes": "2026-08",
-        "valor": 498.1
-      }
+    "hist_usd": [
+      {"fecha":"2025-08-25","valor":357.62},{"fecha":"2025-08-29","valor":357.59},{"fecha":"2025-11-10","valor":347.78},{"fecha":"2025-11-11","valor":347.77},
+      {"fecha":"2025-11-12","valor":347.77},{"fecha":"2025-11-14","valor":347.11},{"fecha":"2025-11-18","valor":347.75},{"fecha":"2025-11-27","valor":347.83},
+      {"fecha":"2025-12-01","valor":347.47},{"fecha":"2025-12-08","valor":347.8},{"fecha":"2025-12-09","valor":347.82},{"fecha":"2025-12-10","valor":347.83},
+      {"fecha":"2025-12-11","valor":347.84},{"fecha":"2025-12-12","valor":346.98},{"fecha":"2025-12-15","valor":347.58},{"fecha":"2025-12-16","valor":344.59},
+      {"fecha":"2025-12-17","valor":342.87},{"fecha":"2025-12-18","valor":342.87},{"fecha":"2025-12-19","valor":342.86},{"fecha":"2025-12-22","valor":337.47},
+      {"fecha":"2025-12-23","valor":332.87},{"fecha":"2025-12-26","valor":327.96},{"fecha":"2025-12-29","valor":332.93},{"fecha":"2025-12-30","valor":332.93},
+      {"fecha":"2026-01-02","valor":332.96},{"fecha":"2026-01-05","valor":327.89},{"fecha":"2026-01-07","valor":306.16},{"fecha":"2026-01-08","valor":318.03},
+      {"fecha":"2026-01-09","valor":318.77},{"fecha":"2026-01-12","valor":323.0},{"fecha":"2026-01-13","valor":322.99},{"fecha":"2026-01-14","valor":337.89},
+      {"fecha":"2026-01-15","valor":337.89},{"fecha":"2026-01-16","valor":347.8},{"fecha":"2026-01-19","valor":352.81},{"fecha":"2026-01-20","valor":357.74},
+      {"fecha":"2026-01-21","valor":367.67},{"fecha":"2026-01-22","valor":367.67},{"fecha":"2026-01-26","valor":367.68},{"fecha":"2026-01-27","valor":367.69},
+      {"fecha":"2026-01-28","valor":367.69},{"fecha":"2026-01-29","valor":367.69},{"fecha":"2026-01-30","valor":367.7},{"fecha":"2026-02-02","valor":367.71},
+      {"fecha":"2026-02-03","valor":367.7},{"fecha":"2026-02-04","valor":367.7},{"fecha":"2026-02-05","valor":367.69},{"fecha":"2026-02-06","valor":367.67},
+      {"fecha":"2026-02-09","valor":367.65},{"fecha":"2026-02-10","valor":367.71},{"fecha":"2026-02-13","valor":367.63},{"fecha":"2026-02-18","valor":377.55},
+      {"fecha":"2026-02-19","valor":377.54},{"fecha":"2026-02-20","valor":377.51},{"fecha":"2026-02-24","valor":377.52},{"fecha":"2026-02-25","valor":377.56},
+      {"fecha":"2026-02-27","valor":377.55},{"fecha":"2026-03-02","valor":377.55},{"fecha":"2026-03-03","valor":377.58},{"fecha":"2026-03-04","valor":377.56},
+      {"fecha":"2026-03-06","valor":377.58},{"fecha":"2026-03-13","valor":387.49},{"fecha":"2026-03-16","valor":387.49},{"fecha":"2026-03-18","valor":387.48},
+      {"fecha":"2026-03-19","valor":387.48},{"fecha":"2026-03-31","valor":391.98},{"fecha":"2026-04-01","valor":392.4},{"fecha":"2026-04-06","valor":392.45},
+      {"fecha":"2026-04-08","valor":390.45},{"fecha":"2026-04-09","valor":392.43},{"fecha":"2026-04-15","valor":392.38},{"fecha":"2026-04-16","valor":392.38},
+      {"fecha":"2026-04-20","valor":392.42},{"fecha":"2026-04-27","valor":412.36},{"fecha":"2026-06-18","valor":447.21},{"fecha":"2026-07-31","valor":467.15},
+      {"fecha":"2026-08-10","valor":496.82}
     ],
     "fas_teorico_usd": 477.4,
     "pellets_usd": 160.0
@@ -2694,16 +2596,10 @@ const GIRASOL_MANI_DATA = {
       "virginia": 432.25
     },
     "hist_industria_ars": [
-      {
-        "mes": "2026-08",
-        "valor": 639547.5
-      }
+      { "mes": "2026-08", "valor": 639547.5 }
     ],
     "hist_runner_ars": [
-      {
-        "mes": "2026-08",
-        "valor": 980097.0
-      }
+      { "mes": "2026-08", "valor": 980097.0 }
     ]
   }
 };
@@ -2743,33 +2639,33 @@ function _gmRenderBody(){
 }
 function _gmGirasolHtml(){
   const g=GIRASOL_MANI_DATA.girasol;
-  const histG=g.hist_usd_oficial||[];
+  const histG=g.hist_usd||[];
   const ultimoUsdOficial=[...histG].reverse().find(h=>h.valor!=null);
   const dispUsd=ultimoUsdOficial?ultimoUsdOficial.valor:null;
   const cards=[
     _gmKpiCard('Disponible Rosario','$'+g.disponible_rosario_ars.toLocaleString('es-AR'),'Cámara Arbitral · '+g.fecha,'#ca8a04'),
-    _gmKpiCard('Disponible (equiv. USD)',dispUsd!=null?('USD '+dispUsd):'—',(dispUsd!=null?('mes '+ultimoUsdOficial.mes+' · '):'')+'disponible ÷ TC oficial A3500','#ca8a04'),
+    _gmKpiCard('Disponible (equiv. USD)',dispUsd!=null?('USD '+dispUsd):'—',(dispUsd!=null?(ultimoUsdOficial.fecha+' · '):'')+'pizarra Rosario','#ca8a04'),
     _gmKpiCard('FOB oficial (Ley 21.453)','USD '+g.fob_oficial_usd,'posición '+g.fob_posicion,'#ca8a04'),
     _gmKpiCard(g.internacional_label,'USD '+g.internacional_usd,'referencia internacional','#ca8a04')
   ].join('');
   return `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">${cards}</div>
     <div class="full-card">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px">
-        <h3 style="margin:0">Evolución disponible girasol — últimos meses</h3>
-        <span style="font-size:0.72rem;color:#aaa">en USD oficial (A3500), promedio mensual</span>
+        <h3 style="margin:0">Evolución disponible girasol — pizarra Rosario</h3>
+        <span style="font-size:0.72rem;color:#aaa">en USD, serie diaria</span>
       </div>
       <div class="canvas-wrap" style="height:280px"><canvas id="gm-girasol-chart"></canvas></div>
-      <div style="font-size:0.7rem;color:#bbb;margin-top:8px;font-style:italic">Los cortes en la línea corresponden a meses sin fijaciones registradas en pizarra (temporada baja del cultivo), no a un error de carga.</div>
+      <div style="font-size:0.7rem;color:#bbb;margin-top:8px;font-style:italic">Los huecos entre puntos corresponden a días sin fijaciones registradas en pizarra, no a un error de carga.</div>
     </div>`;
 }
 function _gmDrawGirasolChart(){
   const el=document.getElementById('gm-girasol-chart');
   if(!el)return;
   if(window._gmChart){try{window._gmChart.destroy();}catch(e){}}
-  const hist=GIRASOL_MANI_DATA.girasol.hist_usd_oficial;
-  const labels=hist.map(h=>h.mes);
+  const hist=GIRASOL_MANI_DATA.girasol.hist_usd;
+  const labels=hist.map(h=>h.fecha);
   const values=hist.map(h=>h.valor);
-  window._gmChart=new Chart(el,{type:'line',data:{labels,datasets:[{label:'Girasol USD oficial',data:values,borderColor:'#ca8a04',backgroundColor:'rgba(202,138,4,0.08)',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,fill:true,tension:0.25,spanGaps:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{callback:v=>'USD '+v,font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45,autoSkip:false}}}}});
+  window._gmChart=new Chart(el,{type:'line',data:{labels,datasets:[{label:'Girasol USD (pizarra Rosario)',data:values,borderColor:'#ca8a04',backgroundColor:'rgba(202,138,4,0.08)',borderWidth:2,pointRadius:1.5,pointHoverRadius:5,fill:true,tension:0.15,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{callback:v=>'USD '+v,font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:60,autoSkip:true,maxTicksLimit:14}}}}});
 }
 function _gmManiHtml(){
   const m=GIRASOL_MANI_DATA.mani;
