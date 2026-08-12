@@ -1,0 +1,93 @@
+name: Actualizar datos USDA
+
+# Refresca los datos duros de la pestaña USDA de estrategiasalgrano.com:
+#   - series históricas de PSD Online (producción, stocks, área, rinde)
+#   - condición de cultivos (NASS QuickStats)
+#   - Crop Progress semanal
+#   - índice ONI (El Niño / La Niña)
+#   - fecha del monitor de sequía
+#
+# El análisis cualitativo del WASDE (veredicto alcista/bajista, resumen y
+# valores esperados por el mercado) NO lo hace este workflow: lo escribe la
+# tarea programada de Cowork, que reemplaza el mismo bloque USDA_DATA.
+# Por eso acá se preservan las claves "wasde" y "wwcb" ya existentes.
+#
+# REQUISITO: cargar el secret NASS_API_KEY en
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+
+on:
+  schedule:
+    # Días de WASDE (9-12 de cada mes) a las 17:30 UTC = 14:30 ART,
+    # con PSD Online ya actualizado tras la publicación de las 12:00 ET.
+    - cron: '30 17 9,10,11,12 * *'
+    # Martes 13:00 UTC = 10:00 ART, con el Crop Progress del lunes publicado.
+    - cron: '0 13 * * 2'
+  workflow_dispatch:        # permite correrlo a mano desde la pestaña Actions
+
+permissions:
+  contents: write
+
+concurrency:
+  group: actualizar-usda
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Extraer datos del USDA
+        env:
+          NASS_API_KEY: ${{ secrets.NASS_API_KEY }}
+        run: |
+          if [ -z "$NASS_API_KEY" ]; then
+            echo "::warning::NASS_API_KEY no está configurado; se omite la condición de cultivos."
+          fi
+          python3 scripts/usda_extractor.py \
+            --out /tmp/usda_data.json \
+            --nass-key "$NASS_API_KEY" \
+            --cache /tmp/psd \
+            --year "$(date +%Y)"
+
+      - name: Actualizar el bloque USDA_DATA en index.html
+        run: python3 scripts/usda_update_index.py --data /tmp/usda_data.json --index index.html
+
+      - name: Verificar sintaxis del JavaScript
+        run: |
+          python3 - <<'PY'
+          import re, subprocess, sys, tempfile, io
+          html = io.open('index.html', encoding='utf-8').read()
+          bloques = re.findall(r'<script>(.*?)</script>', html, re.S)
+          objetivo = [b for b in bloques if 'function showTab' in b]
+          if not objetivo:
+              print('No se encontró el bloque principal; se omite la validación.')
+              sys.exit(0)
+          with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False,
+                                           encoding='utf-8') as f:
+              f.write(objetivo[0])
+              ruta = f.name
+          r = subprocess.run(['node', '--check', ruta], capture_output=True, text=True)
+          if r.returncode != 0:
+              print(r.stderr)
+              sys.exit('El JavaScript quedó inválido: no se commitea.')
+          print('Sintaxis del JavaScript OK')
+          PY
+
+      - name: Commit y push si hubo cambios
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "Sin cambios en index.html"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Actualizacion automatica: datos USDA (PSD + Crop Progress + ONI) - $(date +%Y-%m-%d)"
+          git push
