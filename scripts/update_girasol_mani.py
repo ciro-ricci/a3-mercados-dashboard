@@ -167,13 +167,13 @@ def parse_girasol_fob(html):
 
 def parse_bccba_mani(html):
     result = {}
-        m_ind = re.search(r"Man[ií] Industria.*?\$\s*([\d.,]+)", html, re.S)
+    m_ind = re.search(r"Man[ií] Industria.*?\$\s*([\d.,]+)", html, re.S)
     if m_ind:
         v = to_float_ar(m_ind.group(1))
         if v is not None:
             result["disponible_industria_ars"] = v
     m_run = re.search(
-                r"Man[ií] Runner.*?\$\s*([\d.,]+)(?:.*?U\$S\s*([\d.,]+))?", html, re.S
+        r"Man[ií] Runner.*?\$\s*([\d.,]+)(?:.*?U\$S\s*([\d.,]+))?", html, re.S
     )
     if m_run:
         v = to_float_ar(m_run.group(1))
