@@ -1,0 +1,46 @@
+name: Actualizar historico de cruces (soja/maiz/trigo)
+
+on:
+  schedule:
+    - cron: '0 21 * * 1-5'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  update-cruces:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Actualizar historico de cruces
+        run: python scripts/update_cruces.py
+
+      - name: Commit y push si hay cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- index.html; then
+            git add index.html
+            git commit -m "Actualizacion diaria: historico cruces soja/maiz/trigo - $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "Sin cambios"
+          fi
+
+      - name: Crear issue si algo fallo
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue create --title "Fallo la actualizacion diaria de cruces - $(date -u +%Y-%m-%d)" --body "El workflow ${{ github.workflow }} fallo. Ver el log completo aca: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
