@@ -43,4 +43,5 @@ jobs:
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh issue create --title "Fallo la actualizacion diaria de cruces - $(date -u +%Y-%m-%d)" --body "El workflow ${{ github.workflow }} fallo. Ver el log completo aca: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: |
+          gh issue create --title "Fallo la actualizacion diaria de cruces - $(date -u +%Y-%m-%d)" --body "El workflow ${{ github.workflow }} fallo. Ver el log completo aca: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
