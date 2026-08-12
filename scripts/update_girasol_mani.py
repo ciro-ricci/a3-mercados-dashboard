@@ -25,9 +25,14 @@ queda fijo como referencia mensual. El backfill inicial (mar-24 a may-26)
 sí se calculó con el promedio real de todas las fijaciones de cada mes
 (vía el buscador histórico oficial de la Cámara Arbitral).
 
-El FOB implícito de maní (valor unitario de exportación, INDEC) no tiene
-todavía una fuente pública automatizable confirmada -> el campo se deja
-tal cual está en index.html (no se pisa) hasta resolver esa fuente.
+El FOB implícito de maní (valor unitario de exportación, INDEC) se descartó
+como automatizable: comex.indec.gov.ar/search es un SPA sin API publica y
+esta protegido con captcha. No se muestra esa tarjeta en el dashboard.
+
+El disponible de maní (Industria y Runner) tambien se va guardando cada
+corrida en mani.hist_industria_ars / mani.hist_runner_ars (mismo mecanismo
+que girasol.hist_usd_oficial), para poder construir mas adelante un
+grafico de evolucion propio.
 """
 import json
 import re
@@ -154,6 +159,7 @@ def parse_girasol_fob(html):
                 if v is not None:
                     result["pellets_usd"] = v
 
+    today = datetime.now(timezone.utc).strftime("%b-%y").lower()
     result.setdefault("fob_posicion", "spot")
     return result
 
@@ -245,6 +251,32 @@ def fetch_usda_peanut_prices():
     }
 
 
+def _mes_add(mes, delta):
+    y, m = map(int, mes.split("-"))
+    m += delta
+    y += (m - 1) // 12
+    m = ((m - 1) % 12) + 1
+    return f"{y:04d}-{m:02d}"
+
+
+def _fill_gap_months(hist, mes_actual):
+    """Si el script no corrio (o fallo) uno o mas meses, completa esos meses
+    salteados con valor null en vez de dejarlos directamente ausentes del
+    arreglo -- el grafico usa spanGaps:false y necesita el punto null para
+    dibujar el corte, si no el mes salteado queda invisible y la linea
+    conecta como si fuera continuo."""
+    if not hist:
+        return hist
+    last_mes = hist[-1]["mes"]
+    cursor = _mes_add(last_mes, 1)
+    existentes = {h["mes"] for h in hist}
+    while cursor < mes_actual:
+        if cursor not in existentes:
+            hist.append({"mes": cursor, "valor": None})
+        cursor = _mes_add(cursor, 1)
+    return hist
+
+
 def extract_current_block(html_text):
     m = re.search(r"const GIRASOL_MANI_DATA = (\{.*?\n\};)", html_text, re.S)
     if not m:
@@ -315,6 +347,7 @@ def main():
         if rosario_ars:
             usd_oficial = round(rosario_ars / tc_valor, 1)
             hist = data["girasol"].get("hist_usd_oficial", [])
+            hist = _fill_gap_months(hist, mes_actual)
             found = False
             for h in hist:
                 if h["mes"] == mes_actual:
@@ -337,6 +370,24 @@ def main():
             data["mani"]["fecha"] = today
             changed = True
             print(f"Mani (BCCBA): {mani_vals}")
+
+            def _update_hist(campo_hist, campo_valor):
+                valor = data["mani"].get(campo_valor)
+                if valor is None:
+                    return
+                hist = data["mani"].get(campo_hist, [])
+                found = False
+                for h in hist:
+                    if h["mes"] == mes_actual:
+                        h["valor"] = valor
+                        found = True
+                        break
+                if not found:
+                    hist.append({"mes": mes_actual, "valor": valor})
+                data["mani"][campo_hist] = hist
+
+            _update_hist("hist_industria_ars", "disponible_industria_ars")
+            _update_hist("hist_runner_ars", "disponible_runner_ars")
         else:
             print("[WARN] No se pudo extraer ningun valor de mani de BCCBA.")
     except Exception as e:
