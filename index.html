@@ -1488,7 +1488,8 @@ function _cruceRatioSeries(cultA,cultB){
   const mapB={};serieB.forEach(p=>{mapB[p.fecha]=p.valor;});
   return serieA.filter(p=>mapB[p.fecha]!=null).map(p=>({fecha:p.fecha,valor:p.valor/mapB[p.fecha]}));
 }
-function _showCruceChart(cultA,cultB){
+function _fmtMesAno(fecha){var meses=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];var p=String(fecha).split('-');if(p.length<2)return fecha;return meses[parseInt(p[1],10)-1]+'-'+p[0].slice(2);}
+  function _showCruceChart(cultA,cultB){
   let modal=document.getElementById('cruce-chart-modal');
   if(!modal){
     modal=document.createElement('div');
@@ -1510,7 +1511,7 @@ function _showCruceChart(cultA,cultB){
   const series=_cruceRatioSeries(cultA,cultB);
   const el=document.getElementById('cruce-chart-canvas');
   if(window._cruceChart){try{window._cruceChart.destroy();}catch(e){}}
-  window._cruceChart=new Chart(el,{type:'line',data:{labels:series.map(p=>p.fecha),datasets:[{label:`${labelA}/${labelB}`,data:series.map(p=>p.valor),borderColor:CRUCE_COLOR[cultA],backgroundColor:CRUCE_COLOR[cultA]+'14',borderWidth:2,pointRadius:0,pointHoverRadius:5,fill:true,tension:0.15}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:14}}}}});
+  window._cruceChart=new Chart(el,{type:'line',data:{labels:series.map(p=>p.fecha),datasets:[{label:`${labelA}/${labelB}`,data:series.map(p=>p.valor),borderColor:CRUCE_COLOR[cultA],backgroundColor:CRUCE_COLOR[cultA]+'14',borderWidth:2,pointRadius:0,pointHoverRadius:5,fill:true,tension:0.15}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:14,callback:function(val){return _fmtMesAno(this.getLabelForValue(val));}}}}}});
 }
 function _closeCruceChart(){
   const modal=document.getElementById('cruce-chart-modal');
@@ -3149,7 +3150,7 @@ function _gmDrawGirasolChart(){
   const hist=GIRASOL_MANI_DATA.girasol.hist_usd;
   const labels=hist.map(h=>h.fecha);
   const values=hist.map(h=>h.valor);
-  window._gmChart=new Chart(el,{type:'line',data:{labels,datasets:[{label:'Girasol USD (pizarra Rosario)',data:values,borderColor:'#ca8a04',backgroundColor:'rgba(202,138,4,0.08)',borderWidth:2,pointRadius:1.5,pointHoverRadius:5,fill:true,tension:0.15,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{callback:v=>'USD '+v,font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:60,autoSkip:true,maxTicksLimit:14}}}}});
+  window._gmChart=new Chart(el,{type:'line',data:{labels,datasets:[{label:'Girasol USD (pizarra Rosario)',data:values,borderColor:'#ca8a04',backgroundColor:'rgba(202,138,4,0.08)',borderWidth:2,pointRadius:1.5,pointHoverRadius:5,fill:true,tension:0.15,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{callback:v=>'USD '+v,font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:60,autoSkip:true,maxTicksLimit:14,callback:function(val){return _fmtMesAno(this.getLabelForValue(val));}}}}}});
 }
 function _gmDrawGirasolFobChart(){
     const el=document.getElementById('gm-girasol-fob-chart');
@@ -3158,7 +3159,7 @@ function _gmDrawGirasolFobChart(){
     const hist=GIRASOL_MANI_DATA.girasol.hist_fob_usd||[];
     const labels=hist.map(h=>h.fecha);
     const values=hist.map(h=>h.valor);
-    window._gmFobChart=new Chart(el,{type:'line',data:{labels,datasets:[{label:'FOB girasol (Ley 21.453)',data:values,borderColor:'#b45309',backgroundColor:'rgba(180,83,9,0.08)',borderWidth:2,pointRadius:0.8,pointHoverRadius:5,fill:true,tension:0.1,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{callback:v=>'USD '+v,font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:60,autoSkip:true,maxTicksLimit:14}}}}});
+    window._gmFobChart=new Chart(el,{type:'line',data:{labels,datasets:[{label:'FOB girasol (Ley 21.453)',data:values,borderColor:'#b45309',backgroundColor:'rgba(180,83,9,0.08)',borderWidth:2,pointRadius:0.8,pointHoverRadius:5,fill:true,tension:0.1,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{callback:v=>'USD '+v,font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:60,autoSkip:true,maxTicksLimit:14,callback:function(val){return _fmtMesAno(this.getLabelForValue(val));}}}}}});
   }
 function _gmManiHtml(){
   const m=GIRASOL_MANI_DATA.mani;
