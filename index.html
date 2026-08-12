@@ -2598,7 +2598,7 @@ function buildDeudaStockPanel(){
       .ds-save-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:14px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;}
       .ds-save-info{display:flex;align-items:center;gap:8px;font-size:0.78rem;color:#166534;font-weight:600;}
       .ds-save-dot{width:8px;height:8px;border-radius:50%;background:#10b981;flex-shrink:0;}
-      .ds-save-time{color:#059669;font-weight:700;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+      .ds-save-time{color:#059669;font-weight:700;font-family:'Segoe UI',Arial,sans-serif;}
       .ds-save-actions{display:flex;gap:8px;position:relative;}
       .ds-save-btn{padding:7px 14px;border-radius:8px;border:1px solid #bbf7d0;background:#fff;color:#166534;font-size:0.76rem;font-weight:700;cursor:pointer;transition:background 0.15s;}
       .ds-save-btn:hover{background:#dcfce7;}
@@ -2613,7 +2613,7 @@ function buildDeudaStockPanel(){
       @media(max-width:800px){.ds-grid-top{grid-template-columns:1fr;}}
       .ds-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
       .ds-row input[type=month]{flex:1;padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.82rem;color:#1e293b;background:#fff;transition:border-color 0.15s,box-shadow 0.15s;}
-      .ds-row input[type=number],.ds-row input[type=text]{flex:1;padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.82rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#1e293b;background:#fff;transition:border-color 0.15s,box-shadow 0.15s;}
+      .ds-row input[type=number],.ds-row input[type=text]{flex:1;padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.82rem;font-family:'Segoe UI',Arial,sans-serif;color:#1e293b;background:#fff;transition:border-color 0.15s,box-shadow 0.15s;}
       .ds-row input:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
       .ds-moneda-sel{flex:0 0 108px;padding:9px 8px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.78rem;color:#1e293b;background:#fff;transition:border-color 0.15s,box-shadow 0.15s;}
       .ds-moneda-sel:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
@@ -2629,10 +2629,10 @@ function buildDeudaStockPanel(){
       .ds-switch-track.on::after{left:18px;}
       .ds-stock-card{display:inline-flex;flex-direction:column;gap:10px;width:230px;vertical-align:top;background:#f8fafc;border:1px solid #eef1f5;border-radius:12px;padding:14px 16px;margin:0 12px 12px 0;}
       .ds-stock-card label{display:block;font-size:0.7rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:0;}
-      .ds-stock-card input{width:100%;margin-top:6px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.88rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;box-sizing:border-box;background:#fff;}
+      .ds-stock-card input{width:100%;margin-top:6px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.88rem;font-family:'Segoe UI',Arial,sans-serif;box-sizing:border-box;background:#fff;}
       .ds-stock-card input:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
       .ds-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;width:fit-content;white-space:nowrap;}
-      .ds-badge b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;text-transform:none;letter-spacing:0;}
+      .ds-badge b{font-family:'Segoe UI',Arial,sans-serif;font-weight:700;text-transform:none;letter-spacing:0;}
       .ds-badge-soja{background:#d1fae5;color:#065f46;}
       .ds-badge-maiz{background:#fef3c7;color:#92400e;}
       .ds-badge-trigo{background:#fef9c3;color:#854d0e;}
@@ -2640,7 +2640,7 @@ function buildDeudaStockPanel(){
       @media(max-width:900px){.ds-kpis-grid{grid-template-columns:repeat(2,1fr);}}
       .ds-kpi{background:#ffffff;border-radius:12px;padding:14px 16px;border:1px solid #e2e8f0;box-shadow:0 1px 2px rgba(15,23,42,0.04);}
       .ds-kpi-label{font-size:0.64rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;}
-      .ds-kpi-val{font-size:1.15rem;font-weight:800;color:#0f172a;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+      .ds-kpi-val{font-size:1.15rem;font-weight:800;color:#0f172a;font-family:'Segoe UI',Arial,sans-serif;}
       .ds-kpi.pos .ds-kpi-val{color:#059669;}
       .ds-kpi.neg .ds-kpi-val{color:#e11d48;}
       .ds-kpi.pos-accent .ds-kpi-val{color:#059669;}
@@ -2656,12 +2656,12 @@ function buildDeudaStockPanel(){
       .ds-table tbody tr{border-bottom:1px solid #f1f5f9;transition:background 0.12s;}
       .ds-table tbody tr:last-child{border-bottom:none;}
       .ds-table tbody tr:hover{background:#f8fafc;}
-      .ds-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+      .ds-mono{font-family:'Segoe UI',Arial,sans-serif;}
       .ds-grid-charts{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
       @media(max-width:900px){.ds-grid-charts{grid-template-columns:1fr;}}
       .ds-slider-row{margin-bottom:16px;}
       .ds-slider-row label{display:flex;justify-content:space-between;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:8px;}
-      .ds-slider-row label span{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;color:#4f46e5;}
+      .ds-slider-row label span{font-family:'Segoe UI',Arial,sans-serif;font-weight:700;color:#4f46e5;}
       .ds-slider-row input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;background:linear-gradient(90deg,#fecdd3 0%,#e2e8f0 50%,#a7f3d0 100%);outline:none;cursor:pointer;}
       .ds-slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid #4f46e5;box-shadow:0 1px 3px rgba(15,23,42,0.25);cursor:pointer;transition:transform 0.1s;}
       .ds-slider-row input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.12);}
