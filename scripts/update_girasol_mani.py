@@ -19,10 +19,12 @@ navegador headless):
   del mes en curso de la serie histórica de girasol en USD oficial.
 
 Corre una vez por semana. Cada corrida agrega o actualiza el punto de la
-fecha de hoy en girasol.hist_usd (disponible ÷ TC oficial A3500). El
-backfill inicial (25/08/2025 a 10/08/2026) es una serie diaria real de
-pizarra Rosario cargada por el usuario desde una planilla externa, ya en
-USD -- no se recalcula ni se toca, solo se le van agregando puntos nuevos.
+fecha de hoy en girasol.hist_usd (disponible ÷ TC oficial A3500) y en
+girasol.hist_fob_usd (FOB oficial Ley 21.453, tal cual se scrapea de BCR).
+Los backfills iniciales -- hist_usd (25/08/2025 a 10/08/2026, pizarra
+Rosario) y hist_fob_usd (03/01/2022 a la actualidad, FOB) -- son series
+reales cargadas por el usuario desde planillas externas y no se recalculan
+ni se tocan, solo se les van agregando puntos nuevos.
 
 El FOB implícito de maní (valor unitario de exportación, INDEC) se descartó
 como automatizable: comex.indec.gov.ar/search es un SPA sin API publica y
@@ -165,13 +167,13 @@ def parse_girasol_fob(html):
 
 def parse_bccba_mani(html):
     result = {}
-    m_ind = re.search(r"Man[ií] Industria.*?\$\s*([\d.,]+)", html, re.S)
+    m_ind = re.search(r"Man[ií] Industria.*?$s*([d.,]+)", html, re.S)
     if m_ind:
         v = to_float_ar(m_ind.group(1))
         if v is not None:
             result["disponible_industria_ars"] = v
     m_run = re.search(
-        r"Man[ií] Runner.*?\$\s*([\d.,]+)(?:.*?U\$S\s*([\d.,]+))?", html, re.S
+        r"Man[ií] Runner.*?$s*([d.,]+)(?:.*?U$Ss*([d.,]+))?", html, re.S
     )
     if m_run:
         v = to_float_ar(m_run.group(1))
@@ -335,6 +337,20 @@ def main():
             data["girasol"]["fecha"] = today
             changed = True
             print(f"Girasol FOB/FAS/internacional: {fob_vals}")
+            fob_usd = fob_vals.get("fob_oficial_usd")
+            if fob_usd is not None:
+                hist_fob = data["girasol"].get("hist_fob_usd", [])
+                found = False
+                for h in hist_fob:
+                    if h["fecha"] == today:
+                        h["valor"] = fob_usd
+                        found = True
+                        break
+                if not found:
+                    hist_fob.append({"fecha": today, "valor": fob_usd})
+                    hist_fob.sort(key=lambda h: h["fecha"])
+                data["girasol"]["hist_fob_usd"] = hist_fob
+                print(f"Girasol FOB {today} agregado a hist_fob_usd: {fob_usd}")
         else:
             print("[WARN] No se pudo extraer FOB/FAS de girasol.")
     except Exception as e:
