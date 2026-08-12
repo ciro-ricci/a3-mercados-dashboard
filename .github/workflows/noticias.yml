@@ -1,8 +1,8 @@
-name: Actualizar noticias, dolar BCRA y comercializacion (RSS + APIs oficiales)
+name: Actualizar noticias y dolar BCRA (RSS + APIs oficiales)
 
 on:
   schedule:
-    - cron: '30 10 * * *'   # 07:30 Argentina (UTC-3)
+    - cron: '30 10 * * *' # 07:30 Argentina (UTC-3)
   workflow_dispatch: {}
 
 permissions:
@@ -30,9 +30,6 @@ jobs:
       - name: Actualizar dolar BCRA (Comunicacion A 3500)
         run: python scripts/update_bcra.py
 
-      - name: Actualizar comercializacion (Compras y DJVE de Granos)
-        run: python scripts/update_comercializacion.py
-
       - name: Verificar que los datos no quedaron viejos
         run: |
           python3 - <<'EOF'
@@ -40,7 +37,6 @@ jobs:
           from datetime import datetime, timezone
 
           MAX_STALE_DAYS = 3
-          MAX_STALE_DAYS_COMERCIALIZACION = 12  # fuente semanal, damos margen
           today = datetime.now(timezone.utc).date()
           problemas = []
 
@@ -66,22 +62,13 @@ jobs:
               if dias > MAX_STALE_DAYS:
                   problemas.append(f"BCRA_TC_OVERRIDE no se actualiza hace {dias} dias (ultima fecha: {fecha})")
 
-          m = re.search(r"const COMERCIALIZACION_DATA = \{[\s\S]*?fecha:'(\d{4}-\d{2}-\d{2})'", t)
-          if not m:
-              problemas.append("No se encontró la fecha de COMERCIALIZACION_DATA en index.html")
-          else:
-              fecha = datetime.strptime(m.group(1), "%Y-%m-%d").date()
-              dias = (today - fecha).days
-              if dias > MAX_STALE_DAYS_COMERCIALIZACION:
-                  problemas.append(f"COMERCIALIZACION_DATA no se actualiza hace {dias} dias (ultima fecha: {fecha})")
-
           if problemas:
               print("PROBLEMAS DETECTADOS:")
               for p in problemas:
                   print(" -", p)
               sys.exit(1)
 
-          print("OK: noticias, dolar BCRA y comercializacion estan al dia.")
+          print("OK: noticias y dolar BCRA estan al dia.")
           EOF
 
       - name: Commit y push si hay cambios
@@ -90,7 +77,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if ! git diff --quiet -- noticias.html index.html; then
             git add noticias.html index.html
-            git commit -m "Actualizacion automatica: noticias (RSS) + dolar BCRA A3500 + comercializacion - $(date -u +%Y-%m-%d)"
+            git commit -m "Actualizacion automatica: noticias (RSS) + dolar BCRA A3500 - $(date -u +%Y-%m-%d)"
             git push
           else
             echo "Sin cambios"
@@ -102,5 +89,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh issue create \
-            --title "Fallo la actualizacion automatica (noticias/BCRA/comercializacion) - $(date -u +%Y-%m-%d)" \
+            --title "Fallo la actualizacion automatica (noticias/BCRA) - $(date -u +%Y-%m-%d)" \
             --body "El workflow **${{ github.workflow }}** fallo. Ver el log completo aca: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
