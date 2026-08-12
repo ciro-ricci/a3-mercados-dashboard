@@ -363,6 +363,7 @@ canvas { max-height: 100%; }
   <div class="tab active" onclick="showTab('soj-fut')">Futuros Soja</div>
   <div class="tab" onclick="showTab('mai-fut')">Futuros Maíz</div>
   <div class="tab" onclick="showTab('tri-fut')">Futuros Trigo</div>
+  <div class="tab" onclick="showTab('girasol-mani')">Girasol y Maní</div>
   <div class="tab" onclick="showTab('opciones')">Opciones</div>
   <div class="tab estrategia-tab" onclick="showTab('estrategia')">⚙ Estrategia</div>
   <div class="tab fin-tab" onclick="showTab('financiamiento')">💰 Matriz de decisión</div>
@@ -387,6 +388,10 @@ canvas { max-height: 100%; }
   <div class="panel active" id="panel-soj-fut"></div>
   <div class="panel" id="panel-mai-fut"></div>
   <div class="panel" id="panel-tri-fut"></div>
+  <div class="panel" id="panel-girasol-mani">
+    <div id="gm-cult-btns" style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap"></div>
+    <div id="gm-body"></div>
+  </div>
   <div class="panel" id="panel-opciones">
     <div id="opciones-cult-btns" style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap"></div>
     <div id="panel-soj-opts" class="opts-subpanel"></div>
@@ -2299,14 +2304,254 @@ function _opcionesSetGrain(c){
   document.getElementById('panel-tri-opts').style.display=c==='tri'?'':'none';
   _opcionesRenderBtns();
 }
+// ── Girasol y Maní ──────────────────────────────────────────────
+/* GIRASOL_MANI_DATA — actualizado por scripts/update_girasol_mani.py (semanal).
+   girasol.hist_usd_oficial: serie mensual (precio disponible / TC oficial A3500 del mismo mes).
+   mani.usda: Weekly National Posted Prices for Peanuts (FSA/USDA), referencia del competidor principal.
+   mani.fob_implicito: valor unitario de exportación (USD exportado / tn exportada, INDEC) — mensual, con rezago; null hasta confirmar fuente automatizable. */
+const GIRASOL_MANI_DATA = {
+  "girasol": {
+    "fecha": "2026-08-12",
+    "disponible_rosario_ars": 743250.0,
+    "disponible_usd": 500,
+    "fob_oficial_usd": 532.0,
+    "fob_posicion": "spot",
+    "fas_ars": 620481,
+    "internacional_usd": 1365.0,
+    "internacional_label": "Aceite de girasol FOB (BCR)",
+    "hist_usd_oficial": [
+      {
+        "mes": "2024-03",
+        "valor": 291.6
+      },
+      {
+        "mes": "2024-04",
+        "valor": 290.6
+      },
+      {
+        "mes": "2024-05",
+        "valor": 302.2
+      },
+      {
+        "mes": "2024-06",
+        "valor": 318.1
+      },
+      {
+        "mes": "2024-07",
+        "valor": 335.6
+      },
+      {
+        "mes": "2024-08",
+        "valor": null
+      },
+      {
+        "mes": "2024-09",
+        "valor": null
+      },
+      {
+        "mes": "2024-10",
+        "valor": null
+      },
+      {
+        "mes": "2024-11",
+        "valor": 359.5
+      },
+      {
+        "mes": "2024-12",
+        "valor": 372.7
+      },
+      {
+        "mes": "2025-01",
+        "valor": 345.0
+      },
+      {
+        "mes": "2025-02",
+        "valor": 345.2
+      },
+      {
+        "mes": "2025-03",
+        "valor": 314.8
+      },
+      {
+        "mes": "2025-04",
+        "valor": 299.1
+      },
+      {
+        "mes": "2025-05",
+        "valor": 337.4
+      },
+      {
+        "mes": "2025-06",
+        "valor": 342.8
+      },
+      {
+        "mes": "2025-07",
+        "valor": 335.0
+      },
+      {
+        "mes": "2025-08",
+        "valor": 363.6
+      },
+      {
+        "mes": "2025-09",
+        "valor": null
+      },
+      {
+        "mes": "2025-10",
+        "valor": null
+      },
+      {
+        "mes": "2025-11",
+        "valor": 344.7
+      },
+      {
+        "mes": "2025-12",
+        "valor": 341.7
+      },
+      {
+        "mes": "2026-01",
+        "valor": 345.8
+      },
+      {
+        "mes": "2026-02",
+        "valor": 371.7
+      },
+      {
+        "mes": "2026-03",
+        "valor": 384.0
+      },
+      {
+        "mes": "2026-04",
+        "valor": 401.4
+      },
+      {
+        "mes": "2026-05",
+        "valor": 421.4
+      },
+      {
+        "mes": "2026-08",
+        "valor": 498.1
+      }
+    ],
+    "fas_teorico_usd": 477.4,
+    "pellets_usd": 160.0
+  },
+  "mani": {
+    "fecha": "2026-08-12",
+    "disponible_industria_ars": 639547.5,
+    "disponible_runner_ars": 980097.0,
+    "disponible_runner_usd": 659.0,
+    "usda": {
+      "fecha": "2025-05-27",
+      "runner": 425.2,
+      "spanish": 414.85,
+      "valencia": 432.25,
+      "virginia": 432.25
+    },
+    "fob_implicito": null,
+    "fob_implicito_periodo": null
+  }
+};
+
+let _gmCultivo='girasol';
+function buildGirasolManiPanel(){
+  _gmRenderBtns();
+  _gmRenderBody();
+}
+function _gmRenderBtns(){
+  const wrap=document.getElementById('gm-cult-btns');
+  if(!wrap)return;
+  const cults=[{c:'girasol',lbl:'Girasol',cc:'#ca8a04'},{c:'mani',lbl:'Maní',cc:'#92400e'}];
+  wrap.innerHTML=cults.map(({c,lbl,cc})=>{
+    const act=c===_gmCultivo;
+    return `<button onclick="_gmSetCultivo('${c}')" style="padding:8px 22px;border:2px solid ${act?cc:'#dde'};border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;background:${act?cc:'white'};color:${act?'white':'#555'};transition:all 0.15s">${lbl}</button>`;
+  }).join('');
+}
+function _gmSetCultivo(c){
+  _gmCultivo=c;
+  _gmRenderBtns();
+  _gmRenderBody();
+}
+function _gmKpiCard(label,value,sub,color){
+  return `<div style="background:white;border-radius:10px;padding:12px 16px;flex:1;min-width:150px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid ${color}">
+    <div style="font-size:0.68rem;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">${label}</div>
+    <div style="font-size:1.4rem;font-weight:800;color:${color}">${value}</div>
+    <div style="font-size:0.72rem;margin-top:4px;color:#888">${sub}</div>
+  </div>`;
+}
+function _gmRenderBody(){
+  const body=document.getElementById('gm-body');
+  if(!body)return;
+  if(_gmCultivo==='girasol') body.innerHTML=_gmGirasolHtml();
+  else body.innerHTML=_gmManiHtml();
+  if(_gmCultivo==='girasol') setTimeout(_gmDrawGirasolChart,60);
+}
+function _gmGirasolHtml(){
+  const g=GIRASOL_MANI_DATA.girasol;
+  const cards=[
+    _gmKpiCard('Disponible Rosario','$'+g.disponible_rosario_ars.toLocaleString('es-AR'),'Cámara Arbitral · '+g.fecha,'#ca8a04'),
+    _gmKpiCard('Disponible (equiv. USD)','USD '+g.disponible_usd,'por tonelada · '+g.fecha,'#ca8a04'),
+    _gmKpiCard('FOB oficial (Ley 21.453)','USD '+g.fob_oficial_usd,'posición '+g.fob_posicion,'#ca8a04'),
+    _gmKpiCard(g.internacional_label,'USD '+g.internacional_usd,'referencia internacional','#ca8a04')
+  ].join('');
+  return `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">${cards}</div>
+    <div class="full-card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+        <h3 style="margin:0">Evolución disponible girasol — últimos meses</h3>
+        <span style="font-size:0.72rem;color:#aaa">en USD oficial (A3500), promedio mensual</span>
+      </div>
+      <div class="canvas-wrap" style="height:280px"><canvas id="gm-girasol-chart"></canvas></div>
+      <div style="font-size:0.7rem;color:#bbb;margin-top:8px;font-style:italic">Los cortes en la línea corresponden a meses sin fijaciones registradas en pizarra (temporada baja del cultivo), no a un error de carga.</div>
+    </div>`;
+}
+function _gmDrawGirasolChart(){
+  const el=document.getElementById('gm-girasol-chart');
+  if(!el)return;
+  if(window._gmChart){try{window._gmChart.destroy();}catch(e){}}
+  const hist=GIRASOL_MANI_DATA.girasol.hist_usd_oficial;
+  const labels=hist.map(h=>h.mes);
+  const values=hist.map(h=>h.valor);
+  window._gmChart=new Chart(el,{type:'line',data:{labels,datasets:[{label:'Girasol USD oficial',data:values,borderColor:'#ca8a04',backgroundColor:'rgba(202,138,4,0.08)',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,fill:true,tension:0.25,spanGaps:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{callback:v=>'USD '+v,font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45,autoSkip:false}}}}});
+}
+function _gmManiHtml(){
+  const m=GIRASOL_MANI_DATA.mani;
+  const sojaArs=(typeof SPOT!=='undefined'&&SPOT&&SPOT.soja_ars)?SPOT.soja_ars:null;
+  const paridadIndustria=(sojaArs&&m.disponible_industria_ars)?(m.disponible_industria_ars/sojaArs):null;
+  const paridadRunner=(sojaArs&&m.disponible_runner_ars)?(m.disponible_runner_ars/sojaArs):null;
+  const cards=[
+    _gmKpiCard('Disponible Industria','$'+m.disponible_industria_ars.toLocaleString('es-AR'),'Bolsa de Cereales de Córdoba · '+m.fecha,'#92400e'),
+    _gmKpiCard('Disponible Runner','$'+m.disponible_runner_ars.toLocaleString('es-AR'),'USD '+m.disponible_runner_usd+' · '+m.fecha,'#92400e'),
+    _gmKpiCard('Ref. USDA (Runner)','USD '+m.usda.runner.toFixed(0)+'/tn','Weekly Posted Price · '+m.usda.fecha,'#92400e'),
+    _gmKpiCard('FOB implícito (INDEC)',m.fob_implicito!=null?('USD '+m.fob_implicito+'/tn'):'—',m.fob_implicito_periodo?('mensual, '+m.fob_implicito_periodo):'dato mensual con rezago, aún sin cargar','#92400e')
+  ].join('');
+  const paridadHtml=`<div class="full-card">
+    <h3 style="margin-top:0">Paridad maní / soja</h3>
+    <div style="font-size:0.78rem;color:#888;margin-bottom:14px">Cuántos kilos de maní disponible equivalen, en pesos, a un kilo de soja disponible — referencia de decisión cuando no hay precio internacional de maní.</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px;text-align:center;background:#fef3e2;border-radius:10px;padding:14px">
+        <div style="font-size:0.72rem;color:#92400e;text-transform:uppercase;font-weight:700">Industria / Soja</div>
+        <div style="font-size:1.6rem;font-weight:800;color:#92400e">${paridadIndustria!=null?paridadIndustria.toFixed(2)+'x':'—'}</div>
+      </div>
+      <div style="flex:1;min-width:180px;text-align:center;background:#fef3e2;border-radius:10px;padding:14px">
+        <div style="font-size:0.72rem;color:#92400e;text-transform:uppercase;font-weight:700">Runner / Soja</div>
+        <div style="font-size:1.6rem;font-weight:800;color:#92400e">${paridadRunner!=null?paridadRunner.toFixed(2)+'x':'—'}</div>
+      </div>
+    </div>
+    ${sojaArs?'':'<div style="font-size:0.72rem;color:#bbb;margin-top:10px">Todavía no cargó el precio de soja disponible en esta sesión — la paridad se completa apenas esté disponible.</div>'}
+  </div>`;
+  return `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">${cards}</div>${paridadHtml}
+    <div style="font-size:0.72rem;color:#bbb;margin-top:10px;font-style:italic">No existe FOB ni cotización internacional oficial de maní: no es un commodity homogéneo. El FOB implícito surge de dividir el valor exportado (USD) por las toneladas exportadas según INDEC, se actualiza una vez por mes y llega con 1-2 meses de rezago respecto del mes de referencia.</div>`;
+}
+
 function showTab(id){
-  const ids=['soj-fut','mai-fut','tri-fut','opciones','estrategia','financiamiento','insumo-producto','noticias','brief-granos','deuda-stock'];
+  const ids=['soj-fut','mai-fut','tri-fut','girasol-mani','opciones','estrategia','financiamiento','insumo-producto','noticias','brief-granos','deuda-stock'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',ids[i]===id));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   if(id==='noticias') newsRender();
   if(id==='financiamiento') buildFinanciamientoPanel();
   if(id==='opciones' && !document.getElementById('panel-opciones').dataset.built){ _opcionesRenderBtns(); document.getElementById('panel-opciones').dataset.built='1'; }
+  if(id==='girasol-mani' && !document.getElementById('panel-girasol-mani').dataset.built){ buildGirasolManiPanel(); document.getElementById('panel-girasol-mani').dataset.built='1'; }
   if(id==='insumo-producto' && !document.getElementById('panel-insumo-producto').dataset.built){ buildInsumoProductoPanel(); document.getElementById('panel-insumo-producto').dataset.built='1'; }
   if(id==='brief-granos' && !document.getElementById('panel-brief-granos').dataset.built){ buildBriefGranosPanel(); document.getElementById('panel-brief-granos').dataset.built='1'; }
   if(id==='deuda-stock' && !document.getElementById('panel-deuda-stock').dataset.built){ buildDeudaStockPanel(); document.getElementById('panel-deuda-stock').dataset.built='1'; }
@@ -3057,24 +3302,6 @@ window._initDeviceFlow=function(){
    Las noticias con más de 7 días son eliminadas automáticamente del array.
    Última actualización: 2026-08-06
    ═══════════════════════════════════════════════════════════════════════ */
-const COMERCIALIZACION_DATA = {
-  fecha:'2026-07-29',
-  cultivos:{
-    trigo:{campañas:{'26/27':{actual:{comprado:2660,precio_hecho:1841.2,a_fijar:818.8,fijado:126.3,saldo_a_fijar:692.5,djve_acumulado:0},comparacion_anio_anterior:{comprado:2147.1,precio_hecho:424.7,a_fijar:1722.4,fijado:60.9,saldo_a_fijar:1661.5,djve_acumulado:0}},'25/26':{actual:{comprado:20647.6,precio_hecho:15435.2,a_fijar:5212.4,fijado:3477.1,saldo_a_fijar:1735.4,djve_acumulado:15077},comparacion_anio_anterior:{comprado:15434.7,precio_hecho:11890.2,a_fijar:3544.6,fijado:2731.3,saldo_a_fijar:813.3,djve_acumulado:9418}}}},
-    maiz:{campañas:{'26/27':{actual:{comprado:1109.7,precio_hecho:453.1,a_fijar:656.7,fijado:63.4,saldo_a_fijar:593.3,djve_acumulado:0},comparacion_anio_anterior:{comprado:2358.5,precio_hecho:51.6,a_fijar:2306.9,fijado:3,saldo_a_fijar:2303.9,djve_acumulado:0}},'25/26':{actual:{comprado:34989.9,precio_hecho:24830.1,a_fijar:10159.8,fijado:3674.7,saldo_a_fijar:6485.1,djve_acumulado:27949},comparacion_anio_anterior:{comprado:24182.3,precio_hecho:16312.7,a_fijar:7869.6,fijado:2801.1,saldo_a_fijar:5068.5,djve_acumulado:21579}}}},
-    soja:{campañas:{'26/27':{actual:{comprado:460.4,precio_hecho:99.2,a_fijar:361.2,fijado:7.2,saldo_a_fijar:354,djve_acumulado:0},comparacion_anio_anterior:{comprado:540.4,precio_hecho:20,a_fijar:520.4,fijado:2.4,saldo_a_fijar:518,djve_acumulado:0}},'25/26':{actual:{comprado:23743.1,precio_hecho:12941.5,a_fijar:10801.5,fijado:3534,saldo_a_fijar:7267.6,djve_acumulado:4309},comparacion_anio_anterior:{comprado:27960.5,precio_hecho:18070.2,a_fijar:9890.3,fijado:4461.6,saldo_a_fijar:5428.7,djve_acumulado:7827}}}}
-  }
-};
-
-const CARRYIN_DATA = {
-  fecha_consulta:'',
-  cultivos:{
-    trigo:{'25/26':{produccion:27.9,carry_in:2.49,oferta:30.39},'26/27':{produccion:0,carry_in:0,oferta:0}},
-    maiz:{'25/26':{produccion:71.5,carry_in:3.71,oferta:75.21},'26/27':{produccion:0,carry_in:0,oferta:0}},
-    soja:{'25/26':{produccion:49.5,carry_in:5.36,oferta:54.86},'26/27':{produccion:0,carry_in:0,oferta:0}}
-  }
-};
-
 const NEWS_DATA = [
   {fecha:'2026-08-06',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Poco confiables: La Argentina necesita más estadistas y menos “patoteros” para recuperar la institucionalidad',resumen:'En el año 2013 la Argentina se quedó sin trigo porque, gracias a la intervención instrumentada por el gobierno kirchnerista, se evaporaron los incentivos para producir el cereal. La semana pasada el gobierno libertario decidió intervenir la actividad de practicaje y provocó la paralización del comercio exterior. Por fortuna, reaccionaron a tiempo y suspendieron la […]',link:'https://bichosdecampo.com/poco-confiables-la-argentina-necesita-mas-estadistas-y-menos-patoteros-para-recuperar-la-institucionalidad/'},
   {fecha:'2026-08-06',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Evaristo de Miranda, referente agrícola brasileño, pidió que los hermanos sigan siendo unidos: “Brasil nunca ha dependido tanto del trigo argentino”',resumen:'“Brasil nunca ha dependido tanto del trigo argentino. La mala cosecha nacional obligará al país a importar entre ocho y diez millones de toneladas en 2026, el mayor volumen de su historia”. Así lo indicó Evaristo de Miranda, uno de los referentes técnicos agropecuarios más prestigiosos de Brasil en un artículo publicado en el sitio […]',link:'https://bichosdecampo.com/evaristo-de-miranda-referente-agricola-brasileno-pidio-que-los-hermanos-sigan-siendo-unidos-brasil-nunca-ha-dependido-tanto-del-trigo-argentino/'},
@@ -3175,199 +3402,6 @@ let ipCrop='soja', ipMode='1y', ipRange=5, ipSelIdx=null, ipChart=null;
 function ipEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function ipFmtNum(n,dec){if(n===null||n===undefined||isNaN(n))return'—';const neg=n<0;const parts=Math.abs(n).toFixed(dec).split('.');parts[0]=parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.');return(neg?'-':'')+parts.join(',');}
 function ipLastPeriodLabel(crop){const ins=IP_DATA[crop].insumos[0];const keys=Object.keys(ins.series||{}).sort();if(!keys.length)return'';const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];const [y,mo]=keys[keys.length-1].split('-');return months[parseInt(mo)-1]+' '+y;}
-
-// ── Comercialización ─────────────────────────────────────────────
-let comCultivo = 'soja';
-const comCampañaSel = {}; // por cultivo, campaña elegida ('26/27' o '25/26'); se completa al renderizar
-
-function buildComercializacionPanel(){
-  const panel=document.getElementById('panel-comercializacion');
-  panel.innerHTML = '<div id="com-crop-bar" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap"></div><div id="com-campaign-bar" style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap"></div><div id="com-body"></div>';
-  renderComCropBar();
-  renderComCultivo(comCultivo);
-}
-
-const COM_GRANO_STYLE = {
-  trigo: {accent:'#b45309', softer:'#fffbeb', emoji:'🌾', label:'Trigo'},
-  maiz:  {accent:'#ca8a04', softer:'#fefce8', emoji:'🌽', label:'Maíz'},
-  soja:  {accent:'#16a34a', softer:'#f0fdf4', emoji:'🫘', label:'Soja'},
-};
-
-function renderComCropBar(){
-  document.getElementById('com-crop-bar').innerHTML = Object.keys(COM_GRANO_STYLE).map(function(key){
-    const g = COM_GRANO_STYLE[key];
-    const active = comCultivo===key;
-    return '<button onclick="selectComCultivo(\''+key+'\')" style="padding:8px 20px;border-radius:999px;font-size:0.85rem;font-weight:600;border:1.5px solid '+(active?g.accent:'#e2e8f0')+';background:'+(active?g.accent:'white')+';color:'+(active?'white':'#475569')+';cursor:pointer;transition:all .15s;line-height:1.4">'+g.emoji+' '+g.label+'</button>';
-  }).join('');
-}
-
-function comCampañasDisponibles(crop){
-  const com = (typeof COMERCIALIZACION_DATA!=='undefined') ? COMERCIALIZACION_DATA.cultivos[crop] : null;
-  if(!com || !com.campañas) return [];
-  return Object.keys(com.campañas).sort().reverse(); // ej. ['26/27','25/26'] (mas reciente primero)
-}
-
-function renderComCampaignBar(crop){
-  const disponibles = comCampañasDisponibles(crop);
-  const bar = document.getElementById('com-campaign-bar');
-  if(disponibles.length<2){ bar.innerHTML=''; return; }
-  if(!comCampañaSel[crop] || disponibles.indexOf(comCampañaSel[crop])===-1){
-    comCampañaSel[crop] = disponibles[0];
-  }
-  const g = COM_GRANO_STYLE[crop];
-  bar.innerHTML = '<span style="font-size:0.72rem;color:#94a3b8;align-self:center;margin-right:4px">Campaña:</span>' + disponibles.map(function(camp){
-    const active = comCampañaSel[crop]===camp;
-    return '<button onclick="selectComCampaña(\''+crop+'\',\''+camp+'\')" style="padding:5px 14px;border-radius:999px;font-size:0.76rem;font-weight:600;border:1px solid '+(active?g.accent:'#e2e8f0')+';background:'+(active?g.softer:'white')+';color:'+(active?g.accent:'#94a3b8')+';cursor:pointer;transition:all .15s;line-height:1.4">'+camp+'</button>';
-  }).join('');
-}
-
-function selectComCultivo(crop){
-  comCultivo=crop;
-  renderComCropBar();
-  renderComCultivo(crop);
-}
-
-function selectComCampaña(crop,campaña){
-  comCampañaSel[crop]=campaña;
-  renderComCampaignBar(crop);
-  renderComCultivo(crop);
-}
-
-function comNum(n,dec){
-  if(n===undefined||n===null) return '—';
-  return n.toLocaleString('es-AR',{maximumFractionDigits: dec!==undefined?dec:1});
-}
-
-function comLabel(text){
-  return '<div style="font-size:0.7rem;color:#94a3b8;text-transform:uppercase;letter-spacing:0.6px;font-weight:700">'+text+'</div>';
-}
-function comSub(text){
-  return '<div style="font-size:0.76rem;color:#94a3b8;margin-top:4px;line-height:1.5">'+text+'</div>';
-}
-function comValue(html,color,size){
-  return '<div style="font-weight:800;color:'+(color||'#1e293b')+';font-size:'+(size||'1.6rem')+';line-height:1.2">'+html+'</div>';
-}
-function comUnit(u){
-  return '<span style="font-size:0.85rem;font-weight:600;color:#94a3b8"> '+u+'</span>';
-}
-function comChip(delta){
-  if(delta===null||delta===undefined) return '';
-  const pos = delta>=0;
-  const bg = pos? '#dcfce7':'#fee2e2';
-  const fg = pos? '#166534':'#991b1b';
-  return '<span style="background:'+bg+';color:'+fg+';padding:3px 10px;border-radius:999px;font-size:0.76rem;font-weight:700;white-space:nowrap">'+(pos?'▲':'▼')+' '+Math.abs(delta).toFixed(1)+'% vs campaña ant.</span>';
-}
-function comBar(segments,height){
-  const h = height||14;
-  const bars = segments.map(function(s){return '<div style="width:'+s.pct+'%;background:'+s.color+'"></div>';}).join('');
-  return '<div style="height:'+h+'px;border-radius:'+(h/2)+'px;overflow:hidden;display:flex;background:#f1f5f9">'+bars+'</div>';
-}
-function comPanelCard(innerHtml,extraStyle){
-  return '<div style="background:#eef1f6;border:1px solid #cbd5e1;border-radius:12px;padding:22px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.06);'+(extraStyle||'')+'">'+innerHtml+'</div>';
-}
-
-function renderComCultivo(crop){
-  renderComCampaignBar(crop);
-  const body=document.getElementById('com-body');
-  const comCultivoData = (typeof COMERCIALIZACION_DATA!=='undefined') ? COMERCIALIZACION_DATA.cultivos[crop] : null;
-  const g = COM_GRANO_STYLE[crop];
-
-  if(!comCultivoData || !comCultivoData.campañas){
-    body.innerHTML = comPanelCard('<span style="color:#64748b">Todavía no hay datos de comercialización para este cultivo.</span>');
-    return;
-  }
-
-  const campañaSel = comCampañaSel[crop] || comCampañasDisponibles(crop)[0];
-  const com = comCultivoData.campañas[campañaSel];
-  if(!com){
-    body.innerHTML = comPanelCard('<span style="color:#64748b">No hay datos para la campaña seleccionada.</span>');
-    return;
-  }
-
-  const a = com.actual, p = com.comparacion_anio_anterior || {};
-  const otrasCampañas = Object.keys(comCultivoData.campañas).filter(function(k){return k!==campañaSel;});
-  const campañaRef = otrasCampañas.length ? otrasCampañas[0] : null;
-  const previa = campañaRef ? comCultivoData.campañas[campañaRef] : null;
-  const fechaCom = (typeof COMERCIALIZACION_DATA!=='undefined') ? COMERCIALIZACION_DATA.fecha : '';
-
-  const ci = (typeof CARRYIN_DATA!=='undefined' && CARRYIN_DATA.cultivos[crop]) ? CARRYIN_DATA.cultivos[crop][campañaSel] : null;
-
-  // ── Sección 1: Balance de oferta (ecuación + barra de avance) ──────────
-  let ofertaHtml = '';
-  if(ci && (ci.produccion || ci.carry_in)){
-    const ofertaMT = ci.produccion + ci.carry_in;
-    const compradoMT = a.comprado/1000;
-    const pctVendido = ofertaMT>0 ? Math.min(100,(compradoMT/ofertaMT*100)) : 0;
-    const pctSaldo = 100-pctVendido;
-    ofertaHtml = comPanelCard(
-      comLabel('Balance de oferta · Campaña '+campañaSel)
-      + '<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:14px 0 22px">'
-        + '<div style="text-align:center">' + comValue(comNum(ci.produccion)+comUnit('MT')) + comSub('Producción') + '</div>'
-        + '<div style="font-size:1.3rem;color:#cbd5e1;font-weight:300">+</div>'
-        + '<div style="text-align:center">' + comValue(comNum(ci.carry_in)+comUnit('MT')) + comSub('Carry In (stock inicial)') + '</div>'
-        + '<div style="font-size:1.3rem;color:#cbd5e1;font-weight:300">=</div>'
-        + '<div style="text-align:center;background:'+g.softer+';padding:10px 22px;border-radius:10px">' + comValue(comNum(ofertaMT)+comUnit('MT'), g.accent, '1.7rem') + comSub('Oferta total') + '</div>'
-      + '</div>'
-      + '<div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#64748b;margin-bottom:7px">'
-        + '<span><strong style="color:'+g.accent+'">Vendido: '+comNum(compradoMT,2)+' MT</strong> ('+pctVendido.toFixed(1)+'%)</span>'
-        + '<span>Saldo sin vender: '+comNum(ofertaMT-compradoMT,2)+' MT ('+pctSaldo.toFixed(1)+'%)</span>'
-      + '</div>'
-      + comBar([{pct:pctVendido,color:g.accent},{pct:pctSaldo,color:'#e2e8f0'}], 12)
-      + '<div style="font-size:0.72rem;color:#94a3b8;margin-top:12px">Producción y stock inicial: Monitor SIO Granos (MAGyP), campaña '+campañaSel+'.</div>'
-    );
-  } else {
-    ofertaHtml = comPanelCard(
-      comLabel('Balance de oferta · Campaña '+campañaSel)
-      + '<div style="color:#64748b;font-size:0.85rem;margin-top:10px">MAGyP todavía no publicó una estimación oficial de producción para la campaña '+campañaSel+'. Este dato suele aparecer más avanzado el año, a medida que progresa la siembra/cosecha.</div>'
-    );
-  }
-
-  // ── Sección 2: Avance comercial (embudo: comprado → precio hecho/a fijar → fijado/saldo) ──
-  const deltaComprado = p.comprado ? (a.comprado-p.comprado)/p.comprado*100 : null;
-  const pctPrecioHecho = a.comprado>0 ? (a.precio_hecho/a.comprado*100) : 0;
-  const pctAFijar = 100-pctPrecioHecho;
-  const pctFijado = a.a_fijar>0 ? (a.fijado/a.a_fijar*100) : 0;
-  const pctSaldoAFijar = 100-pctFijado;
-
-  const nivel1 = comPanelCard(
-    comLabel('Total comprado · Campaña '+campañaSel)
-    + '<div style="display:flex;align-items:baseline;gap:12px;margin-top:6px;flex-wrap:wrap">'
-      + comValue(comNum(a.comprado)+comUnit('mil tn'), '#1e293b', '1.9rem')
-      + comChip(deltaComprado)
-    + '</div>'
-    + comSub((p.comprado!==undefined ? ('vs '+comNum(p.comprado)+' mil tn en el mismo período de la campaña anterior · ') : '')+'datos al '+fechaCom)
-  );
-
-  const nivel2 = comPanelCard(
-    comLabel('Cómo se compone lo comprado')
-    + '<div style="margin:14px 0 18px">'
-      + '<div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:7px">'
-        + '<span><strong style="color:'+g.accent+'">●</strong> Precio Hecho <strong>'+comNum(a.precio_hecho)+'</strong> mil tn ('+pctPrecioHecho.toFixed(1)+'%)</span>'
-        + '<span style="color:#94a3b8"><strong style="color:#cbd5e1">●</strong> A Fijar <strong>'+comNum(a.a_fijar)+'</strong> mil tn ('+pctAFijar.toFixed(1)+'%)</span>'
-      + '</div>'
-      + comBar([{pct:pctPrecioHecho,color:g.accent},{pct:pctAFijar,color:'#e2e8f0'}],14)
-    + '</div>'
-    + '<div style="margin-left:16px;padding-left:16px;border-left:2px solid #f1f5f9">'
-      + comSub('Dentro de "A Fijar" ('+comNum(a.a_fijar)+' mil tn):')
-      + '<div style="display:flex;justify-content:space-between;font-size:0.76rem;margin:8px 0 6px">'
-        + '<span><strong style="color:'+g.accent+'">●</strong> Fijado <strong>'+comNum(a.fijado)+'</strong> mil tn ('+pctFijado.toFixed(1)+'%)</span>'
-        + '<span style="color:#94a3b8"><strong style="color:#e2e8f0">●</strong> Saldo a Fijar <strong>'+comNum(a.saldo_a_fijar)+'</strong> mil tn ('+pctSaldoAFijar.toFixed(1)+'%)</span>'
-      + '</div>'
-      + comBar([{pct:pctFijado,color:g.accent},{pct:pctSaldoAFijar,color:'#f1f5f9'}],10)
-    + '</div>'
-  );
-
-  const djveRef = (a.djve_acumulado===0 && previa)
-    ? ('la campaña '+campañaRef+' ya acumula<br><strong style="color:#1e293b">'+comNum(previa.actual.djve_acumulado)+' mil tn</strong>')
-    : (p.djve_acumulado!==undefined ? ('('+comNum(p.djve_acumulado)+' mil tn en la campaña anterior)') : '');
-
-  const nivel3 = '<div style="background:'+g.softer+';border-radius:12px;padding:20px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">'
-    + '<div>' + comLabel('Compromisos de exportación (DJVE acumulado)') + comValue(comNum(a.djve_acumulado)+comUnit('mil tn'), g.accent, '1.7rem') + '</div>'
-    + '<div style="text-align:right;font-size:0.78rem;color:#64748b;line-height:1.5">'+djveRef+'</div>'
-  + '</div>';
-
-  body.innerHTML = ofertaHtml + nivel1 + nivel2 + nivel3;
-}
 
 function buildInsumoProductoPanel(){
   const panel=document.getElementById('panel-insumo-producto');
