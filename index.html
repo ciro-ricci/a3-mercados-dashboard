@@ -3351,6 +3351,11 @@ function usdaSetCrop(crop) {
     p.classList.toggle('active', p.dataset.crop === crop);
   });
   usdaDrawCropCharts(crop);
+  // El grafico de condicion sigue al cultivo elegido arriba. El girasol no
+  // tiene datos de NASS, asi que en ese caso se deja el que estaba.
+  if (USDA_DATA.condicion && USDA_DATA.condicion[crop] && crop !== _usdaCondCrop) {
+    usdaSetCondCrop(crop);
+  }
 }
 
 function usdaDrawCropCharts(crop) {
@@ -3468,7 +3473,8 @@ function usdaDrawCropCharts(crop) {
   }
 }
 
-var _usdaCondCrop = 'maiz';
+var _usdaCondCrop = (typeof USDA_DATA !== 'undefined' && USDA_DATA.condicion &&
+                     USDA_DATA.condicion[_usdaCrop]) ? _usdaCrop : 'maiz';
 
 function usdaSetCondCrop(crop) {
   _usdaCondCrop = crop;
@@ -3730,15 +3736,10 @@ function _ensoImpactoHTML(crop) {
   return html;
 }
 
-function ensoImpactoHTML() {
+function ensoIndicesHTML() {
   var est = _ensoFaseActual();
   if (!est) return '';
-  var m = ENSO_MATRIZ;
-  var nombres = { nino: 'El Niño', nina: 'La Niña', neutral: 'Neutral' };
-  var nombresCrop = { soja: '🫘 Soja', maiz: '🌽 Maíz', trigo: '🌾 Trigo', girasol: '🌻 Girasol' };
-
-  var html = '<div class="u-card"><h3>Impacto histórico del ENSO — ' + m.meta.periodo + '<span class="u-freq">Matriz fija · el semáforo sigue al ENSO vigente</span></h3>';
-
+  var html = '';
   // Encabezado con los dos índices
   html += '<div class="enso-idx">';
   if (est.oni !== null && est.oni !== undefined) {
@@ -3758,8 +3759,20 @@ function ensoImpactoHTML() {
     ((est.oni !== null && est.roni !== null)
       ? ': hoy la diferencia entre ambos es de ' + Math.abs(est.oni - est.roni).toFixed(2) + ' °C.'
       : '.') +
-    ' La fase que se usa abajo se define por el RONI.</div>';
+    ' La fase que se usa en la matriz de impacto se define por el RONI.</div>';
   html += '</div>';
+
+  return html;
+}
+
+function ensoImpactoHTML() {
+  var est = _ensoFaseActual();
+  if (!est) return '';
+  var m = ENSO_MATRIZ;
+  var nombres = { nino: 'El Niño', nina: 'La Niña', neutral: 'Neutral' };
+  var nombresCrop = { soja: '🫘 Soja', maiz: '🌽 Maíz', trigo: '🌾 Trigo', girasol: '🌻 Girasol' };
+
+  var html = '<div class="u-card"><h3>Impacto histórico del ENSO — ' + m.meta.periodo + '<span class="u-freq">Matriz fija · el semáforo sigue al ENSO vigente</span></h3>';
 
   // Selector de cultivo
   html += '<div class="enso-sel">';
@@ -3925,6 +3938,7 @@ function buildUsdaPanel() {
       flecha + '</b> (' + (u.delta_3t > 0 ? '+' : '') + u.delta_3t.toFixed(2) + ' °C). ' +
       'Umbrales: ≥ +0,5 °C El Niño · ≤ -0,5 °C La Niña.</div></div>' +
       '<div class="u-canvas u-canvas-sm"><canvas id="u-chart-enso"></canvas></div>' +
+      ensoIndicesHTML() +
       '<div class="u-note">Oceanic Niño Index (anomalía de temperatura del Pacífico ecuatorial, trimestres móviles). ' +
       'Fuente: <a class="u-src" href="https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt" target="_blank" rel="noopener">NOAA CPC</a>. ' +
       'En general El Niño favorece lluvias en Argentina y sequía en el sudeste asiático; La Niña, lo inverso.</div></div>';
