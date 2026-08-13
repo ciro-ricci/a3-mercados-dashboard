@@ -20,8 +20,10 @@ on:
     # Días de WASDE (9-12 de cada mes) a las 17:30 UTC = 14:30 ART,
     # con PSD Online ya actualizado tras la publicación de las 12:00 ET.
     - cron: '30 17 9,10,11,12 * *'
-    # Martes 13:00 UTC = 10:00 ART, con el Crop Progress del lunes publicado.
-    - cron: '0 13 * * 2'
+    # Lunes 20:30 UTC = 17:30 ART, con el Crop Progress del lunes (4pm ET) ya publicado.
+    - cron: '30 20 * * 1'
+    # Jueves 14:30 UTC = 11:30 ART, con el U.S. Drought Monitor (jueves 8:30am ET) y el ONI ya publicados.
+    - cron: '30 14 * * 4'
   workflow_dispatch:        # permite correrlo a mano desde la pestaña Actions
 
 permissions:
