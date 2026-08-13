@@ -260,14 +260,85 @@ def build_condition(key, current_year):
     return out
 
 
-# ── ENSO / El Niño (NOAA CPC — Oceanic Niño Index) ─────────────────────
+# ── ENSO / El Niño (NOAA CPC — Oceanic Niño Index + RONI) ───────────────
 ONI_URL = "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
+# RONI (Relative Oceanic Niño Index): reemplazo oficial del ONI adoptado por
+# NOAA/CPC en feb-2026 (resta al Niño 3.4 el calentamiento medio de los
+# trópicos 20S-20N, más representativo del efecto atmosférico en clima
+# cambiante). CPC todavía no publica un ascii de la serie completa
+# actualizado en tiempo real, así que se usa la tabla de Brian McNoldy
+# (Univ. of Miami), que replica la metodología oficial de CPC sobre
+# ERSSTv6 y se actualiza mensualmente: https://cpc.ncep.noaa.gov/products/analysis_monitoring/enso/roni/
+RONI_URL = "https://bmcnoldy.earth.miami.edu/tropics/roni/RONI_NINO34_v6.txt"
+_RONI_SEAS = {1: "DJF", 2: "JFM", 3: "FMA", 4: "MAM", 5: "AMJ", 6: "MJJ",
+              7: "JJA", 8: "JAS", 9: "ASO", 10: "SON", 11: "OND", 12: "NDJ"}
+
+
+def build_roni(n_trimestres=48):
+    """
+    Serie del RONI a partir de la tabla pública de Brian McNoldy (Univ. of
+    Miami), que reproduce la metodología oficial de NOAA/CPC (ERSSTv6,
+    Niño 3.4 menos el promedio tropical 20S-20N, escalado a la varianza del
+    Niño 3.4). Se descarta el último valor si viene marcado como -99.99
+    (falta ERSSTv6 del mes en curso, columna PHASE='M').
+    """
+    try:
+        txt = fetch(RONI_URL, timeout=60).decode("utf-8", errors="replace")
+    except Exception as e:
+        log(f"RONI error: {e}")
+        return None
+
+    filas = []
+    for line in txt.splitlines():
+        p = line.split()
+        if len(p) != 8:
+            continue
+        try:
+            anio, mes, roni = int(p[0]), int(p[1]), float(p[6])
+        except ValueError:
+            continue
+        if roni <= -99.0 or mes not in _RONI_SEAS:
+            continue
+        filas.append({"seas": _RONI_SEAS[mes], "anio": anio, "anom": roni})
+
+    if not filas:
+        return None
+
+    recorte = filas[-n_trimestres:]
+    ultimo = filas[-1]
+    a = ultimo["anom"]
+    if a >= 1.5:
+        fase, desc = "El Niño", "fuerte"
+    elif a >= 1.0:
+        fase, desc = "El Niño", "moderado"
+    elif a >= 0.5:
+        fase, desc = "El Niño", "débil"
+    elif a <= -1.5:
+        fase, desc = "La Niña", "fuerte"
+    elif a <= -1.0:
+        fase, desc = "La Niña", "moderada"
+    elif a <= -0.5:
+        fase, desc = "La Niña", "débil"
+    else:
+        fase, desc = "Neutral", ""
+
+    delta = filas[-1]["anom"] - filas[-4]["anom"] if len(filas) >= 4 else 0.0
+
+    log(f"RONI: {ultimo['seas']} {ultimo['anio']} = {a:+.2f} ({fase} {desc})")
+    return {
+        "labels": [f"{f['seas']} {str(f['anio'])[2:]}" for f in recorte],
+        "anom": [f["anom"] for f in recorte],
+        "ultimo": {"periodo": f"{ultimo['seas']} {ultimo['anio']}", "valor": a,
+                   "fase": fase, "intensidad": desc, "delta_3t": round(delta, 2)},
+        "url": RONI_URL,
+    }
 
 
 def build_enso(n_trimestres=48):
     """
-    Serie del ONI (Oceanic Niño Index), el índice estándar para clasificar
-    El Niño / La Niña. Umbrales: >= +0,5 El Niño ; <= -0,5 La Niña.
+    Serie del ONI (Oceanic Niño Index) + RONI (Relative ONI, el índice que
+    NOAA/CPC usa desde feb-2026 para clasificar El Niño / La Niña).
+    Umbrales en ambos: >= +0,5 El Niño ; <= -0,5 La Niña.
     """
     try:
         txt = fetch(ONI_URL, timeout=60).decode("utf-8", errors="replace")
@@ -310,13 +381,30 @@ def build_enso(n_trimestres=48):
     delta = filas[-1]["anom"] - filas[-4]["anom"] if len(filas) >= 4 else 0.0
 
     log(f"ONI: {ultimo['seas']} {ultimo['anio']} = {a:+.2f} ({fase} {desc})")
-    return {
+    out = {
         "labels": [f"{f['seas']} {str(f['anio'])[2:]}" for f in recorte],
         "anom": [f["anom"] for f in recorte],
         "ultimo": {"periodo": f"{ultimo['seas']} {ultimo['anio']}", "valor": a,
                    "fase": fase, "intensidad": desc, "delta_3t": round(delta, 2)},
         "url": ONI_URL,
     }
+
+    roni = build_roni(n_trimestres)
+    if roni:
+        out["roni"] = {
+            "labels": roni["labels"],
+            "anom": roni["anom"],
+            "periodo": roni["ultimo"]["periodo"],
+            "valor": roni["ultimo"]["valor"],
+            "fase": roni["ultimo"]["fase"],
+            "intensidad": roni["ultimo"]["intensidad"],
+            "delta_3t": roni["ultimo"]["delta_3t"],
+            "url": RONI_URL,
+        }
+    else:
+        log("RONI: sin datos, se conserva el valor estático de ENSO_MATRIZ.actual.roni")
+
+    return out
 
 
 # ── Mapas de sequía (hotlink, se actualizan solos cada jueves) ─────────
