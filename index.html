@@ -417,64 +417,55 @@ canvas { max-height: 100%; }
 #panel-usda .enso-chip { display:inline-block; font-size:0.68rem; font-weight:700; color:#fff; padding:3px 9px; border-radius:999px; }
 
 
-/* ── Tarjeta compartible (screenshot para X) ── */
-#usda-card-ov { position:fixed; inset:0; z-index:9999; background:rgba(12,14,20,.82);
-  display:flex; align-items:center; justify-content:center; padding:24px; overflow:auto; }
-#usda-card-ov .cardwrap { display:flex; flex-direction:column; gap:10px; }
-#usda-card-ov .cardbar { display:flex; justify-content:space-between; align-items:center;
-  color:rgba(255,255,255,.72); font-size:.78rem; }
-#usda-card-ov .cardbar button { background:rgba(255,255,255,.14); color:#fff; border:0;
-  border-radius:7px; padding:6px 14px; font-size:.78rem; cursor:pointer; font-family:inherit; }
-#usda-card-ov .cardbar button:hover { background:rgba(255,255,255,.24); }
 
-.usdacard { width:1200px; height:675px; box-sizing:border-box; padding:46px 54px 34px;
-  background:linear-gradient(150deg,#12182a 0%,#1c2740 58%,#16203a 100%);
-  color:#fff; border-radius:20px; display:flex; flex-direction:column;
-  font-family:'Segoe UI',Arial,sans-serif; position:relative; overflow:hidden; }
-.usdacard::after { content:''; position:absolute; right:-140px; top:-140px; width:460px; height:460px;
-  border-radius:50%; opacity:.13; }
-.usdacard.alcista::after { background:#2f9e44; }
-.usdacard.bajista::after { background:#e03131; }
-.usdacard.neutral::after { background:#868e96; }
 
-.usdacard .ch { display:flex; justify-content:space-between; align-items:flex-start; }
-.usdacard .ch-t { font-size:2.6rem; font-weight:800; letter-spacing:-.5px; line-height:1; }
-.usdacard .ch-s { font-size:.94rem; color:rgba(255,255,255,.6); margin-top:8px; letter-spacing:.4px; }
-.usdacard .ch-v { font-size:1.05rem; font-weight:800; letter-spacing:1.6px; padding:10px 24px;
-  border-radius:999px; z-index:1; }
-.usdacard .ch-v.alcista { background:#2f9e44; }
-.usdacard .ch-v.bajista { background:#e03131; }
-.usdacard .ch-v.neutral { background:#6c757d; }
-.usdacard .ch-txt { font-size:1.08rem; color:rgba(255,255,255,.9); line-height:1.5;
-  margin:20px 0 24px; max-width:92%; }
+/* ── CONAB ── */
+#panel-usda .cb-tag { float:right; font-size:.68rem; font-weight:600; text-transform:none;
+  letter-spacing:0; color:#8a94a3; background:#f1f3f6; padding:3px 10px; border-radius:999px; }
+#panel-usda .cb-tabla th { font-size:.65rem; }
+#panel-usda .cb-tabla th[colspan] { text-align:center; border-left:1px solid #eceef1; }
+#panel-usda .cb-tabla td { font-variant-numeric:tabular-nums; }
+#panel-usda .cb-tabla td:nth-child(2), #panel-usda .cb-tabla td:nth-child(4),
+#panel-usda .cb-tabla td:nth-child(6) { border-left:1px solid #f4f5f7; }
+#panel-usda .cb-tabla td:nth-child(3), #panel-usda .cb-tabla td:nth-child(5),
+#panel-usda .cb-tabla td:nth-child(7) { font-size:.72rem; padding-left:2px; }
+#panel-usda .cb-tabla tr.cb-total td { border-top:2px solid #e2e5ea; font-weight:700;
+  background:#fafbfc; }
+#panel-usda .cb-up { color:#1e7e34; font-weight:700; }
+#panel-usda .cb-down { color:#9b1c1c; font-weight:700; }
+#panel-usda .cb-flat { color:#b6bcc4; }
 
-.usdacard .ctab { width:100%; border-collapse:collapse; flex:1; }
-.usdacard .ctab th { text-align:right; font-size:.72rem; font-weight:600; letter-spacing:1.1px;
-  text-transform:uppercase; color:rgba(255,255,255,.42); padding:0 0 10px;
-  border-bottom:1px solid rgba(255,255,255,.16); }
-.usdacard .ctab th:first-child { text-align:left; }
-.usdacard .ctab td { padding:11px 0; border-bottom:1px solid rgba(255,255,255,.07);
-  text-align:right; font-size:1.02rem; }
-.usdacard .ctab td.cv { text-align:left; font-weight:600; line-height:1.25; }
-.usdacard .ctab .cg { display:block; font-size:.66rem; font-weight:600; letter-spacing:.9px;
-  text-transform:uppercase; color:rgba(255,255,255,.36); }
-.usdacard .ctab td.cn { font-weight:800; font-size:1.28rem; font-variant-numeric:tabular-nums; }
-.usdacard .ctab .cu { font-size:.72rem; font-weight:400; color:rgba(255,255,255,.45); margin-left:5px; }
-.usdacard .ctab td.cd { font-variant-numeric:tabular-nums; font-weight:700; }
-.usdacard .ctab .up { color:#69db7c; }
-.usdacard .ctab .down { color:#ff8787; }
-.usdacard .ctab .flat { color:rgba(255,255,255,.4); }
+/* ── Retoques de estética del dashboard ── */
+#panel-usda .u-card { border:1px solid #edeff2; box-shadow:0 1px 3px rgba(16,24,40,.05),
+  0 6px 16px -6px rgba(16,24,40,.08); transition:box-shadow .18s ease; }
+#panel-usda .u-card:hover { box-shadow:0 1px 3px rgba(16,24,40,.06),
+  0 10px 24px -8px rgba(16,24,40,.13); }
+#panel-usda .u-card h3 { display:flex; align-items:center; gap:8px; color:#3d4552;
+  padding-bottom:10px; border-bottom:1px solid #f1f3f6; }
+#panel-usda .u-card h3::before { content:''; width:3px; height:13px; border-radius:2px;
+  background:#7ab8ff; flex:0 0 auto; }
 
-.usdacard .cf { display:flex; justify-content:space-between; align-items:center;
-  font-size:.76rem; color:rgba(255,255,255,.42); padding-top:14px;
-  border-top:1px solid rgba(255,255,255,.12); }
-.usdacard .cf-b { font-weight:700; color:rgba(255,255,255,.72); letter-spacing:.4px; }
+/* tarjetas de veredicto: menos saturadas, más legibles */
+#panel-usda .u-verdict { border-radius:12px; padding:14px 17px;
+  box-shadow:0 4px 14px -6px rgba(16,24,40,.35); }
+#panel-usda .u-verdict .vc { font-size:1rem; }
+#panel-usda .u-verdict .vl { font-size:.64rem; letter-spacing:1.1px; opacity:.78; }
+#panel-usda .u-verdict .vt { font-size:.76rem; line-height:1.45; opacity:.94; }
 
-/* boton para abrir la tarjeta desde la tabla */
-#panel-usda .btn-card { float:right; font-size:.7rem; font-weight:700; text-transform:none;
-  letter-spacing:0; background:#1a1a2e; color:#fff; border:0; border-radius:7px;
-  padding:5px 13px; cursor:pointer; font-family:inherit; }
-#panel-usda .btn-card:hover { background:#2d3a5e; }
+/* tablas: números tabulares y filas con hover */
+#panel-usda .u-table td { font-variant-numeric:tabular-nums; }
+#panel-usda .u-table tbody tr:hover td { background:#fafbfc; }
+#panel-usda .u-table tr.sect td { background:#f7f8fa; letter-spacing:.7px; }
+
+/* sub-pestañas de cultivo con más presencia */
+#panel-usda .u-subtabs { gap:2px; }
+#panel-usda .u-subtab { padding:9px 20px; border-radius:8px 8px 0 0; }
+#panel-usda .u-subtab:hover { background:#f5f6f8; }
+#panel-usda .u-subtab.active { background:#f5f6f8; }
+
+/* encabezado del panel */
+#panel-usda .u-header { padding-bottom:12px; border-bottom:2px solid #eef0f3; }
+#panel-usda .u-header h2 { font-size:1.18rem; letter-spacing:-.2px; }
 
 </style>
 <!-- Landing pública (Gemini design) — Tailwind scope-limited a #landing-gate -->
@@ -3784,8 +3775,7 @@ function buildUsdaPanel() {
       cd.resumen.map(function (r) { return '<li>' + r + '</li>'; }).join('') + '</ul></div>';
 
     // Tabla de variables clave
-    html += '<div class="u-card"><h3>Variables de referencia — WASDE ' + (W.fecha_display || W.fecha) +
-      '<button class="btn-card" onclick="usdaAbrirCard(\'' + c + '\')">📸 Versión para compartir</button></h3>' +
+    html += '<div class="u-card"><h3>Variables de referencia — WASDE ' + (W.fecha_display || W.fecha) + '</h3>' +
       '<table class="u-table"><thead><tr><th>Variable</th><th>Actual</th><th>WASDE previo</th>' +
       '<th>Δ mes</th><th>Esperado mercado</th><th>Sorpresa</th></tr></thead><tbody>';
     (cd.variables || []).forEach(function (g) {
@@ -3818,6 +3808,8 @@ function buildUsdaPanel() {
     html += '<div class="u-card"><h3>' + tituloAB + '</h3>' +
       '<div class="u-canvas"><canvas id="u-chart-ab-' + c + '"></canvas></div>' +
       '<div class="u-note">Fuente: USDA PSD Online (Production, Supply and Distribution). Se actualiza con cada WASDE.</div></div>';
+
+    if (typeof conabHTML === 'function') { html += conabHTML(c); }
 
     html += '</div>';
   });
@@ -3891,9 +3883,14 @@ function buildUsdaPanel() {
     html += '<div class="u-card"><h3>Monitor de sequía en Estados Unidos' +
       (sq.fecha ? ' — datos al ' + sq.fecha : '') + '</h3><div class="u-maps">';
     sq.mapas.forEach(function (m) {
+      var ver = '';
+      if (sq.fecha) { var dd = new Date(sq.fecha + ' UTC');
+        if (!isNaN(dd)) { ver = (m.img.indexOf('?')>=0?'&':'?') + 'v=' + dd.getUTCFullYear() +
+          String(dd.getUTCMonth()+1).padStart(2,'0') + String(dd.getUTCDate()).padStart(2,'0'); } }
+      var src = m.img + (m.img.indexOf('?v=')>=0 ? '' : ver);
       html += '<div class="u-map"><div class="mt">' + m.t + '</div>' +
-        '<a href="' + m.img + '" target="_blank" rel="noopener">' +
-        '<img src="' + m.img + '" alt="' + m.t + '" loading="lazy"></a>' +
+        '<a href="' + src + '" target="_blank" rel="noopener">' +
+        '<img src="' + src + '" alt="' + m.t + '" loading="lazy"></a>' +
         '<div class="md">' + m.d + '</div></div>';
     });
     html += '</div><div class="u-note">Fuente: <a class="u-src" href="' + (sq.url || '#') +
@@ -3921,94 +3918,54 @@ function buildUsdaPanel() {
 }
 
 
-// ── Tarjeta compartible de "Variables de referencia" ───────────────
-// Genera una versión visualmente compacta y de alto contraste, pensada para
-// sacarle screenshot y publicarla en X. Se abre en un overlay a medida
-// (1200x675, la relación 16:9 que X recorta bien) para que la captura salga
-// siempre con las mismas proporciones.
+// CONAB_DATA:START — Boletim da Safra de Graos, lo actualiza la tarea conab-boletim
+const CONAB_DATA = {"fuente":"CONAB — Boletim da Safra de Grãos","url":"https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/safra-de-graos/boletim-da-safra-de-graos","url_datos":"https://portaldeinformacoes.conab.gov.br/downloads/arquivos/SerieHistoricaGraos.txt","cultivos":{"maiz":{"campania":"2025/26","campania_previa":"2024/25","filas":[{"n":"1ª safra","area":4.13,"area_var":9.4,"prod":29.34,"prod_var":17.7,"rinde":7.11,"rinde_var":7.6},{"n":"2ª safra (safrinha)","area":17.78,"area_var":2.0,"prod":107.87,"prod_var":-3.7,"rinde":6.07,"rinde_var":-5.6},{"n":"3ª safra","area":0.68,"area_var":3.2,"prod":3.26,"prod_var":19.5,"rinde":4.81,"rinde_var":15.8}],"total":{"n":"Total","area":22.58,"area_var":3.3,"prod":140.46,"prod_var":0.5,"rinde":6.22,"rinde_var":-2.7}},"soja":{"campania":"2025/26","campania_previa":"2024/25","filas":[],"total":{"n":"Total","area":48.56,"area_var":2.6,"prod":180.25,"prod_var":5.1,"rinde":3.71,"rinde_var":2.5}},"trigo":{"campania":"2025","campania_previa":"2024","filas":[],"total":{"n":"Total","area":2.12,"area_var":-13.6,"prod":6.3,"prod_var":-16.4,"rinde":2.97,"rinde_var":-3.3}}}};
+// CONAB_DATA:END
 
-function _cardFmt(v, dec) {
+// ── CONAB — Boletim da Safra de Grãos (Brasil) ────────────────────
+// Se actualiza solo: la tarea "conab-boletim" corre los días en que CONAB
+// publica su boletín mensual y reemplaza el bloque CONAB_DATA.
+
+function _cbVar(v) {
+  if (v === null || v === undefined) return '<span class="cb-flat">·</span>';
+  var cls = v > 0.05 ? 'cb-up' : (v < -0.05 ? 'cb-down' : 'cb-flat');
+  var s = v > 0 ? '+' : '';
+  return '<span class="' + cls + '">' + s + v.toFixed(1) + '%</span>';
+}
+
+function _cbNum(v, dec) {
   if (v === null || v === undefined) return '—';
-  return v.toLocaleString('es-AR', { minimumFractionDigits: dec || 0, maximumFractionDigits: dec || 0 });
+  return v.toLocaleString('es-AR', { minimumFractionDigits: dec, maximumFractionDigits: dec });
 }
 
-function _cardDelta(actual, previo, dec, invertir) {
-  if (actual === null || previo === null || actual === undefined || previo === undefined) return null;
-  var d = actual - previo;
-  if (Math.abs(d) < 0.001) return { txt: '=', cls: 'flat', raw: 0 };
-  var bueno = invertir ? d < 0 : d > 0;
-  return {
-    txt: (d > 0 ? '▲ +' : '▼ ') + _cardFmt(d, dec),
-    cls: bueno ? 'up' : 'down',
-    raw: d
-  };
-}
+function conabHTML(crop) {
+  if (typeof CONAB_DATA === 'undefined' || !CONAB_DATA.cultivos) return '';
+  var d = CONAB_DATA.cultivos[crop];
+  if (!d) return '';
 
-function usdaAbrirCard(crop) {
-  var W = USDA_DATA.wasde;
-  var cd = W.cultivos[crop];
-  if (!cd) return;
-
-  var nombres = { soja: 'SOJA', maiz: 'MAÍZ', trigo: 'TRIGO', girasol: 'GIRASOL' };
-  var iconos = { soja: '🫘', maiz: '🌽', trigo: '🌾', girasol: '🌻' };
-  var vd = cd.veredicto;
-
-  // Se eligen las filas con más carga informativa: las que tienen sorpresa
-  // contra el mercado primero, después las que cambiaron contra el mes previo.
-  var filas = [];
-  (cd.variables || []).forEach(function (g) {
-    g.filas.forEach(function (f) {
-      filas.push({ g: g.grupo, f: f });
-    });
-  });
-  filas.sort(function (a, b) {
-    var sa = (a.f.esperado !== null && a.f.esperado !== undefined) ? 2 : 0;
-    var sb = (b.f.esperado !== null && b.f.esperado !== undefined) ? 2 : 0;
-    var ca = (a.f.previo !== null && a.f.previo !== undefined && a.f.actual !== a.f.previo) ? 1 : 0;
-    var cb = (b.f.previo !== null && b.f.previo !== undefined && b.f.actual !== b.f.previo) ? 1 : 0;
-    return (sb + cb) - (sa + ca);
-  });
-  filas = filas.slice(0, 7);
-
-  var rows = filas.map(function (x) {
-    var f = x.f, dec = f.dec === undefined ? 1 : f.dec, inv = !!f.invertir;
-    var dMes = _cardDelta(f.actual, f.previo, dec, inv);
-    var dEsp = _cardDelta(f.actual, f.esperado, dec, inv);
-    return '<tr>' +
-      '<td class="cv"><span class="cg">' + x.g.replace(/ \d{4}\/\d{2}$/, '') + '</span>' + f.v + '</td>' +
-      '<td class="cn">' + _cardFmt(f.actual, dec) + '<span class="cu">' + (f.unidad || '') + '</span></td>' +
-      '<td class="cd">' + (dMes ? '<span class="' + dMes.cls + '">' + dMes.txt + '</span>' : '·') + '</td>' +
-      '<td class="cd">' + (dEsp ? '<span class="' + dEsp.cls + '">' + dEsp.txt + '</span>' : '·') + '</td>' +
+  var filas = (d.filas || []).concat([d.total]);
+  var rows = filas.map(function (f, i) {
+    var esTotal = (i === filas.length - 1) && filas.length > 1;
+    return '<tr' + (esTotal ? ' class="cb-total"' : '') + '>' +
+      '<td>' + f.n + '</td>' +
+      '<td>' + _cbNum(f.area, 2) + '</td><td>' + _cbVar(f.area_var) + '</td>' +
+      '<td>' + _cbNum(f.rinde, 2) + '</td><td>' + _cbVar(f.rinde_var) + '</td>' +
+      '<td><b>' + _cbNum(f.prod, 1) + '</b></td><td>' + _cbVar(f.prod_var) + '</td>' +
       '</tr>';
   }).join('');
 
-  var ov = document.createElement('div');
-  ov.id = 'usda-card-ov';
-  ov.innerHTML =
-    '<div class="cardwrap">' +
-      '<div class="cardbar">' +
-        '<span>Captura esta tarjeta para publicarla · 1200×675</span>' +
-        '<button onclick="document.getElementById(\'usda-card-ov\').remove()">Cerrar ✕</button>' +
-      '</div>' +
-      '<div class="usdacard ' + vd + '" id="usda-card">' +
-        '<div class="ch">' +
-          '<div class="ch-l">' +
-            '<div class="ch-t">' + iconos[crop] + ' ' + nombres[crop] + '</div>' +
-            '<div class="ch-s">WASDE · ' + (W.fecha_display || W.fecha) + '</div>' +
-          '</div>' +
-          '<div class="ch-v ' + vd + '">' + vd.toUpperCase() + '</div>' +
-        '</div>' +
-        '<div class="ch-txt">' + cd.veredicto_txt + '</div>' +
-        '<table class="ctab"><thead><tr>' +
-          '<th>Variable</th><th>Dato</th><th>vs. mes previo</th><th>vs. lo esperado</th>' +
-        '</tr></thead><tbody>' + rows + '</tbody></table>' +
-        '<div class="cf">' +
-          '<span>Fuente: USDA · WASDE y PSD Online · Valores en unidades métricas</span>' +
-          '<span class="cf-b">estrategiasalgrano.com</span>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  document.body.appendChild(ov);
+  return '<div class="u-card"><h3>Brasil según CONAB — safra ' + d.campania +
+    '<span class="cb-tag">vs ' + d.campania_previa + '</span></h3>' +
+    '<table class="u-table cb-tabla"><thead><tr>' +
+      '<th></th>' +
+      '<th colspan="2">Área (M ha)</th>' +
+      '<th colspan="2">Rinde (t/ha)</th>' +
+      '<th colspan="2">Producción (Mt)</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<div class="u-note">Las variaciones comparan contra la misma safra del ciclo anterior. ' +
+    'El rinde se recalcula como producción sobre área, porque no se puede promediar entre estados. ' +
+    'Fuente: <a class="u-src" href="' + CONAB_DATA.url + '" target="_blank" rel="noopener">' +
+    CONAB_DATA.fuente + '</a>.</div></div>';
 }
 
 function showTab(id){
