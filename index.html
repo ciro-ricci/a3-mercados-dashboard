@@ -467,6 +467,54 @@ canvas { max-height: 100%; }
 #panel-usda .u-header { padding-bottom:12px; border-bottom:2px solid #eef0f3; }
 #panel-usda .u-header h2 { font-size:1.18rem; letter-spacing:-.2px; }
 
+
+/* ── Layout de dos columnas ──────────────────────────────────────
+   Las tablas solas ocupaban todo el ancho y quedaban desproporcionadas
+   al capturarlas para X o para una presentación. Cada tabla va ahora
+   junto al gráfico que la acompaña. */
+#panel-usda .u-pair { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:16px; align-items:start; }
+@media (max-width:1000px){ #panel-usda .u-pair { grid-template-columns:1fr; } }
+#panel-usda .u-pair > .u-card { margin-bottom:0; height:100%; }
+#panel-usda .u-pair + .u-pair,
+#panel-usda .u-pair { margin-bottom:16px; }
+
+/* columna con dos tarjetas apiladas, para emparejar con una tabla alta */
+#panel-usda .u-stack { display:flex; flex-direction:column; gap:16px; height:100%; }
+#panel-usda .u-stack > .u-card { margin-bottom:0; flex:1; display:flex; flex-direction:column; }
+#panel-usda .u-stack > .u-card .u-canvas { flex:1; }
+
+/* gráficos más bajos: en media columna no necesitan tanta altura */
+#panel-usda .u-canvas-sm { height:230px; }
+
+/* tablas comprimidas: entran en media columna sin perder legibilidad */
+#panel-usda .u-compact .u-table { font-size:.74rem; }
+#panel-usda .u-compact .u-table th { font-size:.62rem; padding:6px 5px; letter-spacing:.3px; }
+#panel-usda .u-compact .u-table td { padding:5px; }
+#panel-usda .u-compact .u-table td:first-child { line-height:1.2; }
+#panel-usda .u-compact .u-table td:first-child span { display:block; font-size:.66rem; }
+#panel-usda .u-compact .u-note { font-size:.66rem; }
+#panel-usda .u-compact .u-condbtn { padding:2px 8px; font-size:.68rem; margin-left:3px; }
+
+/* la tabla de CONAB también entra en media columna */
+#panel-usda .cb-tabla { font-size:.74rem; }
+#panel-usda .cb-tabla th { font-size:.6rem; padding:5px 3px; }
+#panel-usda .cb-tabla td { padding:5px 3px; }
+
+/* la matriz ENSO en media columna: se prioriza el dato sobre la nota */
+#panel-usda .enso-tabla { font-size:.72rem; }
+#panel-usda .enso-tabla th { font-size:.6rem; padding:5px 4px; }
+#panel-usda .enso-tabla td { padding:6px 4px; }
+#panel-usda .enso-nota { font-size:.62rem; }
+#panel-usda .enso-chip { font-size:.62rem; padding:2px 7px; }
+#panel-usda .ei-exp { font-size:.7rem; }
+#panel-usda .ei-v { font-size:1.25rem; }
+
+/* frecuencia de actualización, al lado del título */
+#panel-usda .u-freq { float:right; font-size:.62rem; font-weight:500; text-transform:none;
+  letter-spacing:0; color:#98a2b3; background:#f4f6f8; border-radius:999px;
+  padding:3px 9px; margin-left:8px; }
+
 </style>
 <!-- Landing pública (Gemini design) — Tailwind scope-limited a #landing-gate -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -3689,7 +3737,7 @@ function ensoImpactoHTML() {
   var nombres = { nino: 'El Niño', nina: 'La Niña', neutral: 'Neutral' };
   var nombresCrop = { soja: '🫘 Soja', maiz: '🌽 Maíz', trigo: '🌾 Trigo', girasol: '🌻 Girasol' };
 
-  var html = '<div class="u-card"><h3>Impacto histórico del ENSO por región productora</h3>';
+  var html = '<div class="u-card"><h3>Impacto histórico del ENSO — ' + m.meta.periodo + '<span class="u-freq">Matriz fija · el semáforo sigue al ENSO vigente</span></h3>';
 
   // Encabezado con los dos índices
   html += '<div class="enso-idx">';
@@ -3771,11 +3819,13 @@ function buildUsdaPanel() {
     html += '<div class="u-crop' + (c === _usdaCrop ? ' active' : '') + '" data-crop="' + c + '">';
 
     // Resumen ejecutivo
-    html += '<div class="u-card"><h3>Resumen ejecutivo</h3><ul class="u-bullets">' +
+    html += '<div class="u-card"><h3>Resumen ejecutivo — WASDE ' + (W.fecha_display || W.fecha) + '</h3><ul class="u-bullets">' +
       cd.resumen.map(function (r) { return '<li>' + r + '</li>'; }).join('') + '</ul></div>';
 
-    // Tabla de variables clave
-    html += '<div class="u-card"><h3>Variables de referencia — WASDE ' + (W.fecha_display || W.fecha) + '</h3>' +
+    // Tabla de variables y gráficos, lado a lado: la tabla sola ocupaba todo
+    // el ancho y quedaba mal al capturarla para una presentación.
+    html += '<div class="u-pair">';
+    html += '<div class="u-card u-compact"><h3>Variables de referencia — WASDE ' + (W.fecha_display || W.fecha) + '</h3>' +
       '<table class="u-table"><thead><tr><th>Variable</th><th>Actual</th><th>WASDE previo</th>' +
       '<th>Δ mes</th><th>Esperado mercado</th><th>Sorpresa</th></tr></thead><tbody>';
     (cd.variables || []).forEach(function (g) {
@@ -3795,21 +3845,22 @@ function buildUsdaPanel() {
       '<div class="u-note">Δ mes = variación vs. el WASDE anterior. Sorpresa = diferencia contra el promedio de estimaciones privadas previas al informe. ' +
       'En stocks, el color considera que un aumento es bajista para el precio.</div></div>';
 
-    // Gráficos
-    html += '<div class="u-chart-grid">' +
+    html += '<div class="u-stack">' +
       '<div class="u-card"><h3>Producción y stocks mundiales — 20 campañas</h3>' +
-      '<div class="u-canvas"><canvas id="u-chart-ps-' + c + '"></canvas></div></div>' +
+      '<div class="u-canvas u-canvas-sm"><canvas id="u-chart-ps-' + c + '"></canvas></div></div>' +
       '<div class="u-card"><h3>Relación stocks / consumo</h3>' +
-      '<div class="u-canvas"><canvas id="u-chart-su-' + c + '"></canvas></div></div></div>';
+      '<div class="u-canvas u-canvas-sm"><canvas id="u-chart-su-' + c + '"></canvas></div></div>' +
+      '</div></div>';
 
     var tituloAB = (c === 'girasol')
       ? 'Producción Rusia vs. Ucrania vs. Argentina — 20 campañas'
       : 'Producción Argentina vs. Brasil — 20 campañas';
-    html += '<div class="u-card"><h3>' + tituloAB + '</h3>' +
-      '<div class="u-canvas"><canvas id="u-chart-ab-' + c + '"></canvas></div>' +
+    html += '<div class="u-pair"><div class="u-card"><h3>' + tituloAB + '</h3>' +
+      '<div class="u-canvas u-canvas-sm"><canvas id="u-chart-ab-' + c + '"></canvas></div>' +
       '<div class="u-note">Fuente: USDA PSD Online (Production, Supply and Distribution). Se actualiza con cada WASDE.</div></div>';
 
     if (typeof conabHTML === 'function') { html += conabHTML(c); }
+    html += '</div>';
 
     html += '</div>';
   });
@@ -3817,7 +3868,9 @@ function buildUsdaPanel() {
   // ── Crop Progress
   var cp = USDA_DATA.crop_progress;
   if (cp && cp.tablas) {
-    html += '<div class="u-card"><h3>Crop Progress — semana al ' + (cp.publicado || '') + '</h3>';
+    html += '<div class="u-pair">';
+    html += '<div class="u-card u-compact"><h3>Crop Progress — semana al ' + (cp.publicado || '') +
+      '<span class="u-freq">NASS publica los lunes</span></h3>';
     html += '<table class="u-table"><thead><tr><th>Indicador</th><th>Actual</th><th>Semana previa</th>' +
       '<th>Año previo</th><th>Prom. 5 años</th></tr></thead><tbody>';
     var keys = Object.keys(cp.tablas);
@@ -3844,23 +3897,26 @@ function buildUsdaPanel() {
   }
 
   // ── Condición: comparación intra-campaña, con selector de cultivo
-  html += '<div class="u-card"><h3>Condición de cultivos — campaña en curso vs. historia' +
+  html += '<div class="u-card u-compact"><h3>Condición de cultivos — campaña en curso vs. historia' +
     '<span style="float:right;font-weight:400;text-transform:none;letter-spacing:0">' +
     ['maiz', 'soja', 'trigo'].map(function (c) {
       return '<span class="u-condbtn' + (c === _usdaCondCrop ? ' active' : '') + '" data-crop="' + c +
         '" onclick="usdaSetCondCrop(\'' + c + '\')">' + nombres[c] + '</span>';
     }).join('') + '</span></h3>' +
-    '<div class="u-canvas" style="height:300px"><canvas id="u-chart-cond-actual"></canvas></div>' +
+    '<div class="u-canvas u-canvas-sm"><canvas id="u-chart-cond-actual"></canvas></div>' +
     '<div class="u-note">% del área en condición buena + excelente, alineado por semana del año. ' +
-    'La línea punteada es el promedio de las últimas 20 campañas. Fuente: USDA NASS QuickStats.</div></div>';
+    'La línea punteada es el promedio de las últimas 20 campañas. Fuente: USDA NASS QuickStats.</div></div>' +
+    '</div>';
 
-  // ── El Niño / La Niña
+  // ── El Niño / La Niña: el gráfico del índice y la matriz de impacto van
+  // lado a lado, para que la sección entre completa en una captura.
+  html += '<div class="u-pair">';
   var e = USDA_DATA.enso;
   if (e) {
     var u = e.ultimo;
     var fcls = u.fase === 'El Niño' ? 'bajista' : (u.fase === 'La Niña' ? 'alcista' : 'neutral');
     var flecha = u.delta_3t > 0.15 ? '↑ calentando' : (u.delta_3t < -0.15 ? '↓ enfriando' : '→ estable');
-    html += '<div class="u-card"><h3>Seguimiento de El Niño / La Niña (índice ONI)</h3>' +
+    html += '<div class="u-card"><h3>Seguimiento de El Niño / La Niña — dato al ' + u.periodo + '<span class="u-freq">NOAA actualiza a principios de cada mes</span></h3>' +
       '<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:12px">' +
       '<div class="u-enso-now ' + fcls + '">' +
       '<div class="ph">' + u.fase + (u.intensidad ? ' ' + u.intensidad : '') + '</div>' +
@@ -3868,7 +3924,7 @@ function buildUsdaPanel() {
       '<div style="font-size:0.8rem;color:#555;flex:1;min-width:220px">Tendencia últimos 3 trimestres: <b>' +
       flecha + '</b> (' + (u.delta_3t > 0 ? '+' : '') + u.delta_3t.toFixed(2) + ' °C). ' +
       'Umbrales: ≥ +0,5 °C El Niño · ≤ -0,5 °C La Niña.</div></div>' +
-      '<div class="u-canvas" style="height:250px"><canvas id="u-chart-enso"></canvas></div>' +
+      '<div class="u-canvas u-canvas-sm"><canvas id="u-chart-enso"></canvas></div>' +
       '<div class="u-note">Oceanic Niño Index (anomalía de temperatura del Pacífico ecuatorial, trimestres móviles). ' +
       'Fuente: <a class="u-src" href="https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt" target="_blank" rel="noopener">NOAA CPC</a>. ' +
       'En general El Niño favorece lluvias en Argentina y sequía en el sudeste asiático; La Niña, lo inverso.</div></div>';
@@ -3876,6 +3932,7 @@ function buildUsdaPanel() {
 
   // ── Impacto histórico del ENSO por región
   if (typeof ensoImpactoHTML === 'function') { html += ensoImpactoHTML(); }
+  html += '</div>';
 
   // ── Mapas de sequía
   var sq = USDA_DATA.sequia;
