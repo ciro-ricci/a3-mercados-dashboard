@@ -54,6 +54,16 @@ def main():
         if k in nuevos:
             combinado[k] = nuevos[k]
 
+    # El RONI vive en un servidor universitario que se cae seguido. Si esta
+    # corrida no lo trajo, se conserva el último valor bueno en vez de dejar
+    # el dashboard sin RONI hasta la próxima corrida.
+    viejo_roni = (actual.get("enso") or {}).get("roni")
+    if viejo_roni and not (combinado.get("enso") or {}).get("roni"):
+        if isinstance(combinado.get("enso"), dict):
+            combinado["enso"]["roni"] = viejo_roni
+            print(f"Aviso: RONI no vino en esta corrida; se conserva "
+                  f"{viejo_roni.get('periodo')} = {viejo_roni.get('valor')}")
+
     faltantes = [k for k in ("wasde", "wwcb") if k not in combinado]
     if faltantes:
         print(f"Aviso: el bloque no traía {', '.join(faltantes)}; "

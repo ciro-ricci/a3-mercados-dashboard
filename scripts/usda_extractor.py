@@ -35,9 +35,10 @@ PSD_URLS = {
 
 # commodity PSD -> (clave interna, archivo)
 COMMODITIES = {
-    "soja":  ("Oilseed, Soybean", "oilseeds"),
-    "maiz":  ("Corn",             "grains"),
-    "trigo": ("Wheat",            "grains"),
+    "soja":    ("Oilseed, Soybean",       "oilseeds"),
+    "maiz":    ("Corn",                   "grains"),
+    "trigo":   ("Wheat",                  "grains"),
+    "girasol": ("Oilseed, Sunflowerseed", "oilseeds"),
 }
 
 # Países de interés (además del agregado mundial)
@@ -45,6 +46,18 @@ COUNTRIES = {
     "eeuu":      "United States",
     "argentina": "Argentina",
     "brasil":    "Brazil",
+    "rusia":     "Russia",
+    "ucrania":   "Ukraine",
+    "ue":        "European Union",
+}
+
+# Qué ámbitos guarda cada cultivo. No tiene sentido cargar Brasil en girasol
+# ni Rusia en soja: infla el bloque USDA_DATA sin aportar nada al dashboard.
+SCOPES_POR_CULTIVO = {
+    "soja":    {"mundo", "eeuu", "argentina", "brasil"},
+    "maiz":    {"mundo", "eeuu", "argentina", "brasil"},
+    "trigo":   {"mundo", "eeuu", "argentina", "brasil"},
+    "girasol": {"mundo", "argentina", "rusia", "ucrania", "ue"},
 }
 
 # Todo en unidades métricas: PSD entrega producción/stocks en 1000 MT,
@@ -137,6 +150,8 @@ def build_psd_series(paths):
         scope = {"mundo": {y: dict(a) for y, a in world.items()}}
         for k in COUNTRIES:
             scope[k] = {y: dict(a) for y, a in byc[k].items()}
+        permitidos = SCOPES_POR_CULTIVO.get(crop, set(COUNTRIES) | {"mundo"})
+        scope = {k: v for k, v in scope.items() if k in permitidos}
         out[crop] = scope
         log(f"PSD {crop}: {len(world)} campañas")
 
