@@ -23,6 +23,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.request
 import zipfile
 from collections import defaultdict
@@ -58,10 +59,25 @@ def log(msg):
     print(f"[usda] {msg}", file=sys.stderr)
 
 
-def fetch(url, timeout=180):
+def fetch(url, timeout=120, intentos=3):
+    """
+    Descarga con reintentos. Los servidores del USDA (sobre todo
+    apps.fas.usda.gov) cortan la conexion cada tanto sin motivo; un solo
+    timeout no deberia tumbar toda la actualizacion.
+    """
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return r.read()
+    ultimo = None
+    for i in range(1, intentos + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return r.read()
+        except Exception as e:                      # noqa: BLE001
+            ultimo = e
+            if i < intentos:
+                espera = 15 * i
+                log(f"fallo {i}/{intentos} en {url} ({e}); reintento en {espera}s")
+                time.sleep(espera)
+    raise ultimo
 
 
 def load_psd(cache_dir):
@@ -544,19 +560,43 @@ def main():
     ap.add_argument("--year", type=int, default=2026)
     args = ap.parse_args()
 
-    paths = load_psd(args.cache)
-    series = shape_series(build_psd_series(paths))
+    # Cada fuente es independiente: PSD, NASS, Crop Progress, ONI y el monitor
+    # de sequia viven en servidores distintos. Si una se cae, las demas tienen
+    # que actualizarse igual. Las claves que no se generan se omiten del JSON,
+    # y usda_update_index.py conserva el valor anterior del index.html.
+    out = {}
+    fallas = []
 
-    condition = build_condition(args.nass_key, args.year) if args.nass_key else {}
-    progress = build_progress(args.year)
-    enso = build_enso()
-    drought = build_drought()
+    def intentar(clave, fn):
+        try:
+            v = fn()
+        except Exception as e:                      # noqa: BLE001
+            log(f"ERROR en '{clave}': {e} - se conserva el dato anterior")
+            fallas.append(clave)
+            return
+        if v:
+            out[clave] = v
+        else:
+            log(f"'{clave}' vino vacio - se conserva el dato anterior")
+            fallas.append(clave)
 
-    out = {"series": series, "condicion": condition, "crop_progress": progress,
-           "enso": enso, "sequia": drought}
+    intentar("series", lambda: shape_series(build_psd_series(load_psd(args.cache))))
+    if args.nass_key:
+        intentar("condicion", lambda: build_condition(args.nass_key, args.year))
+    else:
+        log("sin NASS_API_KEY: se omite la condicion de cultivos")
+    intentar("crop_progress", lambda: build_progress(args.year))
+    intentar("enso", build_enso)
+    intentar("sequia", build_drought)
+
+    if not out:
+        sys.exit("Fallaron todas las fuentes; no se escribe nada.")
+
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
-    log(f"escrito {args.out} ({os.path.getsize(args.out)/1024:.0f} KB)")
+    log(f"escrito {args.out} ({os.path.getsize(args.out)/1024:.0f} KB) - "
+        f"actualizadas: {', '.join(sorted(out))}"
+        + (f" · sin novedad: {', '.join(fallas)}" if fallas else ""))
 
 
 if __name__ == "__main__":
