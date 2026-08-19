@@ -391,6 +391,7 @@ def main():
                 if valor is None:
                     return
                 hist = data["mani"].get(campo_hist, [])
+                hist = _fill_gap_months(hist, mes_actual)
                 found = False
                 for h in hist:
                     if h["mes"] == mes_actual:
@@ -403,6 +404,7 @@ def main():
 
             _update_hist("hist_industria_ars", "disponible_industria_ars")
             _update_hist("hist_runner_ars", "disponible_runner_ars")
+            _update_hist("hist_runner_usd", "disponible_runner_usd")
         else:
             print("[WARN] No se pudo extraer ningun valor de mani de BCCBA.")
     except Exception as e:
