@@ -495,6 +495,7 @@ canvas { max-height: 100%; }
 #panel-usda .u-compact .u-table td:first-child span { display:block; font-size:.66rem; }
 #panel-usda .u-compact .u-note { font-size:.66rem; }
 #panel-usda .u-compact .u-condbtn { padding:2px 8px; font-size:.68rem; margin-left:3px; }
+#panel-usda .cp-n { font-size:.6rem; color:#a8b0ba; margin-left:4px; vertical-align:super; }
 
 /* la tabla de CONAB también entra en media columna */
 #panel-usda .cb-tabla { font-size:.74rem; }
@@ -8416,7 +8417,11 @@ function buildUsdaPanel() {
           '<td><b>' + t.bueno_excelente + '%</b></td>' +
           '<td>' + (t.ge_semana_previa !== undefined ? t.ge_semana_previa + '%' : '—') + '</td>' +
           '<td>' + (t.ge_anio_previo !== undefined ? t.ge_anio_previo + '%' : '—') + '</td>' +
-          '<td>—</td></tr>';
+          '<td>' + (t.promedio_5a !== undefined
+            ? t.promedio_5a + '%' + (t.promedio_5a_n && t.promedio_5a_n < 5
+                ? '<span class="cp-n" title="campanas con dato para esta semana">n=' + t.promedio_5a_n + '</span>'
+                : '')
+            : '—') + '</td></tr>';
       } else {
         html += '<tr><td>' + k + ' <span style="color:#aaa;font-weight:400">(% avance)</span></td>' +
           '<td><b>' + t.actual + '%</b></td><td>' + t.semana_previa + '%</td>' +
@@ -8425,19 +8430,27 @@ function buildUsdaPanel() {
     });
     html += '</tbody></table>' +
       '<div class="u-note">Fuente: <a class="u-src" href="' + (cp.url || '#') + '" target="_blank" rel="noopener">USDA NASS Crop Progress</a>' +
-      ' · Las filas de condición comparan % bueno+excelente; las de avance, % del área.</div></div>';
+      ' · Las filas de condición comparan % bueno+excelente; las de avance, % del área. ' +
+      'NASS publica el promedio de 5 años solo para las filas de avance: el de las filas de condición ' +
+      'se calcula acá con el histórico de QuickStats, promediando la misma semana del año en las ' +
+      '5 campañas previas.</div></div>';
   }
 
   // ── Condición: comparación intra-campaña, con selector de cultivo
   html += '<div class="u-card u-compact"><h3>Condición de cultivos — campaña en curso vs. historia' +
     '<span style="float:right;font-weight:400;text-transform:none;letter-spacing:0">' +
-    ['maiz', 'soja', 'trigo'].map(function (c) {
-      return '<span class="u-condbtn' + (c === _usdaCondCrop ? ' active' : '') + '" data-crop="' + c +
-        '" onclick="usdaSetCondCrop(\'' + c + '\')">' + nombres[c] + '</span>';
+    [['maiz', '🌽 Maíz'], ['soja', '🫘 Soja'], ['trigo', '🌾 Trigo inv.'],
+     ['trigo_primavera', '🌾 Trigo prim.']].filter(function (p) {
+      return USDA_DATA.condicion && USDA_DATA.condicion[p[0]];
+    }).map(function (p) {
+      return '<span class="u-condbtn' + (p[0] === _usdaCondCrop ? ' active' : '') + '" data-crop="' + p[0] +
+        '" onclick="usdaSetCondCrop(\'' + p[0] + '\')">' + p[1] + '</span>';
     }).join('') + '</span></h3>' +
     '<div class="u-canvas u-canvas-sm"><canvas id="u-chart-cond-actual"></canvas></div>' +
     '<div class="u-note">% del área en condición buena + excelente, alineado por semana del año. ' +
-    'La línea punteada es el promedio de las últimas 20 campañas. Fuente: USDA NASS QuickStats.</div></div>' +
+    'La línea punteada es el promedio de las últimas 20 campañas. El trigo se muestra por clase ' +
+    '(invierno y primavera) porque NASS los releva en ventanas distintas y no se pueden sumar. ' +
+    'Fuente: USDA NASS QuickStats.</div></div>' +
     '</div>';
 
   // ── El Niño / La Niña: el gráfico del índice y la matriz de impacto van
