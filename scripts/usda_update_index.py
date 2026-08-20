@@ -15,14 +15,65 @@ Uso:
 """
 
 import argparse
+import datetime
 import io
 import json
 import re
 import sys
 
+# Mismo mapeo que usa el extractor, para poder reconstruir el promedio
+# de 5 años sin volver a consultar QuickStats.
+CP_CONDICION = {
+    "Corn Condition":         "maiz",
+    "Soybean Condition":      "soja",
+    "Winter Wheat Condition": "trigo",
+    "Spring Wheat Condition": "trigo_primavera",
+}
+
 INICIO = "// USDA_DATA:START"
 FIN = "// USDA_DATA:END"
-CLAVES_DUROS = ("series", "condicion", "crop_progress", "enso", "sequia")
+CLAVES_DUROS = ("series", "condicion", "crop_progress", "enso", "sequia",
+                "condicion_hist")
+
+
+def _completar_prom5_desde_hist(datos):
+    """
+    Rellena el promedio de 5 años de las tablas de condición usando el bloque
+    histórico guardado.
+
+    El extractor ya lo calcula cuando QuickStats responde. Esto cubre el caso
+    contrario: Crop Progress se actualizó (servidor de NASS releases) pero
+    QuickStats no contestó (otro servidor). Sin esto, la columna quedaría
+    vacía justo la semana que falla, aunque el dato histórico no cambie nunca.
+    """
+    hist = (datos.get("condicion_hist") or {}).get("cultivos") or {}
+    cp = datos.get("crop_progress") or {}
+    tablas = cp.get("tablas") or {}
+    if not hist or not tablas:
+        return
+
+    semana = cp.get("semana")
+    fecha = cp.get("semana_termina")
+    if fecha:
+        try:
+            semana = datetime.datetime.strptime(
+                fecha, "%B %d, %Y").date().isocalendar()[1]
+        except ValueError:
+            pass
+    if not semana:
+        return
+
+    for titulo, d in tablas.items():
+        if d.get("tipo") != "condicion" or d.get("promedio_5a") is not None:
+            continue
+        crop = CP_CONDICION.get(titulo)
+        vals = list(((hist.get(crop) or {}).get(str(semana)) or {}).values())
+        if not vals:
+            continue
+        d["promedio_5a"] = round(sum(vals) / len(vals), 1)
+        d["promedio_5a_n"] = len(vals)
+        print(f"Prom. 5 anios de {titulo} reconstruido desde el historico: "
+              f"{d['promedio_5a']}% (n={len(vals)})")
 
 
 def main():
@@ -53,6 +104,15 @@ def main():
     for k in CLAVES_DUROS:
         if k in nuevos:
             combinado[k] = nuevos[k]
+
+    # El histórico de condición es una tabla fija (las 5 campañas de
+    # referencia ya cerradas). Si la corrida no lo trajo porque QuickStats no
+    # contestó, se conserva el que ya estaba: no cambia de una semana a otra.
+    if not combinado.get("condicion_hist") and (actual.get("condicion_hist")):
+        combinado["condicion_hist"] = actual["condicion_hist"]
+        print("Aviso: se conserva el histórico de condición anterior.")
+
+    _completar_prom5_desde_hist(combinado)
 
     # El RONI vive en un servidor universitario que se cae seguido. Si esta
     # corrida no lo trajo, se conserva el último valor bueno en vez de dejar

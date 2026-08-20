@@ -593,6 +593,39 @@ def build_progress(year):
     }
 
 
+ANIOS_PROM5 = 5
+
+
+def build_condicion_hist(anio):
+    """
+    Histórico de condición de las 5 campañas de referencia, semana por semana.
+
+    Esto no cambia nunca: 2021-2025 hoy ya está cerrado. Se guarda en el
+    index.html para que el promedio de 5 años sea una consulta a una tabla fija
+    y no dependa de que QuickStats conteste todas las semanas. Lo único que
+    cambia semana a semana es qué columna de esa tabla se lee.
+
+    Formato: {cultivo: {"semana": {"anio": ge}}}, con las claves en texto
+    porque el bloque viaja como JSON dentro del HTML.
+    """
+    if not _GE_CACHE:
+        return None
+    ventana = list(range(anio - ANIOS_PROM5, anio))
+    hist = {}
+    for crop, ge in _GE_CACHE.items():
+        por_semana = {}
+        for (y, w), v in ge.items():
+            if y in ventana:
+                por_semana.setdefault(str(w), {})[str(y)] = v
+        if por_semana:
+            hist[crop] = por_semana
+    if not hist:
+        return None
+    log(f"histórico de condición: {len(hist)} cultivos, campañas "
+        f"{ventana[0]}-{ventana[-1]}")
+    return {"ventana": ventana, "cultivos": hist}
+
+
 def completar_prom5(progress, anio):
     """
     Agrega el promedio de 5 años a las tablas de CONDICIÓN.
@@ -672,6 +705,7 @@ def main():
         intentar("condicion", lambda: build_condition(args.nass_key, args.year))
     else:
         log("sin NASS_API_KEY: se omite la condicion de cultivos")
+    intentar("condicion_hist", lambda: build_condicion_hist(args.year))
     intentar("crop_progress", lambda: build_progress(args.year))
     if "crop_progress" in out:
         try:
