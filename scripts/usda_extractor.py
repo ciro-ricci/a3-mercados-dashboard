@@ -198,7 +198,28 @@ def shape_series(psd):
 
 
 # ── NASS QuickStats ────────────────────────────────────────────────────
-NASS_CROPS = {"maiz": "CORN", "soja": "SOYBEANS", "trigo": "WHEAT"}
+# El trigo se pide por clase. Sumar "WHEAT" sin filtrar mezcla el de invierno
+# con el de primavera en las semanas 22-27, cuando NASS informa los dos, y da
+# porcentajes imposibles (73-85% de bueno+excelente).
+NASS_CROPS = {
+    "maiz":            {"commodity_desc": "CORN"},
+    "soja":            {"commodity_desc": "SOYBEANS"},
+    "trigo":           {"commodity_desc": "WHEAT", "class_desc": "WINTER"},
+    "trigo_primavera": {"commodity_desc": "WHEAT", "class_desc": "SPRING, (EXCL DURUM)"},
+}
+
+# Título de la tabla del Crop Progress -> cultivo interno, para poder calcular
+# el promedio de 5 años de las tablas de condición (NASS no lo publica).
+CP_CONDICION = {
+    "Corn Condition":         "maiz",
+    "Soybean Condition":      "soja",
+    "Winter Wheat Condition": "trigo",
+    "Spring Wheat Condition": "trigo_primavera",
+}
+
+# Serie cruda {(año, semana ISO): % bueno+excelente} por cultivo. La llena
+# build_condition y la reusa el promedio de 5 años, para no repetir llamadas.
+_GE_CACHE = {}
 
 
 def nass_get(key, **params):
@@ -229,16 +250,16 @@ def build_condition(key, current_year):
     import datetime as _dt
 
     out = {}
-    for crop, nass_name in NASS_CROPS.items():
+    for crop, filtro in NASS_CROPS.items():
         recs = []
         for unit in ("PCT GOOD", "PCT EXCELLENT"):
             recs += nass_get(
                 key,
                 source_desc="SURVEY",
-                commodity_desc=nass_name,
                 statisticcat_desc="CONDITION",
                 agg_level_desc="NATIONAL",
                 unit_desc=unit,
+                **filtro,
             )
         if not recs:
             out[crop] = None
@@ -254,6 +275,7 @@ def build_condition(key, current_year):
             except (ValueError, TypeError, KeyError):
                 continue
 
+        _GE_CACHE[crop] = dict(ge)
         years_avail = sorted({y for y, _ in ge})
         if not years_avail:
             out[crop] = None
@@ -559,12 +581,62 @@ def build_progress(year):
         return None
     txt = fetch(url).decode("utf-8", errors="replace")
     released = re.search(r"Released\s+(\w+ \d+, \d{4})", txt)
+    # La fecha de cierre de la semana es la que alinea el promedio de 5 anios
+    # con la misma semana de campanias anteriores.
+    fin = re.search(r"Week Ending\s+(\w+ \d+, \d{4})", txt)
     return {
         "semana": week,
         "publicado": released.group(1) if released else None,
+        "semana_termina": fin.group(1) if fin else None,
         "url": url,
         "tablas": parse_progress(txt),
     }
+
+
+def completar_prom5(progress, anio):
+    """
+    Agrega el promedio de 5 años a las tablas de CONDICIÓN.
+
+    NASS lo publica para las tablas de avance ("2021-2025 Average") pero no
+    para las de condición, que traen solo las cinco categorías de la semana.
+    Se reconstruye con el histórico de QuickStats: bueno+excelente en la
+    MISMA semana ISO de cada una de las 5 campañas anteriores.
+
+    Se informa n: si alguna campaña no tiene dato para esa semana (pasa
+    cuando la campaña arrancó o terminó corrida), el promedio va sobre menos
+    de 5 años y conviene que se note.
+    """
+    import datetime as _dt
+
+    if not progress or not progress.get("tablas") or not _GE_CACHE:
+        return progress
+
+    fecha = progress.get("semana_termina")
+    semana = progress.get("semana")
+    if fecha:
+        try:
+            semana = _dt.datetime.strptime(fecha, "%B %d, %Y").date().isocalendar()[1]
+        except ValueError:
+            pass
+    if not semana:
+        return progress
+
+    for titulo, datos in progress["tablas"].items():
+        if datos.get("tipo") != "condicion":
+            continue
+        crop = CP_CONDICION.get(titulo)
+        ge = _GE_CACHE.get(crop) if crop else None
+        if not ge:
+            continue
+        vals = [ge[(y, semana)] for y in range(anio - 5, anio) if (y, semana) in ge]
+        if not vals:
+            continue
+        datos["promedio_5a"] = round(sum(vals) / len(vals), 1)
+        datos["promedio_5a_n"] = len(vals)
+        log(f"prom 5a {titulo} (semana {semana}): "
+            f"{datos['promedio_5a']}% sobre {len(vals)} campanias")
+
+    return progress
 
 
 def main():
@@ -601,6 +673,11 @@ def main():
     else:
         log("sin NASS_API_KEY: se omite la condicion de cultivos")
     intentar("crop_progress", lambda: build_progress(args.year))
+    if "crop_progress" in out:
+        try:
+            completar_prom5(out["crop_progress"], args.year)
+        except Exception as e:                      # noqa: BLE001
+            log(f"ERROR calculando el promedio de 5 anios: {e}")
     intentar("enso", build_enso)
     intentar("sequia", build_drought)
 
