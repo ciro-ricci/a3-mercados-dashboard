@@ -627,9 +627,9 @@ window.LANDING_LINKS = {
    BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
    oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
    valores (oficial, CCL, soja/maíz/trigo, etc.) siguen viniendo de la sheet.
-   Última actualización: 2026-08-19
+   Última actualización: 2026-08-20
    ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
-const BCRA_TC_OVERRIDE = 1494.1268;
+const BCRA_TC_OVERRIDE = 1497.5332;
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 // Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
 const PIZARRA_SOJ_2025={
@@ -9326,10 +9326,12 @@ window._initDeviceFlow=function(){
 /* ═══════════════════════════════════════════════════════════════════════
    NEWS_DATA — Claude actualiza este bloque cada vez que corre el scraping.
    Las noticias con más de 7 días son eliminadas automáticamente del array.
-   Última actualización: 2026-08-19
+   Última actualización: 2026-08-20
    ═══════════════════════════════════════════════════════════════════════ */
 const NEWS_DATA = [
   {fecha:'2026-08-19',fuente:'Bichos de Campo',cultivo:'Maíz / Soja',titulo:'El maíz sigue dando la nota: Se registraron embarques por más de un millón de toneladas con un “pase” que continúa siendo imbatible',resumen:'Este martes los valores del maíz y de la soja disponible en el mercado argentino registraron alzas considerables –que superaron con creces a la de los precios futuros– de la mano de la presión de demanda realizada por agroexportadores para completar embarques. Luego del feriado del lunes, este martes se registraron Declaraciones Juradas de Ventas […]',link:'https://bichosdecampo.com/el-maiz-sigue-dando-la-nota-se-registraron-embarques-por-mas-de-un-millon-de-tonelada-con-un-pase-que-sigue-siendo-imbatible/'},
+  {fecha:'2026-08-19',fuente:'Infocampo',cultivo:'Maíz',titulo:'Estudiaron el riego por goteo durante 9 años y confirmaron 77% más rendimiento en el maíz temprano',resumen:'Un estudio privado llevado a cabo por una empresa cordobesa comprobó que el riego por goteo subterráneo no solo incrementa la productividad del maíz, sino que también aporta estabilidad frente a la variabilidad climática y mejora la rentabilidad del sistema.',link:'https://www.infocampo.com.ar/estudiaron-el-riego-por-goteo-durante-9-anos-y-confirmaron-77-mas-rendimiento-en-el-maiz-temprano/'},
+  {fecha:'2026-08-19',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Apareció la demanda china (¡enhorabuena!) y los precios de la soja argentina explotaron',resumen:'Finalmente, con la consolidación de la demanda china –que está originando volúmenes considerables de poroto en la Argentina– la capacidad teórica de pago de los exportadores superó a la de la industria oleaginosa. El valor FOB oficial “spot” del poroto de soja argentino se encuentra en 477 u$s/tonelada, una cifra 8,6% superior a la registrada […]',link:'https://bichosdecampo.com/aparecio-la-demanda-china-enhorabuena-y-los-precios-de-la-soja-argentina-explotaron/'},
   {fecha:'2026-08-18',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'Faltan comercializar más de 8,0 millones de toneladas de trigo 2025/26: Estás loco si estás vendiendo a ciegas',resumen:'Todavía restan ingresar al circuito comercial argentino 8,3 millones de toneladas de trigo 2025/26 considerando un stock remanente para la nueva campaña 2026/27 de 3,9 millones, según un análisis realizado por Kimei Cereales en base a datos oficiales. “Por el lado de la industria, los valores trepan hasta los 300 u$s/tonelada según calidad y eso […]',link:'https://bichosdecampo.com/faltan-comercializar-mas-de-80-millones-de-toneladas-de-trigo-2025-26-estas-loco-si-estas-vendiendo-a-ciegas/'},
   {fecha:'2026-08-18',fuente:'Infocampo',cultivo:'Maíz',titulo:'El maíz explota en los puertos: un frenético ritmo de exportaciones marca un nuevo récord para el cereal',resumen:'En lo que va de agosto, los exportadores han anotado DJVE de maíz por casi 8 millones de toneladas, ya superando el máximo de todo marzo, cuando fueron 6,84 millones. El cereal argentino se encamina a ser el segundo más exportado a nivel mundial.',link:'https://www.infocampo.com.ar/el-maiz-explota-en-los-puertos-un-frenetico-ritmo-de-exportaciones-marca-un-nuevo-record-para-el-cereal/'},
   {fecha:'2026-08-18',fuente:'Bichos de Campo',cultivo:'Maíz',titulo:'Semana complicada: Lluvias torrenciales en zonas “pasadas” de agua con pronóstico de heladas muy fuertes',resumen:'Con buena parte de la cosecha de maíz por levantar y la siembra de girasol en plena fase inicial –la implantación de cereales de invierno ya fue concluida–, el agro argentino y uruguayo tiene por delante días complicados en materia meteorológica. “Una ciclogénesis de evolución lenta afecta el nordeste argentino y dominará el pronóstico meteorológico […]',link:'https://bichosdecampo.com/semana-complicada-lluvias-torrenciales-en-zonas-pasadas-de-agua-con-pronostico-de-heladas-muy-fuertes/'},
