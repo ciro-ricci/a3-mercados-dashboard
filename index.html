@@ -10037,6 +10037,12 @@ let _finTNA=32;
 let _finVA={soj:null,mai:null,tri:null};
 let _finModo='pesos';
 let _finTasaUsd=7;
+  const FIN_TARGET_VENC={soj:['SEP26','NOV26','ENE27'],mai:['SEP26','DIC26','ENE27'],tri:['SEP26','NOV26','ENE27']};
+  function _finPickVenc(futs,cultKey){
+  const targets=FIN_TARGET_VENC[cultKey]||[];
+  const picked=targets.map(v=>(futs||[]).find(r=>r.venc_display===v&&r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste)))).filter(Boolean);
+  return picked.length?picked:sortByVenc((futs||[]).filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste)))).slice(0,3);
+  }
 
 function _finSetCultivo(c){_finCultivo=c;buildFinanciamientoPanel();}
 function _finSetTNA(v){const n=parseFloat(String(v).replace(',','.'));if(!isNaN(n)&&n>0){_finTNA=n;buildFinanciamientoPanel();}}
@@ -10107,7 +10113,7 @@ function buildFinanciamientoDolar(panel,modoBtnsHtml){
       </div>`;
     }
     const dispUsd=_finGetVAUsd(cv.key);
-    const validFuts=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste)))).slice(0,3);
+    const validFuts=_finPickVenc(futs,cv.key);
     const cards=validFuts.map(f=>{
       const vencDate=VENC_DATES[f.venc_display];
       const dias=vencDate?Math.round((vencDate-today)/(1000*60*60*24)):null;
@@ -10195,7 +10201,7 @@ function buildFinanciamientoPesos(panel,modoBtnsHtml){
   const fmtARS=n=>n!=null?n.toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0}):'—';
   const fmtUSD=n=>n!=null?n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
   // 3 próximos vencimientos válidos
-  const validFuts=sortByVenc(futs.filter(r=>r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste)))).slice(0,3);
+  const validFuts=_finPickVenc(futs,cult);
   const cards=validFuts.map(f=>{
     const vencDate=VENC_DATES[f.venc_display];
     const dias=vencDate?Math.round((vencDate-today)/(1000*60*60*24)):null;
