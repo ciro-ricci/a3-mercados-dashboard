@@ -1977,13 +1977,13 @@ function buildStratPanel(){const panel=document.getElementById('panel-estrategia
 // de cultivos, cada uno con sus factores (alcista/bajista/neutral) y fuente.
 // BRIEF_GRANOS_DATA:START — bloque autogenerado por la tarea programada, no editar a mano
 const BRIEF_GRANOS_DATA = {
-  fecha: '2026-08-24',
+  fecha: '2026-08-25',
   resumen: [
-    '<b>Trigo a máximos de casi dos años:</b> los ataques ucranianos sobre las terminales graneleras de Novorossiysk dejaron fuera de servicio más del 90% de la capacidad exportadora de Rusia y Ucrania en la cuenca Azov-Mar Negro, mientras el USDA recortó la cosecha de trigo de invierno de EEUU a 989,9 M bu (-29% interanual), la más baja desde 1963.',
-    '<b>Soja sube por sequía en el Medio Oeste:</b> los futuros de Chicago superaron US$12,20/bu, el nivel más alto desde el pico de más de dos años del 24 de julio, con exportadores privados vendiendo 66,4 M bu (incluida nueva cosecha 2026/27) en medio de la distensión arancelaria EEUU-China.',
-    '<b>Maíz sostenido por exportaciones récord de EEUU:</b> el USDA elevó por sexta vez en el año su proyección de exportaciones a 3.400 M bu por demanda de México, mientras en Argentina la cosecha tardía sigue atrasada por un clima atípico en la Región Núcleo.',
-    '<b>Petróleo firme sobre US$87/barril</b> mejora los márgenes de biodiésel y sostiene la demanda de aceites vegetales, aunque una propuesta en California para limitar el aceite de soja/canola al 20% de inclusión en biocombustibles LCFS presiona puntualmente al aceite de soja.',
-    '<b>Girasol argentino en niveles récord:</b> cosecha 2025/26 proyectada en 6,2 Mt y aceite firme en Rotterdam (US$1.520-1.540/t) sostienen precios locales en torno a US$500-520/t en Rosario y San Lorenzo.'
+    '<b>Trigo dispara por Mar Negro:</b> la escalada Rusia-Ucrania volvió a golpear infraestructura portuaria (Novorossiysk) y SovEcon recortó en 1 Mt las exportaciones mensuales previstas de Ucrania (a 2,2 Mt, muy por debajo de los 4,5 Mt de agosto 2025); futuros CBOT en máximos de casi 3 años.',
+    '<b>Maíz sube por dudas de rinde en EEUU:</b> el Pro Farmer Crop Tour relevó rindes por debajo del año pasado y de lo proyectado por el USDA (Illinois 115,6 qq/ha vs. 133,1 qq/ha oficial), sumado a reservas finales más ajustadas.',
+    '<b>China sigue comprando soja de EEUU:</b> otras 13 cargas (~800.000 t) reservadas el 6/8, acercándose a un cuarto de la meta anual tras la baja del arancel chino del 10% a productos agrícolas de EEUU.',
+    '<b>Girasol en niveles excepcionales:</b> disponible cerca de USD 500/t y nueva cosecha argentina entre USD 420-450/t, sostenido por dudas de rinde en Ucrania/Rusia/Bulgaria/Rumania y la suba de aceites de soja y palma.',
+    '<b>Petróleo retrocede:</b> WTI y Brent cayeron cerca de 2-3% por toma de ganancias, a la espera de definiciones sobre sanciones de EEUU a Irán; presión bajista de corto plazo sobre el complejo de aceites/biodiesel.'
   ],
   cultivos: [
     {
@@ -1991,12 +1991,11 @@ const BRIEF_GRANOS_DATA = {
       icon: '🫘',
       nombre: 'Soja (poroto, harina y aceite)',
       factores: [
-        { dir: 'alcista', titulo: 'Soja sube a máximo de casi un mes por sequía en EEUU', texto: 'La preocupación por la condición del cultivo en el Medio Oeste llevó a los futuros por encima de US$12,20/bu, el nivel más alto desde el pico de más de dos años de US$12,50 alcanzado el 24 de julio.', fuente: 'Trading Economics', url: 'https://tradingeconomics.com/commodity/soybeans' },
-        { dir: 'alcista', titulo: 'Fuertes ventas de exportación', texto: 'Exportadores privados vendieron 5,5 M bu para destinos sin confirmar más 63,3 M bu de nueva cosecha 2026/27 (total 66,4 M bu); los embarques semanales subieron 15% respecto del promedio de cuatro semanas.', fuente: 'Farm Progress', url: 'https://www.farmprogress.com/marketing/flash-sales' },
-        { dir: 'alcista', titulo: 'Distensión arancelaria EEUU-China', texto: 'China acordó eliminar su arancel recíproco del 10% sobre productos agrícolas de EEUU, incluida la soja, como parte del acuerdo comercial post cumbre Trump-Xi.', fuente: 'AgWeb', url: 'https://www.agweb.com/news/china-drop-10-tariff-u-s-ag-goods-including-soybeans' },
-        { dir: 'alcista', titulo: 'Petróleo firme sostiene el aceite de soja', texto: 'El WTI opera sobre US$87/barril (+2% en la rueda), mejorando la ecuación del biodiésel y dando soporte a la demanda industrial de aceite de soja.', fuente: 'Forbes Advisor', url: 'https://www.forbes.com/advisor/investing/oil-prices-today/' },
-        { dir: 'bajista', titulo: 'Propuesta en California presiona al aceite de soja', texto: 'Una propuesta para limitar el aceite de soja y canola al 20% de inclusión en biodiésel y diésel renovable para calificar a créditos LCFS pesó sobre los futuros de aceite de soja.', fuente: 'Barchart', url: 'https://www.barchart.com/story/news/28023144/soybeans-round-out-wednesday-with-strength' },
-        { dir: 'bajista', titulo: 'Fondos recortan posición larga', texto: 'Según el último COT de la CFTC disponible (semana del 11 de agosto), los fondos especulativos redujeron su neto largo en soja a 109.109 contratos, 23.415 menos que la semana previa.', fuente: 'CFTC / AGSIST', url: 'https://agsist.com/cot' }
+        { dir:'alcista', titulo:'China confirma más compras', texto:'China reservó al menos 13 cargas adicionales (~800.000 t) de soja estadounidense el 6/8, acercándose a un cuarto de su meta de compra anual tras la baja del arancel del 10% a productos agrícolas de EEUU.', fuente:'Bloomberg', url:'https://www.bloomberg.com/news/articles/2026-08-06/china-books-13-more-us-soy-cargoes-nearing-quarter-of-target' },
+        { dir:'alcista', titulo:'Pro Farmer ve menos vainas por muestra', texto:'En Illinois se contaron en promedio 1430 vainas por muestra vs. 1479 en 2025, lo que limita el optimismo sobre el rinde final de la oleaginosa en EEUU.', fuente:'La Nación (Campo)', url:'https://www.lanacion.com.ar/economia/campo/la-escalada-en-la-guerra-entre-rusia-y-ucrania-vuelve-a-tensionar-el-mercado-de-granos-nid20082026/' },
+        { dir:'bajista', titulo:'Lluvias en el Medio Oeste', texto:'Precipitaciones recientes en el Medio Oeste de EEUU mejoraron la condición de los lotes de soja y limitaron las subas de precio; contrato septiembre CBOT cerró en USD 448,55/t, con leve baja diaria.', fuente:'La Nación (Campo)', url:'https://www.lanacion.com.ar/economia/campo/la-escalada-en-la-guerra-entre-rusia-y-ucrania-vuelve-a-tensionar-el-mercado-de-granos-nid20082026/' },
+        { dir:'alcista', titulo:'Aceite de soja impulsado por petróleo y aceite de palma', texto:'La suba del aceite de soja recibe impulso del petróleo, mientras el aceite de palma refleja incertidumbre productiva en Indonesia y Malasia, ambos factores de soporte para el complejo aceites.', fuente:'La Nación (Campo)', url:'https://www.lanacion.com.ar/economia/campo/la-escalada-en-la-guerra-entre-rusia-y-ucrania-vuelve-a-tensionar-el-mercado-de-granos-nid20082026/' },
+        { dir:'neutral', titulo:'Condición de cultivo en EEUU estable', texto:'USDA relevó soja en 61% good-to-excellent al 16/8, con 96% del área en floración y 85% formando vainas, en línea a levemente por delante del promedio de 5 años.', fuente:'DTN Progressive Farmer', url:'https://www.dtnpf.com/agriculture/web/ag/news/article/2026/08/17/usda-crop-progress-corn-rated-60-61' }
       ]
     },
     {
@@ -2004,10 +2003,11 @@ const BRIEF_GRANOS_DATA = {
       icon: '🌽',
       nombre: 'Maíz',
       factores: [
-        { dir: 'alcista', titulo: 'USDA eleva exportaciones de EEUU a récord', texto: 'El USDA subió por sexta vez en el año su estimación de exportaciones de maíz 2025/26 a un récord de 3.400 M bu, impulsado por la demanda robusta de México y otros importadores.', fuente: 'Farm Progress', url: 'https://www.farmprogress.com/marketing/corn-soybeans-rally-after-usda-yields-come-up-short' },
-        { dir: 'neutral', titulo: 'USDA aumenta el área sembrada en EEUU', texto: 'El informe de producción de agosto elevó el área sembrada de maíz en 1,4 M de acres, a 96,7 M de acres, camino a una cosecha récord pese a la sequía reciente.', fuente: 'Wisconsin Farmer / USA Today Network', url: 'https://www.wisfarmer.com/story/news/2026/08/19/usda-boosts-corn-soybean-outlook-as-wheat-crop-sinks-to-50-year-low/91347960007/' },
-        { dir: 'bajista', titulo: 'Fondos recortan posición larga en maíz', texto: 'Los fondos especulativos bajaron su neto largo a 125.875 contratos en el último COT disponible (semana del 11 de agosto), 18.946 menos que la semana anterior.', fuente: 'CFTC / AGSIST', url: 'https://agsist.com/cot' },
-        { dir: 'neutral', titulo: 'Cosecha tardía atrasada en Argentina', texto: 'Un clima atípico en la Región Núcleo demoró la trilla del maíz tardío, con buena parte de la superficie aún pendiente de cosecha; la Bolsa de Cereales de Rosario proyecta 66 Mt para la campaña 2026/27.', fuente: 'Ruralnet', url: 'https://ruralnet.com.ar/maiz-tardio-trigo-clima-region-nucleo-agosto-2026/' }
+        { dir:'alcista', titulo:'Pro Farmer Crop Tour decepciona', texto:'El relevamiento de campo calculó un rinde promedio en Illinois de 115,6 qq/ha, frente a 125,3 qq/ha en 2025 y muy por debajo de los 133,1 qq/ha proyectados por el USDA para 2026/27.', fuente:'La Nación (Campo)', url:'https://www.lanacion.com.ar/economia/campo/la-escalada-en-la-guerra-entre-rusia-y-ucrania-vuelve-a-tensionar-el-mercado-de-granos-nid20082026/' },
+        { dir:'alcista', titulo:'USDA recorta stocks finales de EEUU', texto:'El USDA redujo las existencias finales previstas para Estados Unidos y las reservas mundiales, achicando la holgura del balance de oferta y demanda pese a una producción aún elevada.', fuente:'La Nación (Campo)', url:'https://www.lanacion.com.ar/economia/campo/la-escalada-en-la-guerra-entre-rusia-y-ucrania-vuelve-a-tensionar-el-mercado-de-granos-nid20082026/' },
+        { dir:'alcista', titulo:'Menor exportación proyectada de Ucrania', texto:'El USDA en Kiev proyectó hasta 9 millones de toneladas menos de exportación de maíz para 2026/27 respecto de lo previsto inicialmente, por el impacto de la guerra en la logística portuaria.', fuente:'Bichos de Campo', url:'https://bichosdecampo.com/la-pregunta-del-millon-que-nadie-puede-responder-con-precision-cuanto-maiz-y-trigo-dejaran-de-exportar-rusia-y-ucrania/' },
+        { dir:'bajista', titulo:'Condición de cultivo por debajo del año pasado', texto:'El maíz estadounidense fue calificado 60% good-to-excellent al 16/8, 11 puntos porcentuales por debajo del 71% del año anterior, aunque el desarrollo (silking 97%) está en línea con el promedio.', fuente:'DTN Progressive Farmer', url:'https://www.dtnpf.com/agriculture/web/ag/news/article/2026/08/17/usda-crop-progress-corn-rated-60-61' },
+        { dir:'neutral', titulo:'Cosecha atrasada en Argentina', texto:'Las labores de maíz en Argentina siguen atrasadas por cuestiones climáticas, con una intención de siembra 2026/27 en baja (10,4 millones de hectáreas) frente al ciclo anterior.', fuente:'La Capital', url:'https://www.lacapital.com.ar/agro/ciclo-202627-se-sembrara-menos-maiz-pero-mas-soja-n10275120.html' }
       ]
     },
     {
@@ -2015,10 +2015,11 @@ const BRIEF_GRANOS_DATA = {
       icon: '🌾',
       nombre: 'Trigo',
       factores: [
-        { dir: 'alcista', titulo: 'Ataques ucranianos paralizan la exportación rusa por el Mar Negro', texto: 'Los ataques con drones sobre las terminales graneleras de Novorossiysk dejaron fuera de servicio más del 90% de la capacidad exportadora de Rusia y Ucrania en la cuenca Azov-Mar Negro durante la parte más activa de la temporada.', fuente: 'The Moscow Times', url: 'https://www.themoscowtimes.com/2026/08/17/ukrainian-strikes-halt-most-russian-grain-exports-in-the-black-sea-a93517' },
-        { dir: 'alcista', titulo: 'Rusia exportaría el menor volumen de agosto en más de una década', texto: 'Rusia, el mayor exportador mundial de trigo, iría camino a embarcar entre 3,0 y 3,4 M de toneladas en agosto, muy por debajo del promedio de cinco años de 5 M t, presionando a compradores de Medio Oriente, África y Asia hacia proveedores más caros.', fuente: 'CNBC', url: 'https://www.cnbc.com/2026/08/13/ukraine-russia-novorossiysk-grain.html' },
-        { dir: 'alcista', titulo: 'USDA recorta la cosecha de trigo de EEUU a mínimo desde 1963', texto: 'La producción de trigo de invierno de EEUU se redujo a 989,9 M bu (-29% interanual), la más baja en 63 años, llevando el total de todas las variedades a 1.531 M bu.', fuente: 'Wisconsin Farmer / USA Today Network', url: 'https://www.wisfarmer.com/story/news/2026/08/19/usda-boosts-corn-soybean-outlook-as-wheat-crop-sinks-to-50-year-low/91347960007/' },
-        { dir: 'neutral', titulo: 'Argentina asegura cosecha récord 2025/26 pero prevé caída para 2026/27', texto: 'Tras una campaña 2025/26 récord de 27,8 Mt, la Bolsa de Cereales proyecta una caída del 23,4% en la producción 2026/27, a 21,3 Mt, por la elevada incertidumbre climática con el 95% del área ya sembrada.', fuente: 'Agronews Castilla y León', url: 'https://www.agronewscastillayleon.com/argentina-caida-trigo-2026-2027-soja-maiz/' }
+        { dir:'alcista', titulo:'Ataques a infraestructura portuaria en el Mar Negro', texto:'La escalada Rusia-Ucrania volvió a afectar puertos, con Novorossiysk (90% de las exportaciones rusas) prácticamente paralizado; un tercio del trigo mundial sale de esa región.', fuente:'Infobae / The Economist', url:'https://www.infobae.com/economist/2026/08/25/la-renovada-amenaza-a-los-suministros-mundiales-de-cereales/' },
+        { dir:'alcista', titulo:'SovEcon recorta exportaciones de Ucrania', texto:'La consultora redujo en 1 millón de toneladas su estimación mensual de exportación de trigo ucraniano, a 2,2 Mt, muy por debajo de los 4,5 Mt embarcados en agosto de 2025.', fuente:'La Nación (Campo)', url:'https://www.lanacion.com.ar/economia/campo/la-escalada-en-la-guerra-entre-rusia-y-ucrania-vuelve-a-tensionar-el-mercado-de-granos-nid20082026/' },
+        { dir:'alcista', titulo:'USDA recorta producción mundial de trigo', texto:'En su informe de agosto el USDA bajó su cálculo de producción global de trigo 2026/27, proyectando una caída respecto de la campaña anterior; contrato septiembre cerró en USD 250,87/t.', fuente:'La Nación (Campo)', url:'https://www.lanacion.com.ar/economia/campo/la-escalada-en-la-guerra-entre-rusia-y-ucrania-vuelve-a-tensionar-el-mercado-de-granos-nid20082026/' },
+        { dir:'bajista', titulo:'Clima seco favorece cosecha en Argentina', texto:'Un escenario de clima seco favorecería el avance de la cosecha de trigo en Argentina, en contraste con las lluvias que complican a Brasil, según relevamiento de LSEG.', fuente:'LSEG vía GBM Media', url:'https://gbm.com/media/noticia/clima-seco-favorecera-cosecha-de-trigo-en-argentina-mientras-que-brasil-se-enfrenta-a-lluvias-lseg/' },
+        { dir:'neutral', titulo:'Futuros en máximos de casi 3 años', texto:'Los futuros de trigo de referencia subieron a máximos de casi tres años, reflejando el riesgo de una menor llegada efectiva de cereal al mercado internacional más que un cambio en la oferta física total.', fuente:'Cronista / Financial Times', url:'https://www.cronista.com/financial-times/fuerte-suba-del-trigo-amenaza-con-un-shock-global-de-precios-en-los-alimentos/' }
       ]
     },
     {
@@ -2026,20 +2027,15 @@ const BRIEF_GRANOS_DATA = {
       icon: '🌻',
       nombre: 'Girasol',
       factores: [
-        { dir: 'neutral', titulo: 'Precio firme en Rosario y San Lorenzo', texto: 'El disponible cotizó en torno a US$500/t en la cámara Rosario y hasta US$520/t en San Lorenzo, sostenido por la demanda de exportación de aceite.', fuente: 'Infocampo', url: 'https://www.infocampo.com.ar/precio-del-girasol-hoy-3-agosto-2026/' },
-        { dir: 'alcista', titulo: 'Aceite de girasol firme y stocks mundiales ajustados', texto: 'El aceite cotiza entre US$1.520 y US$1.540/t en Rotterdam para posiciones agosto-septiembre; la relación stocks/consumo mundial cayó a 5,8% por la menor participación de Ucrania en el comercio global.', fuente: 'Agrolatam', url: 'https://www.agrolatam.com/agricultura/girasol-record-cosecha-2026-exportaciones-precios/' },
-        { dir: 'alcista', titulo: 'Cosecha récord y buenos márgenes en Argentina', texto: 'Se proyecta una cosecha histórica de 6,2 M t para la campaña 2025/26, con precios de hasta US$400/t en posiciones junio-agosto que disparan la rentabilidad del cultivo.', fuente: 'Ruralnet', url: 'https://ruralnet.com.ar/girasol-2026-proyectan-62-millones-de-toneladas-y-precios-de-hasta-us-400-que-disparan-la-rentabilidad/' }
+        { dir:'alcista', titulo:'Precios en niveles excepcionales', texto:'El disponible se ubica cerca de USD 500/t y la nueva cosecha argentina se ofrece entre USD 420 y 450/t; un analista recomienda avanzar con ~20% de venta de la producción a estos valores.', fuente:'La Nación (Campo)', url:'https://www.lanacion.com.ar/economia/campo/la-escalada-en-la-guerra-entre-rusia-y-ucrania-vuelve-a-tensionar-el-mercado-de-granos-nid20082026/' },
+        { dir:'alcista', titulo:'Dudas de rinde en el Mar Negro y Europa del Este', texto:'Persisten dudas sobre la producción en Bulgaria, Rumania, Ucrania y Rusia; se esperan temperaturas superiores a lo normal y pocas lluvias en el cinturón girasolero ucraniano en las próximas dos semanas.', fuente:'La Nación (Campo)', url:'https://www.lanacion.com.ar/economia/campo/la-escalada-en-la-guerra-entre-rusia-y-ucrania-vuelve-a-tensionar-el-mercado-de-granos-nid20082026/' },
+        { dir:'alcista', titulo:'Cosecha récord y exportaciones argentinas en alza', texto:'Argentina se encamina a una cosecha histórica de 6,2 millones de toneladas en 2025/26; las exportaciones del complejo girasolero crecieron 128,5% interanual en el primer semestre de 2026.', fuente:'Agrolatam / Infocampo', url:'https://www.agrolatam.com/agricultura/girasol-record-cosecha-2026-exportaciones-precios/' },
+        { dir:'neutral', titulo:'Aceite de girasol podría acompañar suba de aceites', texto:'El aceite de girasol podría seguir la tendencia alcista del aceite de soja y de palma, en un contexto de precios de Rotterdam entre USD 1.520 y 1.540/t para posiciones agosto-septiembre.', fuente:'La Nación (Campo)', url:'https://www.lanacion.com.ar/economia/campo/la-escalada-en-la-guerra-entre-rusia-y-ucrania-vuelve-a-tensionar-el-mercado-de-granos-nid20082026/' }
       ]
     },
-    {
-      id: 'mani',
-      icon: '🥜',
-      nombre: 'Maní',
-      factores: []
-    }
+    { id: 'mani', icon: '🥜', nombre: 'Maní', factores: [] }
   ]
 };
-
 // BRIEF_GRANOS_DATA:END
 
 function buildBriefGranosPanel(){
