@@ -92,4 +92,17 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git commit -m "Actualizacion automatica: datos USDA (PSD + Crop Progress + ONI) - $(date +%Y-%m-%d)"
-          git push
+          # Otros workflows (noticias, girasol) tambien escriben en main. Si uno
+          # pushea mientras este corre, el push se rechaza por non-fast-forward.
+          # Se reintenta reaplicando el commit sobre lo ultimo del remoto.
+          for intento in 1 2 3 4 5; do
+            if git push; then
+              echo "Push OK en el intento $intento"
+              exit 0
+            fi
+            echo "Push rechazado; rebase sobre origin/main y reintento ($intento)"
+            git pull --rebase --autostash origin main || exit 1
+            sleep $((intento * 5))
+          done
+          echo "No se pudo pushear despues de 5 intentos"
+          exit 1
