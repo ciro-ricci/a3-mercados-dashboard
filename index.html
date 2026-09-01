@@ -9453,8 +9453,12 @@ function buildUsdaPanel() {
     html += '<table class="u-table"><thead><tr><th>Indicador</th><th>Actual</th><th>Semana previa</th>' +
       '<th>Año previo</th><th>Prom. 5 años</th></tr></thead><tbody>';
     var keys = Object.keys(cp.tablas);
+    // Solo maíz, soja y trigo, y solo lo accionable: condición, avance de
+    // siembra y avance de cosecha. Las etapas intermedias de desarrollo
+    // (emergido, espigado, grano pastoso, dentado, madurez, vainas, caída de
+    // hojas) quedan afuera para que la tabla entre de un vistazo.
     var relevantes = keys.filter(function (k) {
-      return /Corn|Soybean|Wheat/i.test(k);
+      return /Corn|Soybean|Wheat/i.test(k) && /Condition|Planted|Harvested/i.test(k);
     });
     (relevantes.length ? relevantes : keys).forEach(function (k) {
       var t = cp.tablas[k];
