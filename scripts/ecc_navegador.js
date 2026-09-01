@@ -10,7 +10,16 @@
 // Devuelve: {filas:[{cultivo,campania,semana,condicion,siembra,cosecha}], ...}
 
 (async () => {
-  const CULTIVOS = { maiz: 1, soja: 2, trigo: 3 };   // ids del formulario
+  // id del formulario -> qué filas del archivo interesan.
+  // La base distingue soja de primera y de segunda (Soja1/Soja2) y maíz
+  // temprano y tardío (Maiz1/Maiz2). De soja se toma el agregado; el maíz se
+  // separa, porque temprano y tardío transitan el llenado en momentos
+  // distintos y promediarlos tapa la señal.
+  const PEDIDOS = [
+    { id: 3, filas: { trigo: 'trigo' } },
+    { id: 1, filas: { maiz1: 'maiz_temprano', maiz2: 'maiz_tardio' } },
+    { id: 2, filas: { soja: 'soja' } }
+  ];
   const ZONA_TOTAL = 16;
 
   // ── lector mínimo de xlsx (zip + XML), sin librerías externas
@@ -68,23 +77,22 @@
   ];
 
   const filas = [], errores = [];
-  for (const [crop, id] of Object.entries(CULTIVOS)) {
+  for (const pedido of PEDIDOS) {
     for (const camp of campanias) {
-      const url = '/admin/phpexcel/Examples/reporte_bd.php?cultivo=' + id +
+      const url = '/admin/phpexcel/Examples/reporte_bd.php?cultivo=' + pedido.id +
         '&campania=' + encodeURIComponent(camp) + '&zona=' + ZONA_TOTAL;
       try {
         const r = await fetch(url, { credentials: 'include' });
-        if (!r.ok) { errores.push(crop + ' ' + camp + ' http ' + r.status); continue; }
+        if (!r.ok) { errores.push(pedido.id + ' ' + camp + ' http ' + r.status); continue; }
         const datos = await leerXlsx(await r.arrayBuffer());
         for (const f of datos) {
           if (!f[0] || f[1] !== 'TOTAL' || !f[3]) continue;
-          // Solo el cultivo agregado, no Maiz1/Maiz2 ni Soja1/Soja2
-          const nombre = String(f[0]).toLowerCase();
-          if (nombre !== crop && !(crop === 'maiz' && nombre === 'maiz')) continue;
+          const clave = pedido.filas[String(f[0]).toLowerCase()];
+          if (!clave) continue;
           const cats = [5, 6, 7, 8, 9].map(i => num(f[i]) || 0);
           const suma = cats.reduce((a, b) => a + b, 0);
           filas.push({
-            cultivo: crop,
+            cultivo: clave,
             campania: String(f[2]).trim(),
             semana: Number(f[3]),
             // si las cinco categorías vienen en cero, esa semana no se relevó
@@ -93,7 +101,7 @@
             cosecha: num(f[20])
           });
         }
-      } catch (e) { errores.push(crop + ' ' + camp + ': ' + String(e).slice(0, 80)); }
+      } catch (e) { errores.push(pedido.id + ' ' + camp + ': ' + String(e).slice(0, 80)); }
     }
   }
 
