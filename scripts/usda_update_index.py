@@ -33,7 +33,7 @@ CP_CONDICION = {
 INICIO = "// USDA_DATA:START"
 FIN = "// USDA_DATA:END"
 CLAVES_DUROS = ("series", "condicion", "crop_progress", "enso", "sequia",
-                "condicion_hist")
+                "condicion_hist", "conab_prog")
 
 
 def _completar_prom5_desde_hist(datos):
