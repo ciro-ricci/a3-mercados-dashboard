@@ -518,6 +518,20 @@ def _row_numbers(chunk, label_pattern):
     return [0 if t == "-" else int(t) for t in toks]
 
 
+def _normalizar(texto):
+    """
+    NASS sirve los reportes con saltos de línea de Windows (CRLF).
+
+    Como el extractor decodifica bytes, el CR queda pegado al final de cada
+    línea. Eso rompía el título de las tablas de AVANCE ("Corn Dough - Selected
+    States<CR>"), que no matcheaba el patrón y se descartaba. Las de condición
+    zafaban de casualidad, porque su título sigue con ": Week Ending ..." y el
+    punto de la expresión regular se tragaba el CR. Resultado: se perdían las
+    15 tablas de avance y quedaban solo las 7 de condición.
+    """
+    return texto.replace("\r\n", "\n").replace("\r", "\n")
+
+
 def parse_progress(text):
     """
     Extrae las filas nacionales del reporte Crop Progress.
@@ -532,6 +546,7 @@ def parse_progress(text):
     La fila nacional se rotula "18 States", "15 States", etc. (no "United States").
     """
     tables = {}
+    text = _normalizar(text)
     chunks = re.split(r"\n(?=[A-Z][A-Za-z ,/&']+ - Selected States)", text)
 
     for ch in chunks:
@@ -579,7 +594,7 @@ def build_progress(year):
     url, week = find_latest_progress(year)
     if not url:
         return None
-    txt = fetch(url).decode("utf-8", errors="replace")
+    txt = _normalizar(fetch(url).decode("utf-8", errors="replace"))
     released = re.search(r"Released\s+(\w+ \d+, \d{4})", txt)
     # La fecha de cierre de la semana es la que alinea el promedio de 5 anios
     # con la misma semana de campanias anteriores.
