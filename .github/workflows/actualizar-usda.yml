@@ -58,6 +58,15 @@ jobs:
             --cache /tmp/psd \
             --year "$(date +%Y)"
 
+      - name: Progresso de safra de CONAB (Brasil)
+        run: |
+          pip install openpyxl --quiet
+          # Si CONAB no responde no se corta la corrida: el resto de los datos
+          # se publica igual y el bloque anterior de Brasil queda intacto.
+          python3 scripts/conab_progreso.py \
+            --out /tmp/conab_prog.json \
+            --merge-into /tmp/usda_data.json || echo "::warning::CONAB no respondio"
+
       - name: Actualizar el bloque USDA_DATA en index.html
         run: python3 scripts/usda_update_index.py --data /tmp/usda_data.json --index index.html
 
