@@ -30,7 +30,8 @@ FIN = "// ECC_DATA:END"
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
          "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
 ANIOS_PROM = 5
-COSECHA_SIN_CONDICION = 95
+SIEMBRA_MINIMA = 50
+COSECHA_MAXIMA = 90
 
 
 def log(m):
@@ -118,8 +119,8 @@ def acumular(semanas):
     # la Bolsa arrastra el último valor y a veces publica filas erróneas. Y
     # comparar la condición de un lote ya cosechado no aporta nada.
     for s in semanas:
-        cos = semanas[s][2]
-        if cos is not None and cos >= COSECHA_SIN_CONDICION:
+        sie, cos = semanas[s][1], semanas[s][2]
+        if (sie is None or sie <= SIEMBRA_MINIMA) or (cos is not None and cos >= COSECHA_MAXIMA):
             semanas[s][0] = None
     return semanas
 
