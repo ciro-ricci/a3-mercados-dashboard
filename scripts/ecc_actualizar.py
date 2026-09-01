@@ -30,25 +30,46 @@ FIN = "// ECC_DATA:END"
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
          "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
 ANIOS_PROM = 5
+COSECHA_SIN_CONDICION = 95
 
 
 def log(m):
     print(f"[ecc] {m}", file=sys.stderr)
 
 
-def orden_cronologico(semanas):
+def orden_cronologico(semanas, valores=None):
     """
     Ordena las semanas de una campaña respetando el cruce de año.
 
     "Semana" es la semana ISO del calendario, no la de la campaña. Como una
     campaña cruza dos años (maíz 2025/26 va de la semana 48 de 2025 a la 35 de
-    2026), ordenar por número da un orden equivocado. El orden real se recupera
-    buscando el hueco más grande en el círculo de semanas: la campaña arranca
-    justo después de ese hueco.
+    2026), ordenar por número da un orden equivocado.
+
+    El criterio bueno es la cosecha, que dentro de una campaña solo puede subir:
+    el punto donde cae de golpe es el corte entre un año y el siguiente. Sirve
+    incluso cuando la campaña cubre las 52 semanas y no hay hueco que delate el
+    arranque, que es el caso del maíz y la soja.
+
+    Si no hay cosecha informada todavía (trigo en pleno crecimiento), se cae al
+    hueco más grande del círculo de semanas.
     """
     s = sorted(int(x) for x in semanas)
     if len(s) < 2:
         return s
+
+    if valores:
+        cos = [valores.get(str(w), [None, None, None])[2] for w in s]
+        if any(v for v in cos if v):
+            caidas = []
+            for i in range(len(s)):
+                a, b = cos[i], cos[(i + 1) % len(s)]
+                if a is not None and b is not None:
+                    caidas.append((a - b, i))
+            if caidas:
+                caida, corte = max(caidas)
+                if caida > 20:                      # una caída real, no ruido
+                    return s[corte + 1:] + s[:corte + 1]
+
     huecos = [(s[i + 1] - s[i], i) for i in range(len(s) - 1)]
     huecos.append((s[0] + 53 - s[-1], len(s) - 1))
     _, corte = max(huecos)
@@ -69,7 +90,7 @@ def vigente(camps):
     de acá en adelante; la vieja ya no aporta decisión.
     """
     def clave(c):
-        sems = orden_cronologico(camps[c].keys())
+        sems = orden_cronologico(camps[c].keys(), camps[c])
         if not sems:
             return (0, 0, 0)
         return (anio_de(c) + (1 if sems[-1] < sems[0] else 0), sems[-1], anio_de(c))
@@ -86,17 +107,25 @@ def acumular(semanas):
     """
     for idx in (1, 2):
         tope = 0.0
-        for s in orden_cronologico(semanas.keys()):
+        for s in orden_cronologico(semanas.keys(), semanas):
             v = semanas[str(s)][idx]
             if v is not None and v > tope:
                 tope = v
             if tope > 0:
                 semanas[str(s)][idx] = tope
+
+    # Con la cosecha prácticamente terminada la condición deja de relevarse:
+    # la Bolsa arrastra el último valor y a veces publica filas erróneas. Y
+    # comparar la condición de un lote ya cosechado no aporta nada.
+    for s in semanas:
+        cos = semanas[s][2]
+        if cos is not None and cos >= COSECHA_SIN_CONDICION:
+            semanas[s][0] = None
     return semanas
 
 
 def comparar(camps, vig, idx):
-    sems = orden_cronologico(camps[vig].keys())
+    sems = orden_cronologico(camps[vig].keys(), camps[vig])
     if not sems:
         return None
     w = sems[-1]
