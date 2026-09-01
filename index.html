@@ -9382,6 +9382,59 @@ function eccHTML() {
   return html;
 }
 
+// ── Brasil — Progresso de Safra de CONAB ──────────────────────────────
+// CONAB ya publica el promedio de 5 años y las dos comparaciones, así que
+// acá no se calcula nada: se muestra lo que viene en la planilla semanal.
+
+function conabProgHTML() {
+  if (typeof USDA_DATA === 'undefined') return '';
+  var P = USDA_DATA.conab_prog;
+  if (!P || !P.cultivos) return '';
+
+  var nombres = {
+    soja: '🫘 Soja', maiz: '🌽 Maíz', maiz1: '🌽 Maíz 1ª safra',
+    maiz2: '🌽 Maíz 2ª safra (safrinha)', maiz3: '🌽 Maíz 3ª safra',
+    trigo: '🌾 Trigo'
+  };
+  var orden = ['soja', 'maiz', 'maiz1', 'maiz2', 'maiz3', 'trigo'];
+  var ops = [['plantio', 'Siembra'], ['colheita', 'Cosecha']];
+
+  var filas = '';
+  orden.forEach(function (cr) {
+    var d = P.cultivos[cr];
+    if (!d) return;
+    var base = d.plantio || d.colheita;
+    if (!base) return;
+
+    filas += '<tr class="sect"><td colspan="5">' + (nombres[cr] || cr) +
+      ' · safra ' + base.safra +
+      ' <span class="ecc-viejo">' + base.cobertura + '</span></td></tr>';
+
+    ops.forEach(function (o) {
+      var v = d[o[0]];
+      if (!v) return;
+      filas += '<tr><td>' + o[1] + '<span>% del área</span></td>' +
+        '<td><b>' + _eccPct(v.actual, 0) + '</b></td>' +
+        '<td>' + _eccPct(v.semana_previa, 0) + '</td>' +
+        '<td>' + _eccPct(v.anio_previo, 0) + '</td>' +
+        '<td>' + _eccPct(v.prom5, 1) + '</td></tr>';
+    });
+  });
+
+  if (!filas) return '';
+
+  return '<div class="u-card u-compact"><h3>Brasil — Avance de safra, semana al ' +
+    (P.fecha || '') + '<span class="u-freq">CONAB publica los lunes</span></h3>' +
+    '<table class="u-table ecc-tabla"><thead><tr><th>Indicador</th><th>Actual</th>' +
+    '<th>Semana previa</th><th>Año previo</th><th>Prom. 5 años</th></tr></thead><tbody>' +
+    filas + '</tbody></table><div class="u-note">Fuente: <a class="u-src" href="' +
+    P.url + '" target="_blank" rel="noopener">' + P.fuente + '</a>. ' +
+    'Fila nacional ponderada por los estados que releva CONAB, con la cobertura ' +
+    'indicada al lado de cada cultivo. El promedio de 5 años y las comparaciones ' +
+    'vienen calculados en la propia planilla. CONAB no publica condición de ' +
+    'cultivo, solo avance.</div></div>';
+}
+
 function ensoIndicesHTML() {
   var est = _ensoFaseActual();
   if (!est) return '';
