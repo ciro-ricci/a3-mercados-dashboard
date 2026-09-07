@@ -1631,34 +1631,64 @@ function _cruceRatioSeries(cultA,cultB){
   return serieA.filter(p=>mapB[p.fecha]!=null).map(p=>({fecha:p.fecha,valor:p.valor/mapB[p.fecha]}));
 }
 function _fmtMesAno(fecha){var meses=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];var p=String(fecha).split('-');if(p.length<2)return fecha;return meses[parseInt(p[1],10)-1]+'-'+p[0].slice(2);}
-  function _showCruceChart(cultA,cultB){
-  let modal=document.getElementById('cruce-chart-modal');
-  if(!modal){
-    modal=document.createElement('div');
-    modal.id='cruce-chart-modal';
-    modal.style.cssText='display:none;position:fixed;inset:0;background:rgba(20,20,30,0.55);z-index:9999;align-items:center;justify-content:center;padding:20px;';
-    modal.innerHTML=`<div style="background:white;border-radius:14px;max-width:760px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;">
-      <button onclick="_closeCruceChart()" style="position:absolute;top:14px;right:16px;border:none;background:#f0f2f5;color:#555;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:700;">✕</button>
-      <h3 id="cruce-chart-title" style="margin:0 0 4px"></h3>
-      <div id="cruce-chart-sub" style="font-size:0.78rem;color:#888;margin-bottom:14px"></div>
-      <div class="canvas-wrap" style="height:320px"><canvas id="cruce-chart-canvas"></canvas></div>
-    </div>`;
-    document.body.appendChild(modal);
-    modal.addEventListener('click',e=>{if(e.target===modal)_closeCruceChart();});
+  function _ensureCruceModal(){
+                let modal=document.getElementById('cruce-chart-modal');
+      if(!modal){
+            modal=document.createElement('div');
+            modal.id='cruce-chart-modal';
+            modal.style.cssText='display:none;position:fixed;inset:0;background:rgba(20,20,30,0.55);z-index:9999;align-items:center;justify-content:center;padding:20px;';
+            modal.innerHTML=`<div style="background:white;border-radius:14px;max-width:760px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;">
+                  <button onclick="_closeCruceChart()" style="position:absolute;top:14px;right:16px;border:none;background:#f0f2f5;color:#555;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:700;">✕</button>
+                        <h3 id="cruce-chart-title" style="margin:0 0 4px"></h3>
+                              <div id="cruce-chart-sub" style="font-size:0.78rem;color:#888;margin-bottom:14px"></div>
+                                    <div class="canvas-wrap" style="height:320px"><canvas id="cruce-chart-canvas"></canvas></div>
+                                        </div>`;
+            document.body.appendChild(modal);
+            modal.addEventListener('click',e=>{if(e.target===modal)_closeCruceChart();});
+      }
+      return modal;
   }
-  const labelA=CRUCE_LABEL[cultA],labelB=CRUCE_LABEL[cultB];
-  document.getElementById('cruce-chart-title').textContent=`Evolución ${labelA} / ${labelB}`;
-  document.getElementById('cruce-chart-sub').textContent='Cociente entre el disponible en USD de ambos cultivos, serie diaria';
-  modal.style.display='flex';
-  const series=_cruceRatioSeries(cultA,cultB);
-  const el=document.getElementById('cruce-chart-canvas');
-  if(window._cruceChart){try{window._cruceChart.destroy();}catch(e){}}
-  window._cruceChart=new Chart(el,{type:'line',data:{labels:series.map(p=>p.fecha),datasets:[{label:`${labelA}/${labelB}`,data:series.map(p=>p.valor),borderColor:CRUCE_COLOR[cultA],backgroundColor:CRUCE_COLOR[cultA]+'14',borderWidth:2,pointRadius:0,pointHoverRadius:5,fill:true,tension:0.15}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:14,callback:function(val){return _fmtMesAno(this.getLabelForValue(val));}}}}}});
-}
-function _closeCruceChart(){
-  const modal=document.getElementById('cruce-chart-modal');
-  if(modal)modal.style.display='none';
-}
+  function _showCruceChart(cultA,cultB){
+      _ensureCruceModal();
+      const modal=document.getElementById('cruce-chart-modal');
+      const labelA=CRUCE_LABEL[cultA],labelB=CRUCE_LABEL[cultB];
+        document.getElementById('cruce-chart-title').textContent=`Evolución ${labelA} / ${labelB}`;
+      document.getElementById('cruce-chart-sub').textContent='Cociente entre el disponible en USD de ambos cultivos, serie diaria';
+      modal.style.display='flex';
+      const series=_cruceRatioSeries(cultA,cultB);
+      const el=document.getElementById('cruce-chart-canvas');
+      if(window._cruceChart){try{window._cruceChart.destroy();}catch(e){}}
+      window._cruceChart=new Chart(el,{type:'line',data:{labels:series.map(p=>p.fecha),datasets:[{label:`${labelA}/${labelB}`,data:series.map(p=>p.valor),borderColor:CRUCE_COLOR[cultA],backgroundColor:CRUCE_COLOR[cultA]+'14',borderWidth:2,pointRadius:0,pointHoverRadius:5,fill:true,tension:0.15}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:14,callback:function(val){return _fmtMesAno(this.getLabelForValue(val));}}}}}});
+  }
+  function _closeCruceChart(){
+      const modal=document.getElementById('cruce-chart-modal');
+      if(modal)modal.style.display='none';
+  }
+  const MANI_OTHER_LABEL={soja:'Soja',girasol:'Girasol',maiz:'Maíz',trigo:'Trigo'};
+  const MANI_CRUCE_COLOR='#92400e';
+  function _maniOtherMonthlyMap(otherKey){
+      const daily=otherKey==='girasol'?(GIRASOL_MANI_DATA.girasol.hist_usd||[]):(HIST_CRUCES_DATA[otherKey]||[]);
+      const map={};
+      daily.forEach(p=>{if(p.valor!=null)map[p.fecha.slice(0,7)]=p.valor;});
+      return map;
+  }
+  function _maniRatioSeries(otherKey){
+          const maniSerie=(GIRASOL_MANI_DATA.mani.hist_runner_usd)||[];
+      const otherMap=_maniOtherMonthlyMap(otherKey);
+      return maniSerie.filter(p=>otherMap[p.mes]!=null).map(p=>({fecha:p.mes,valor:p.valor/otherMap[p.mes]}));
+  }
+  function _showManiCruceChart(otherKey){
+      _ensureCruceModal();
+      const modal=document.getElementById('cruce-chart-modal');
+      const label=MANI_OTHER_LABEL[otherKey];
+      document.getElementById('cruce-chart-title').textContent=`Evolución Maní / ${label}`;
+      document.getElementById('cruce-chart-sub').textContent='Cociente entre el Maní Runner y el disponible de '+label+', ambos en USD — serie mensual';
+      modal.style.display='flex';
+      const series=_maniRatioSeries(otherKey);
+      const el=document.getElementById('cruce-chart-canvas');
+      if(window._cruceChart){try{window._cruceChart.destroy();}catch(e){}}
+      window._cruceChart=new Chart(el,{type:'line',data:{labels:series.map(p=>p.fecha),datasets:[{label:`Maní/${label}`,data:series.map(p=>p.valor),borderColor:MANI_CRUCE_COLOR,backgroundColor:MANI_CRUCE_COLOR+'14',borderWidth:2,pointRadius:2,pointHoverRadius:5,fill:true,tension:0.15}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f2f5'},ticks:{font:{size:10.5}}},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:14,callback:function(val){return _fmtMesAno(this.getLabelForValue(val));}}}}}});
+  }
 function injectPriceCrossPanel(panelId){
   const panel=document.getElementById('panel-'+panelId);
   if(!panel)return;
@@ -8821,29 +8851,38 @@ function _gmDrawGirasolFobChart(){
 function _gmManiHtml(){
   const m=GIRASOL_MANI_DATA.mani;
   const sojaArs=(typeof SPOT!=='undefined'&&SPOT&&SPOT.soja_ars)?SPOT.soja_ars:null;
-  const paridadIndustria=(sojaArs&&m.disponible_industria_ars)?(m.disponible_industria_ars/sojaArs):null;
-  const paridadRunner=(sojaArs&&m.disponible_runner_ars)?(m.disponible_runner_ars/sojaArs):null;
-  const cards=[
-    _gmKpiCard('Disponible Industria','$'+m.disponible_industria_ars.toLocaleString('es-AR'),'Bolsa de Cereales de Córdoba · '+m.fecha,'#92400e'),
-    _gmKpiCard('Disponible Runner','$'+m.disponible_runner_ars.toLocaleString('es-AR'),'USD '+m.disponible_runner_usd+' · '+m.fecha,'#92400e'),
-    _gmKpiCard('Ref. USDA (Runner)','USD '+m.usda.runner.toFixed(0)+'/tn','Weekly Posted Price · '+m.usda.fecha,'#92400e')
-  ].join('');
-  const paridadHtml=`<div class="full-card">
-    <h3 style="margin-top:0">Paridad maní / soja</h3>
-    <div style="font-size:0.78rem;color:#888;margin-bottom:14px">Cuántos kilos de maní disponible equivalen, en pesos, a un kilo de soja disponible — referencia de decisión cuando no hay precio internacional de maní.</div>
-    <div style="display:flex;gap:16px;flex-wrap:wrap">
-      <div style="flex:1;min-width:180px;text-align:center;background:#fef3e2;border-radius:10px;padding:14px">
-        <div style="font-size:0.72rem;color:#92400e;text-transform:uppercase;font-weight:700">Industria / Soja</div>
-        <div style="font-size:1.6rem;font-weight:800;color:#92400e">${paridadIndustria!=null?paridadIndustria.toFixed(2)+'x':'—'}</div>
-      </div>
-      <div style="flex:1;min-width:180px;text-align:center;background:#fef3e2;border-radius:10px;padding:14px">
-        <div style="font-size:0.72rem;color:#92400e;text-transform:uppercase;font-weight:700">Runner / Soja</div>
-        <div style="font-size:1.6rem;font-weight:800;color:#92400e">${paridadRunner!=null?paridadRunner.toFixed(2)+'x':'—'}</div>
-      </div>
-    </div>
-    ${sojaArs?'':'<div style="font-size:0.72rem;color:#bbb;margin-top:10px">Todavía no cargó el precio de soja disponible en esta sesión — la paridad se completa apenas esté disponible.</div>'}
+    const maizArs=(typeof SPOT!=='undefined'&&SPOT&&SPOT.maiz_ars)?SPOT.maiz_ars:null;
+    const trigoArs=(typeof SPOT!=='undefined'&&SPOT&&SPOT.trigo_ars)?SPOT.trigo_ars:null;
+    const girasolArs=(GIRASOL_MANI_DATA.girasol&&GIRASOL_MANI_DATA.girasol.disponible_rosario_ars)?GIRASOL_MANI_DATA.girasol.disponible_rosario_ars:null;
+    const cards=[
+          _gmKpiCard('Disponible Industria','$'+m.disponible_industria_ars.toLocaleString('es-AR'),'Bolsa de Cereales de Córdoba · '+m.fecha,'#92400e'),
+      _gmKpiCard('Disponible Runner','$'+m.disponible_runner_ars.toLocaleString('es-AR'),'USD '+m.disponible_runner_usd+' · '+m.fecha,'#92400e'),
+      _gmKpiCard('Ref. USDA (Runner)','USD '+m.usda.runner.toFixed(0)+'/tn','Weekly Posted Price · '+m.usda.fecha,'#92400e')
+    ].join('');
+    const paridadPairs=[
+      {label:'Soja',key:'soja',valor:sojaArs},
+      {label:'Girasol',key:'girasol',valor:girasolArs},
+      {label:'Maíz',key:'maiz',valor:maizArs},
+  {label:'Trigo',key:'trigo',valor:trigoArs}
+    ];
+    const paridadCardsHtml=paridadPairs.map(p=>{
+      const r=(p.valor&&m.disponible_runner_ars)?(m.disponible_runner_ars/p.valor):null;
+      const fmt=r==null?'—':r.toFixed(2)+'x';
+      return `<div onclick="_showManiCruceChart('${p.key}')" style="flex:1;min-width:200px;background:#f7f8fa;border-radius:12px;padding:16px 18px;border:1px solid #e8eaed;cursor:pointer;transition:box-shadow 0.15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
+        <div style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Maní / ${p.label} · Disponible</div>
+        <div style="font-size:1.5rem;font-weight:800;color:#1a1a2e;">${fmt}</div>
+        <div style="font-size:0.76rem;color:#666;margin-top:4px;">${r!=null?`1 tn de Maní (Runner) equivale a ${fmt} de ${p.label}`:'Sin datos disponibles'}</div>
+        <div style="font-size:0.68rem;color:#aaa;margin-top:6px;">📈 Ver evolución</div>
+    </div>`;
+    }).join('');
+    const paridadHtml=`<div class="full-card">
+      <h3 style="margin-top:0">Paridad maní / otros granos</h3>
+      <div style="font-size:0.78rem;color:#888;margin-bottom:14px">Cuántos kilos de maní disponible (Runner) equivalen, en pesos, a un kilo de cada grano — referencia de decisión cuando no hay precio internacional de maní.</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">${paridadCardsHtml}</div>
+      ${(sojaArs&&maizArs&&trigoArs&&girasolArs)?'':'<div style="font-size:0.72rem;color:#bbb;margin-top:10px">Todavía no cargaron todos los precios disponibles de esta sesión — cada paridad se completa apenas esté disponible el dato correspondiente.</div>'}
+             <div style="font-size:0.7rem;color:#bbb;margin-top:10px;font-style:italic">El gráfico de evolución es mensual: el maní solo se releva con esa frecuencia (Bolsa de Cereales de Córdoba), a diferencia de los cruces diarios entre soja, maíz y trigo.</div>
   </div>`;
-const runnerArsChart=`<div class="full-card" style="margin-top:18px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px"><h3 style="margin:0">Evolución disponible Maní Runner — pesos</h3><span style="font-size:0.72rem;color:#aaa">ARS/tn, serie mensual</span></div><div class="canvas-wrap" style="height:280px"><canvas id="gm-mani-runner-ars-chart"></canvas></div><div style="display:flex;align-items:center;gap:10px;margin-top:10px"><span style="font-size:0.7rem;color:#888;white-space:nowrap">Ventana: <b id="gm-mani-runner-ars-range-val">Todos</b></span><input type="range" id="gm-mani-runner-ars-range" min="3" max="${(m.hist_runner_ars||[]).length}" value="${(m.hist_runner_ars||[]).length}" step="1" oninput="_gmManiRangeChange('ars',this.value)" style="flex:1"></div><div style="font-size:0.7rem;color:#bbb;margin-top:8px;font-style:italic">Valor de cierre de cada mes según el relevamiento semanal de la Bolsa de Cereales de Córdoba.</div></div>`;
+  const runnerArsChart=`<div class="full-card" style="margin-top:18px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px"><h3 style="margin:0">Evolución disponible Maní Runner — pesos</h3><span style="font-size:0.72rem;color:#aaa">ARS/tn, serie mensual</span></div><div class="canvas-wrap" style="height:280px"><canvas id="gm-mani-runner-ars-chart"></canvas></div><div style="display:flex;align-items:center;gap:10px;margin-top:10px"><span style="font-size:0.7rem;color:#888;white-space:nowrap">Ventana: <b id="gm-mani-runner-ars-range-val">Todos</b></span><input type="range" id="gm-mani-runner-ars-range" min="3" max="${(m.hist_runner_ars||[]).length}" value="${(m.hist_runner_ars||[]).length}" step="1" oninput="_gmManiRangeChange('ars',this.value)" style="flex:1"></div><div style="font-size:0.7rem;color:#bbb;margin-top:8px;font-style:italic">Valor de cierre de cada mes según el relevamiento semanal de la Bolsa de Cereales de Córdoba.</div></div>`;
   const runnerUsdChart=`<div class="full-card" style="margin-top:18px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px"><h3 style="margin:0">Evolución disponible Maní Runner — dólares</h3><span style="font-size:0.72rem;color:#aaa">USD/tn, serie mensual</span></div><div class="canvas-wrap" style="height:280px"><canvas id="gm-mani-runner-usd-chart"></canvas></div><div style="display:flex;align-items:center;gap:10px;margin-top:10px"><span style="font-size:0.7rem;color:#888;white-space:nowrap">Ventana: <b id="gm-mani-runner-usd-range-val">Todos</b></span><input type="range" id="gm-mani-runner-usd-range" min="3" max="${(m.hist_runner_usd||[]).length}" value="${(m.hist_runner_usd||[]).length}" step="1" oninput="_gmManiRangeChange('usd',this.value)" style="flex:1"></div><div style="font-size:0.7rem;color:#bbb;margin-top:8px;font-style:italic">Valor de cierre de cada mes según el relevamiento semanal de la Bolsa de Cereales de Córdoba.</div></div>`;
   return `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">${cards}</div>${paridadHtml}${runnerArsChart}${runnerUsdChart}
     <div style="font-size:0.72rem;color:#bbb;margin-top:10px;font-style:italic">No existe FOB ni cotización internacional oficial de maní: no es un commodity homogéneo, y la fuente de valor de exportación (INDEC comex) no tiene una vía pública automatizable para incorporarla acá.</div>`;
