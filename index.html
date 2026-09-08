@@ -2028,51 +2028,61 @@ function buildStratPanel(){const panel=document.getElementById('panel-estrategia
 const BRIEF_GRANOS_DATA = {
   fecha: '2026-09-08',
   resumen: [
-    '<b>Trigo en vilo por el Mar Negro:</b> Rusia rechazó restablecer el acuerdo de granos y los ataques a los puertos de Odesa mantienen casi bloqueada la exportación ucraniana, aunque el precio corrigió tras señales de Putin sobre una eventual paz.',
-    '<b>Soja sostenida por China:</b> nuevas compras chinas (192.000 t para 2026/27) y la expectativa por la visita de Xi Jinping a Washington este mes mantienen a la soja de Chicago cerca de máximos de casi tres años, con el WASDE del 11/9 en el radar.',
-    '<b>Maíz en corrección técnica:</b> tras el fuerte rally de agosto, el maíz de Chicago ajusta a la baja mientras Brasil proyecta una cosecha 2026/27 aún mayor (139-147,5 Mt).',
-    '<b>Pizarra local en alza:</b> la soja en Rosario escaló a $560.000-564.000/tonelada (+12% mensual) y el trigo tocó su valor más alto en más de tres años, acompañando la suba internacional.',
-    '<b>Petróleo firme:</b> WTI en torno a USD 90,5 y Brent USD 95 sostienen la demanda de aceite de soja para biodiésel.'
+    '<b>Trigo en máximos de dos años:</b> el "apagón logístico" en el Mar Negro (exportaciones rusas y ucranianas muy por debajo del año pasado) sigue empujando los precios internacionales al alza.',
+    '<b>Sequía histórica en Europa:</b> la cosecha de maíz de la UE cae a un mínimo de 19 años (~50 Mt) y podría requerir hasta 25 Mt de importaciones, abriendo demanda para Argentina, Brasil, EEUU y Ucrania.',
+    '<b>Semana clave para el mercado:</b> el WASDE de septiembre se publica el 11/9, y persisten los focos de atención en la relación comercial EEUU-China y el conflicto Rusia-Ucrania.',
+    '<b>Brasil arranca la siembra de soja 2026/27</b> con proyección de cosecha récord (183,5-185,6 Mt), aunque el Niño genera riesgo de lluvias irregulares en el Centro-Oeste.',
+    '<b>Petróleo sostenido en niveles altos</b> (WTI ~USD 90/barril) por tensión en Medio Oriente, factor de soporte para aceites vegetales vía biocombustibles.'
   ],
   cultivos: [
     {
-      id: 'soja', icon: '🫘', nombre: 'Soja (poroto, harina y aceite)',
+      id: 'soja',
+      icon: '🫘',
+      nombre: 'Soja (poroto, harina y aceite)',
       factores: [
-        { dir: 'alcista', titulo: 'China sostiene las compras', texto: 'USDA reportó ventas de 192.000 toneladas de soja a China para el ciclo 2026/27, en el marco del compromiso de Beijing de comprar 25 Mt anuales hasta 2028; se espera que la visita de Xi Jinping a EE.UU. este mes destrabe más anuncios agrícolas.', fuente: 'TradingView / Reuters', url: 'https://www.tradingview.com/news/reuters.com,2026:newsml_L6N43811R:0-cbot-soybeans-soar-on-us-weather-jitters-china-demand-hopes/' },
-        { dir: 'alcista', titulo: 'Precios cerca de máximos de casi 3 años', texto: 'La soja de Chicago cotiza cerca de su nivel más alto en casi tres años, sostenida por la demanda china y dudas sobre el clima en EE.UU.', fuente: 'Business Recorder', url: 'https://www.brecorder.com/news/40437909/soybeans-set-for-fourth-weekly-gain-on-china-demand-us-weather-concerns' },
-        { dir: 'neutral', titulo: 'WASDE del 11/9 en el radar', texto: 'El mercado espera el informe WASDE de septiembre para confirmar rindes en EE.UU., tras una condición de cultivo relativamente estable (58% bueno-excelente al 30/8).', fuente: 'DTN Progressive Farmer', url: 'https://www.dtnpf.com/agriculture/web/ag/news/article/2026/08/31/usda-crop-progress-corn-rated-57-58' },
-        { dir: 'alcista', titulo: 'Pizarra Rosario en alza', texto: 'La soja disponible en Rosario subió a $560.000-564.000 por tonelada, un incremento de 12% respecto al mes anterior.', fuente: 'Infocampo', url: 'https://www.infocampo.com.ar/precio-de-la-soja-hoy-3-septiembre-2026/' },
-        { dir: 'bajista', titulo: 'Brasil proyecta cosecha récord', texto: 'La Conab y el USDA proyectan una cosecha de soja 2026/27 en Brasil de entre 185 y 186 millones de toneladas, ampliando la oferta global.', fuente: 'Forbes Agro / Infomoney', url: 'https://forbes.com.br/forbes-agro/2026/04/conab-eleva-projecao-e-soja-brasileira-deve-atingir-recorde-de-179-milhoes-de-toneladas/' }
+        { dir: 'bajista', titulo: 'Brasil proyecta safra récord', texto: 'El plantío de soja 2026/27 arrancó con potencial de cosecha entre 183,5 y 185,6 Mt, lo que presiona la oferta global hacia la baja.', fuente: 'RDM Online', url: 'https://rdmonline.com.br/soja-pode-bater-novo-recorde-no-brasil-mas-clima-sera-decisivo-na-safra/' },
+        { dir: 'neutral', titulo: 'El Niño genera incertidumbre en Brasil', texto: 'Lluvias irregulares afectan al plantío en el Centro-Oeste, mientras el Sur podría verse beneficiado; el resultado final de la safra dependerá del clima de los próximos meses.', fuente: 'Notícias Agrícolas', url: 'https://www.noticiasagricolas.com.br/noticias/soja/427081-parana-pode-ter-safra-recorde-de-soja-em-202627-com-chuvas-do-el-nino-diz-deral.html' },
+        { dir: 'bajista', titulo: 'China mantiene arancel del 10% a la soja de EEUU', texto: 'Pese al acuerdo comercial y a la reanudación de compras estatales, el arancel sigue limitando la demanda comercial amplia y favorece a Brasil como origen.', fuente: 'S&P Global Commodity Insights', url: 'https://www.spglobal.com/commodity-insights/en/news-research/latest-news/agriculture/101625-analysis-china-seen-using-soybeans-as-leverage-in-trade-rift-with-us' },
+        { dir: 'alcista', titulo: 'Condición de la soja en EEUU por debajo del año pasado', texto: 'El cultivo llegó a 58% bueno/excelente, con el llenado de vainas en curso; la condición general viene rezagada frente a 2025.', fuente: 'DTN Progressive Farmer', url: 'https://www.dtnpf.com/agriculture/web/ag/news/article/2026/08/31/usda-crop-progress-corn-rated-57-58' },
+        { dir: 'neutral', titulo: 'Precio de pizarra en Rosario', texto: 'La soja cotiza en torno a $560.000 por tonelada, con ajuste reciente respecto a semanas previas de $570.000-580.000.', fuente: 'Infocampo', url: 'https://www.infocampo.com.ar/precio-de-la-soja-hoy-8-septiembre-2026/' }
       ]
     },
     {
-      id: 'maiz', icon: '🌽', nombre: 'Maíz',
+      id: 'maiz',
+      icon: '🌽',
+      nombre: 'Maíz',
       factores: [
-        { dir: 'neutral', titulo: 'Corrección técnica tras el rally de agosto', texto: 'Después de la fuerte suba de agosto, el maíz de Chicago ajusta a la baja en un movimiento considerado saludable por operadores.', fuente: 'Farm Progress', url: 'https://www.farmprogress.com/markets-and-quotes/afternoon-market-recap' },
-        { dir: 'neutral', titulo: 'Condición de cultivo estable en EE.UU.', texto: 'El maíz estadounidense se mantiene en 57% bueno-excelente al 30 de agosto, sin grandes cambios semana a semana.', fuente: 'DTN Progressive Farmer', url: 'https://www.dtnpf.com/agriculture/web/ag/news/article/2026/08/31/usda-crop-progress-corn-rated-57-58' },
-        { dir: 'bajista', titulo: 'Brasil suma oferta', texto: 'Brasil proyecta una producción de maíz 2026/27 de entre 139 y 147,5 millones de toneladas, ampliando la disponibilidad global del cereal.', fuente: 'Infomoney', url: 'https://www.infomoney.com.br/economia/producao-de-milho-do-brasil-na-safra-2026-2027-sera-de-139-mi-de-toneladas/' },
-        { dir: 'alcista', titulo: 'Demanda exportadora firme', texto: 'Las ventas semanales de exportación de EE.UU. sorprendieron al alza (soja +44% semanal), dando soporte general al complejo granario, incluido el maíz.', fuente: 'Farm Progress', url: 'https://www.farmprogress.com/markets-and-quotes/morning-market-review' }
+        { dir: 'alcista', titulo: 'Sequía histórica derrumba la cosecha de maíz europeo', texto: 'La UE caería a 50,1 Mt, mínimo en 19 años, y podría necesitar hasta 25 Mt de importaciones; Francia perdería un 35% de su producción.', fuente: 'Agronews Castilla y León', url: 'https://www.agronewscastillayleon.com/maiz-ue-cosecha-2026-50-millones-toneladas' },
+        { dir: 'alcista', titulo: 'Oportunidad de exportación para Argentina', texto: 'Fabricantes europeos buscarían hasta 7 Mt adicionales de maíz importado, con Ucrania, EEUU y Brasil como proveedores llamados a cubrir el faltante.', fuente: 'Agroinformacion', url: 'https://agroinformacion.com/la-produccion-de-maiz-en-francia-caera-un-35-en-2026-por-culpa-de-la-sequia-lo-que-representa-el-menor-volumen-desde-1980/' },
+        { dir: 'alcista', titulo: 'Conflicto en el Mar Negro también golpea al maíz', texto: 'El "apagón logístico" ruso-ucraniano llevó al maíz y al trigo a máximos de dos años por menor oferta exportable de la región.', fuente: 'Infocampo', url: 'https://www.infocampo.com.ar/la-guerra-en-el-mar-negro-recrudece-y-empuja-los-precios-trigo-y-maiz-en-maximos-de-dos-anos/' },
+        { dir: 'neutral', titulo: 'Precio de pizarra en Rosario', texto: 'El maíz cotiza en torno a $293.000 por tonelada, sostenido por la fuerte demanda de exportación hacia Brasil y Asia.', fuente: 'Infocampo', url: 'https://www.infocampo.com.ar/precio-del-maiz-hoy-8-septiembre-2026/' }
       ]
     },
     {
-      id: 'trigo', icon: '🌾', nombre: 'Trigo',
+      id: 'trigo',
+      icon: '🌾',
+      nombre: 'Trigo',
       factores: [
-        { dir: 'alcista', titulo: 'Rusia rechaza revivir el acuerdo del Mar Negro', texto: 'Moscú descartó restablecer el acuerdo de granos del Mar Negro, mientras los ataques a la infraestructura portuaria de Odesa mantienen casi bloqueada la exportación ucraniana de trigo.', fuente: 'Infobae', url: 'https://www.infobae.com/america/agencias/2026/09/08/rusia-rechaza-la-posibilidad-de-restablecer-el-acuerdo-del-grano-en-el-mar-negro/' },
-        { dir: 'bajista', titulo: 'Corrección por señales de paz', texto: 'El trigo cayó unos US$12/tonelada tras un discurso de Putin que abrió la puerta a un eventual acuerdo de paz con Ucrania, reduciendo momentáneamente la prima de riesgo geopolítico.', fuente: 'Rosario Finanzas', url: 'https://rosariofinanzas.ar/noticias/el-trigo-se-desplomo-us-12-tras-declaraciones-de-putin-sobre-la-paz' },
-        { dir: 'alcista', titulo: 'Máximo en Chicago desde 2023', texto: 'El contrato de trigo blando de diciembre llegó a tocar el cierre más alto para un contrato líder desde febrero de 2023, antes de corregir parcialmente.', fuente: 'Farm Progress', url: 'https://www.farmprogress.com/markets-and-quotes/afternoon-market-recap' },
-        { dir: 'alcista', titulo: 'Máximo de más de 3 años en Argentina', texto: 'El trigo local alcanzó su precio más alto en más de tres años, acompañando la suba internacional impulsada por la crisis del Mar Negro.', fuente: 'Gear S.A.', url: 'https://gear-sa.com.ar/2026/09/01/vuela-el-precio-del-trigo-y-alcanza-maximo-de-mas-de-tres-anos-la-soja-subio-a-560-000-y-el-maiz-tambien-acompano-en-un-mercado-movilizado/' },
-        { dir: 'neutral', titulo: 'Clima mixto en la región núcleo', texto: 'El SMN prevé humedad normal a superior en la región núcleo y el Litoral, favorable para las etapas sensibles del cultivo, aunque persiste riesgo de anegamiento en lotes con excedentes hídricos en el sur del área agrícola.', fuente: 'Ruralnet', url: 'https://ruralnet.com.ar/trigo-y-gruesa-2026-27-como-pega-el-pronostico-climatico-del-smn/' }
+        { dir: 'alcista', titulo: 'Exportaciones rusas y ucranianas se desploman', texto: 'Rusia exportaría solo 2,0 Mt en septiembre frente a 4,6 Mt del año anterior; Ucrania también exporta muy por debajo del ciclo previo, recortando un tercio de la oferta mundial que sale del Mar Negro.', fuente: 'Infobae', url: 'https://www.infobae.com/economia/2026/08/27/el-trigo-llego-a-su-precio-mas-alto-en-dos-anos-por-que-subio-y-como-impactara-en-las-exportaciones-argentinas/' },
+        { dir: 'alcista', titulo: 'Trigo en máximos de dos años en Europa', texto: 'El contrato de diciembre en Euronext llegó a 249,25 €/t ante la persistente tensión en el Mar Negro sin perspectivas de solución.', fuente: 'Agronews Castilla y León', url: 'https://www.agronewscastillayleon.com/trigo-euronext-7-septiembre-2026-249-euros' },
+        { dir: 'neutral', titulo: 'Clima favorable para la cosecha en Argentina', texto: 'Se prevé clima seco que favorecería la cosecha de trigo, mientras Brasil enfrenta lluvias que complican su propia campaña.', fuente: 'GBM Media / LSEG', url: 'https://gbm.com/media/noticia/clima-seco-favorecera-cosecha-de-trigo-en-argentina-mientras-que-brasil-se-enfrenta-a-lluvias-lseg/' }
       ]
     },
     {
-      id: 'girasol', icon: '🌻', nombre: 'Girasol',
+      id: 'girasol',
+      icon: '🌻',
+      nombre: 'Girasol',
       factores: [
-        { dir: 'bajista', titulo: 'Caída de producción esperada', texto: 'Heladas tardías y sequía en algunas zonas productivas llevan a proyectar una caída de hasta 15% en la producción respecto a la campaña anterior.', fuente: 'De Campo Noticias', url: 'https://www.decamponoticias.com/girasol-campana-2026-27-buenos-margenes/' },
-        { dir: 'alcista', titulo: 'Buenos márgenes relativos', texto: 'El girasol llega a la campaña 2026/27 con márgenes proyectados que superan a otras alternativas de gruesa, especialmente en el sur bonaerense, sosteniendo el interés de los productores.', fuente: 'Infosudoeste', url: 'https://infosudoeste.com.ar/2026/07/29/el-girasol-promete-otra-buena-campana/' },
-        { dir: 'neutral', titulo: 'Sin cotización oficial vigente', texto: 'El mercado opera sin una pizarra oficial de referencia; los valores de exportación se ubican entre USD 550 y 600 por tonelada según calidad.', fuente: 'Infocampo', url: 'https://www.infocampo.com.ar/precio-del-girasol-hoy-5-septiembre-2026/' }
+        { dir: 'bajista', titulo: 'Sin cotización oficial y menor demanda de exportación', texto: 'El mercado local atraviesa un momento de incertidumbre, con valores de referencia en los puertos entre USD 400 y 600 según calidad, y estimaciones de caída de producción cercana al 15% interanual.', fuente: 'Infocampo', url: 'https://www.infocampo.com.ar/precio-del-girasol-hoy-8-septiembre-2026/' },
+        { dir: 'neutral', titulo: 'Buenos márgenes proyectados para la campaña', texto: 'A pesar de la incertidumbre de oferta, se esperan buenos márgenes para el cultivo, con el clima como principal incógnita de cara a la siembra.', fuente: 'De Campo Noticias', url: 'https://www.decamponoticias.com/girasol-campana-2026-27-buenos-margenes/' }
       ]
     },
-    { id: 'mani', icon: '🥜', nombre: 'Maní', factores: [] }
+    {
+      id: 'mani',
+      icon: '🥜',
+      nombre: 'Maní',
+      factores: []
+    }
   ]
 };
 // BRIEF_GRANOS_DATA:END
