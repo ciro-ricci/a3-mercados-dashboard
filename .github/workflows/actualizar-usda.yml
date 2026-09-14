@@ -58,6 +58,17 @@ jobs:
             --cache /tmp/psd \
             --year "$(date +%Y)"
 
+      - name: Boletim da Safra de CONAB (Brasil)
+        run: |
+          pip install openpyxl --quiet
+          # Antes lo hacía una tarea programada en la máquina de CIRO; se mudó
+          # acá para no depender de que esa máquina esté encendida.
+          if python3 scripts/conab_extractor.py --out /tmp/conab_data.json; then
+            python3 scripts/conab_update_index.py --data /tmp/conab_data.json --index index.html
+          else
+            echo "::warning::CONAB no respondio; se conserva el bloque anterior"
+          fi
+
       - name: Progresso de safra de CONAB (Brasil)
         run: |
           pip install openpyxl --quiet
