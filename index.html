@@ -10806,7 +10806,18 @@ const COT_DATA = {"soja":{"label":"Soja","code":"005602","series":[{"fecha":"200
 const COT_LABEL = { soja: 'Soja', maiz: 'Maíz', trigo: 'Trigo' };
 const COT_POS_COLOR = '#22863a';
 const COT_NEG_COLOR = '#cb2431';
+const COT_MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 let _cotState = { cult: 'soja', months: 12 };
+
+function _cotFmtFechaCorta(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.getDate() + ' ' + COT_MESES[d.getMonth()].toLowerCase() + ' ' + d.getFullYear();
+}
+
+function _cotFmtMes(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return COT_MESES[d.getMonth()] + ' ' + d.getFullYear();
+}
 
 function _cotInterpretacion(cult, ultimo) {
   const net = ultimo.net;
@@ -10856,10 +10867,7 @@ function _cotTabHtml() {
   const maxMonths = _cotMaxMonths();
   return `<div class="full-card">
     <h3 style="margin-top:0;color:#444;font-size:14.4px;font-weight:700">Posición de fondos especulativos (CFTC)</h3>
-    <div style="font-size:12.5px;color:#64748b;margin-bottom:14px">
-      Contratos netos (largos menos cortos) de "Managed Money" en los futuros de Chicago —
-      reporte semanal Commitment of Traders de la CFTC, dato al ${ultimaFecha}.
-    </div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:14px">Reporte semanal — datos al ${_cotFmtFechaCorta(ultimaFecha)}.</div>
     <div id="cot-cards" style="display:flex;gap:14px;flex-wrap:wrap">${cardsHtml}</div>
     <div style="margin-top:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
       <label style="font-size:12px;color:#64748b;font-weight:700;white-space:nowrap;">Período:</label>
@@ -10904,30 +10912,69 @@ function _cotRenderChart() {
   const el = document.getElementById('cot-chart-canvas');
   if (!el) return;
   const serie = _cotFilteredSeries();
+  const promedio = serie.reduce((s, p) => s + p.net, 0) / serie.length;
   if (window._cotChart) { try { window._cotChart.destroy(); } catch (e) {} }
   window._cotChart = new Chart(el, {
     type: 'line',
     data: {
       labels: serie.map(p => p.fecha),
-      datasets: [{
-        label: `${COT_LABEL[_cotState.cult]} · net Managed Money`,
-        data: serie.map(p => p.net),
-        borderColor: '#22863a',
-        backgroundColor: '#22863a14',
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 5,
-        fill: true,
-        tension: 0.1,
-      }],
+      datasets: [
+        {
+          label: `${COT_LABEL[_cotState.cult]}`,
+          data: serie.map(p => p.net),
+          borderColor: '#22863a',
+          backgroundColor: '#22863a14',
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          fill: true,
+          tension: 0.1,
+          order: 1,
+        },
+        {
+          label: 'Promedio del período',
+          data: serie.map(() => promedio),
+          borderColor: '#94a3b8',
+          borderDash: [6, 4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false,
+          tension: 0,
+          order: 0,
+        },
+      ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'end',
+          labels: { boxWidth: 12, font: { size: 10.5 }, color: '#64748b', usePointStyle: true },
+        },
+        tooltip: {
+          callbacks: {
+            title: items => items.length ? _cotFmtFechaCorta(items[0].label) : '',
+          },
+        },
+      },
       scales: {
         y: { grid: { color: '#f0f2f5' }, ticks: { font: { size: 10.5 } } },
-        x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 14 } },
+        x: {
+          grid: { display: false },
+          ticks: {
+            font: { size: 9 },
+            maxRotation: 45,
+            autoSkip: true,
+            maxTicksLimit: 12,
+            callback: function (value) {
+              const raw = this.getLabelForValue(value);
+              return _cotFmtMes(raw);
+            },
+          },
+        },
       },
     },
   });
