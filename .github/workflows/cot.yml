@@ -1,0 +1,33 @@
+name: Actualizar posición de fondos (CFTC COT)
+
+on:
+  schedule:
+    - cron: "0 5 * * 6"
+  workflow_dispatch: {}
+
+jobs:
+  update-cot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Actualizar COT_DATA
+        run: python scripts/update_cot.py
+
+      - name: Commit y push si hubo cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- index.html; then
+            echo "Sin cambios en index.html"
+          else
+            git add index.html
+            git commit -m "Actualizar posición de fondos (CFTC COT)"
+            git push
+          fi
