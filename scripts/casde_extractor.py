@@ -38,6 +38,7 @@ import io
 import json
 import re
 import sys
+import urllib.parse
 import urllib.request
 
 INDICE = "https://www.agri.cn/sj/gxxs/"
@@ -87,9 +88,10 @@ def ultimo_informe():
     m = re.search(r'href="([^"]*?/\d{6}/t(\d{8})_\d+\.htm)"[^>]*>\s*([^<]*CASDE[^<]*)', html)
     if not m:
         return None, None, None
-    url = m.group(1)
-    if not url.startswith("http"):
-        url = "https://www.agri.cn" + (url if url.startswith("/") else "/" + url)
+    # los href vienen relativos al directorio del índice ("./202609/t....htm"),
+    # así que hay que resolverlos contra INDICE y no pegarlos al dominio: si no,
+    # se pierde el /sj/gxxs/ del medio y la URL resultante da 404.
+    url = urllib.parse.urljoin(INDICE, m.group(1))
     return url, m.group(2), m.group(3).strip()
 
 
