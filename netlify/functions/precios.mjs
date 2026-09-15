@@ -88,13 +88,39 @@ async function leerChicago(simbolo) {
           hora: m.regularMarketTime, descripcion: m.shortName || null};
 }
 
+// El canal abierto de A3 solo trae las posiciones mas liquidas. El resto sale
+// del resumen diario oficial, que Ciro ya publica como CSV: ahi esta el ajuste
+// del cierre anterior de todos los contratos que operaron.
+const HOJA_AJUSTES = 'https://docs.google.com/spreadsheets/d/' +
+  '1j-ZrWBO-fCkGUPqWtWRsGgGswMRCm2mnMhsPmX6osLI/export?format=csv&gid=527444289';
+
+async function leerAjustes() {
+  const r = await fetch(HOJA_AJUSTES, {signal: AbortSignal.timeout(9000)});
+  if (!r.ok) throw new Error('la hoja de ajustes respondio ' + r.status);
+  const txt = await r.text();
+  const salida = {};
+  for (const linea of txt.split('\n')) {
+    // Contrato,Vencimiento,Producto,...,Ajuste,Volumen,IntAbierto,VarIA,FechaDatos,...
+    const c = linea.match(/^([A-Z]{3}\.[A-Z]{3}(?:\.P)?\/[A-Z0-9]+)/);
+    if (!c) continue;
+    const campos = linea.split(',');
+    // el ajuste viene entrecomillado con coma decimal
+    const m = linea.match(/,"(-?[\d.]+,\d+)",/);
+    if (!m) continue;
+    const valor = parseFloat(m[1].replace(/\./g, '').replace(',', '.'));
+    const fecha = (linea.match(/,(\d{2}-\d{2}-\d{4}),/) || [])[1] || null;
+    if (isFinite(valor)) salida[c[1]] = {ajuste: valor, fecha: fecha};
+  }
+  return salida;
+}
+
 function redondear(v, d) {
   if (v == null || !isFinite(v)) return null;
   const f = Math.pow(10, d == null ? 2 : d);
   return Math.round(v * f) / f;
 }
 
-export default async () => {
+export default async (req) => {
   const salida = {generado: new Date().toISOString(), a3: null, chicago: null, errores: []};
 
   let snap = null;
@@ -143,9 +169,53 @@ export default async () => {
       volumen: d.volumen, hora: d.hora};
   });
 
-  salida.a3 = {posiciones: posiciones, enVivo: true};
+  let ajustes = {};
+  try { ajustes = await leerAjustes(); }
+  catch (e) { salida.errores.push('Ajustes: ' + e.message); }
+
+  salida.a3 = {posiciones: posiciones, enVivo: true, ajustes: ajustes};
   salida.chicago = {contratos: chicago, demoraMin: 10,
     nota: 'Yahoo Finance, aproximadamente 10 minutos de retraso sobre el CBOT'};
+
+  // Salida para planillas: una fila por posicion, punto y coma como separador y
+  // coma decimal, que es como lee Excel en configuracion argentina.
+  const url = new URL(req.url);
+  if ((url.searchParams.get('formato') || '').toLowerCase() === 'csv') {
+    const ahora = new Date(salida.generado).toLocaleString('es-AR',
+      {timeZone: 'America/Argentina/Buenos_Aires', hour12: false});
+    const num = v => (v == null || !isFinite(v)) ? '' :
+      v.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2,
+                                 useGrouping: false});
+
+    const filas = [['Posicion', 'Precio', 'Estado', 'FechaHora'].join(';')];
+    const yaEsta = new Set();
+
+    for (const p of posiciones) {
+      yaEsta.add(p.ticker);
+      const vivo = p.ultimo != null && p.ultimo !== 0;
+      filas.push([p.ticker, num(vivo ? p.ultimo : p.ajusteAnterior),
+                  vivo ? 'en vivo' : 'sin operar, ajuste anterior', ahora].join(';'));
+    }
+
+    // las que no viajan en vivo, con el ajuste del cierre anterior y su fecha
+    for (const t of Object.keys(ajustes)) {
+      if (yaEsta.has(t)) continue;
+      filas.push([t, num(ajustes[t].ajuste), 'cierre anterior',
+                  (ajustes[t].fecha || '')].join(';'));
+    }
+
+    // Chicago, en dolares por tonelada, con la hora real del dato
+    for (const k of Object.keys(chicago)) {
+      const c = chicago[k];
+      filas.push([c.simbolo, num(c.usdTn), 'Chicago, 10 min de retraso',
+        new Date(c.hora * 1000).toLocaleString('es-AR',
+          {timeZone: 'America/Argentina/Buenos_Aires', hour12: false})].join(';'));
+    }
+
+    return new Response(filas.join('\r\n'), {
+      headers: {'content-type': 'text/csv; charset=utf-8',
+                'cache-control': 'no-store'}});
+  }
 
   return new Response(JSON.stringify(salida), {
     headers: {'content-type': 'application/json; charset=utf-8',
