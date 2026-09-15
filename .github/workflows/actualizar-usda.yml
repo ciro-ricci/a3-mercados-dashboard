@@ -58,6 +58,13 @@ jobs:
             --cache /tmp/psd \
             --year "$(date +%Y)"
 
+      - name: CASDE de China
+        run: |
+          # El CASDE sale los mismos dias que el WASDE. Si agri.cn no responde
+          # desde los servidores de GitHub, se conserva el bloque anterior.
+          python3 scripts/casde_extractor.py --out /tmp/casde.json --index index.html \
+            || echo "::warning::CASDE no respondio; se conserva el bloque anterior"
+
       - name: Boletim da Safra de CONAB (Brasil)
         run: |
           pip install openpyxl --quiet
