@@ -101,9 +101,12 @@ async function leerAjustes() {
   const salida = {};
   for (const linea of txt.split('\n')) {
     // Contrato,Vencimiento,Producto,...,Ajuste,Volumen,IntAbierto,VarIA,FechaDatos,...
-    const c = linea.match(/^([A-Z]{3}\.[A-Z]{3}(?:\.P)?\/[A-Z0-9]+)/);
+    // Ojo: las opciones empiezan igual que el futuro pero siguen con el strike
+    // (SOY.CME/ABR27 438 P). Si no se exige que el ticker sea TODO el primer
+    // campo, la prima de la opcion pisa el ajuste del futuro.
+    const c = linea.match(/^([A-Z]{3}\.[A-Z]{3}(?:\.P)?\/[A-Z0-9]+),/);
     if (!c) continue;
-    const campos = linea.split(',');
+    if (linea.indexOf(',Opcion,') >= 0 || linea.indexOf(',Opción,') >= 0) continue;
     // el ajuste viene entrecomillado con coma decimal
     const m = linea.match(/,"(-?[\d.]+,\d+)",/);
     if (!m) continue;
