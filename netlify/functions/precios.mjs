@@ -149,5 +149,5 @@ export default async () => {
 
   return new Response(JSON.stringify(salida), {
     headers: {'content-type': 'application/json; charset=utf-8',
-              'cache-control': 'public, max-age=30'}});
+              'cache-control': 'no-store'}});
 };
