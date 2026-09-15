@@ -190,29 +190,41 @@ export default async (req) => {
       v.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2,
                                  useGrouping: false});
 
-    const filas = [['Posicion', 'Precio', 'Estado', 'FechaHora'].join(';')];
+    // Dos fechas distintas, porque son dos cosas distintas: cuando se genero el
+    // dato en el mercado y cuando lo fuimos a buscar. Mezclarlas hacia parecer
+    // fresco un precio viejo con el mercado cerrado.
+    const filas = [['Posicion', 'Precio', 'Estado', 'FechaDato', 'Consultado'].join(';')];
     const yaEsta = new Set();
+    const ahoraMs = Date.parse(salida.generado);
 
     for (const p of posiciones) {
       yaEsta.add(p.ticker);
-      const vivo = p.ultimo != null && p.ultimo !== 0;
-      filas.push([p.ticker, num(vivo ? p.ultimo : p.ajusteAnterior),
-                  vivo ? 'en vivo' : 'sin operar, ajuste anterior', ahora].join(';'));
+      const operado = p.ultimo != null && p.ultimo !== 0;
+      // A3 no publica la hora de cada operacion, asi que la fecha del dato
+      // queda vacia a proposito en vez de inventar la hora de la consulta.
+      filas.push([p.ticker, num(operado ? p.ultimo : p.ajusteAnterior),
+        operado ? 'A3, ultimo operado' : 'A3, sin operar hoy, ajuste anterior',
+        '', ahora].join(';'));
     }
 
-    // las que no viajan en vivo, con el ajuste del cierre anterior y su fecha
     for (const t of Object.keys(ajustes)) {
       if (yaEsta.has(t)) continue;
-      filas.push([t, num(ajustes[t].ajuste), 'cierre anterior',
-                  (ajustes[t].fecha || '')].join(';'));
+      filas.push([t, num(ajustes[t].ajuste), 'A3, cierre anterior',
+                  (ajustes[t].fecha || ''), ahora].join(';'));
     }
 
-    // Chicago, en dolares por tonelada, con la hora real del dato
     for (const k of Object.keys(chicago)) {
       const c = chicago[k];
-      filas.push([c.simbolo, num(c.usdTn), 'Chicago, 10 min de retraso',
-        new Date(c.hora * 1000).toLocaleString('es-AR',
-          {timeZone: 'America/Argentina/Buenos_Aires', hour12: false})].join(';'));
+      const minutos = c.hora ? (ahoraMs - c.hora * 1000) / 60000 : null;
+      // el retraso normal es de unos 10 minutos: bastante mas que eso significa
+      // que la rueda cerro y el precio dejo de moverse
+      const estado = (minutos != null && minutos > 25)
+        ? 'Chicago, rueda cerrada, ultimo de la sesion'
+        : 'Chicago, unos 10 min de retraso';
+      filas.push([c.simbolo, num(c.usdTn), estado,
+        c.hora ? new Date(c.hora * 1000).toLocaleString('es-AR',
+          {timeZone: 'America/Argentina/Buenos_Aires', hour12: false}) : '',
+        ahora].join(';'));
     }
 
     return new Response(filas.join('\r\n'), {
