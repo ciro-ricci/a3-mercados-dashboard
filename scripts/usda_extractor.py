@@ -49,21 +49,22 @@ COUNTRIES = {
     "rusia":     "Russia",
     "ucrania":   "Ukraine",
     "ue":        "European Union",
+    "china":     "China",
 }
 
 # Qué ámbitos guarda cada cultivo. No tiene sentido cargar Brasil en girasol
 # ni Rusia en soja: infla el bloque USDA_DATA sin aportar nada al dashboard.
 SCOPES_POR_CULTIVO = {
-    "soja":    {"mundo", "eeuu", "argentina", "brasil"},
-    "maiz":    {"mundo", "eeuu", "argentina", "brasil"},
-    "trigo":   {"mundo", "eeuu", "argentina", "brasil"},
+    "soja":    {"mundo", "eeuu", "argentina", "brasil", "china"},
+    "maiz":    {"mundo", "eeuu", "argentina", "brasil", "china"},
+    "trigo":   {"mundo", "eeuu", "argentina", "brasil", "china"},
     "girasol": {"mundo", "argentina", "rusia", "ucrania", "ue"},
 }
 
 # Todo en unidades métricas: PSD entrega producción/stocks en 1000 MT,
 # área en 1000 HA y rinde en MT/HA — no hay que convertir desde bushels/acres.
 ATTRS = ("Production", "Ending Stocks", "Domestic Consumption", "Exports",
-         "Area Harvested", "Yield")
+         "Imports", "Area Harvested", "Yield")
 
 N_CAMPAIGNS = 20
 
@@ -166,12 +167,14 @@ def shape_series(psd):
         crop_out = {"campanias": [f"{y}/{str(y + 1)[2:]}" for y in years], "years": years}
         for scope, data in scopes.items():
             prod, stocks, ratio, exports, area, rinde = [], [], [], [], [], []
+            imports, consumo = [], []
             for y in years:
                 d = data.get(y, {})
                 p = d.get("Production")
                 es = d.get("Ending Stocks")
                 dc = d.get("Domestic Consumption")
                 ex = d.get("Exports")
+                im = d.get("Imports")
                 ar = d.get("Area Harvested")
                 yi = d.get("Yield")
                 # El rinde no se puede sumar entre países: para el agregado
@@ -185,6 +188,8 @@ def shape_series(psd):
                 area.append(round(ar / 1000, 2) if ar is not None else None)
                 rinde.append(round(yi, 2) if yi is not None else None)  # t/ha
                 ratio.append(round(es / dc * 100, 1) if es and dc else None)
+                imports.append(round(im / 1000, 2) if im is not None else None)
+                consumo.append(round(dc / 1000, 2) if dc is not None else None)
             crop_out[scope] = {
                 "produccion": prod,       # Mt
                 "stocks": stocks,         # Mt
@@ -192,6 +197,8 @@ def shape_series(psd):
                 "area": area,             # M ha
                 "rinde": rinde,           # t/ha
                 "stocks_uso": ratio,      # %
+                "importaciones": imports,  # Mt — la variable que mueve el precio en China
+                "consumo": consumo,        # Mt
             }
         result[crop] = crop_out
     return result
