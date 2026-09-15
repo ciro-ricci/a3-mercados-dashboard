@@ -486,6 +486,35 @@ canvas { max-height: 100%; }
 
 /* gráficos más bajos: en media columna no necesitan tanta altura */
 #panel-usda .u-canvas-sm { height:230px; }
+    #panel-precios .pr-card{background:#fff;border:1px solid #edeff2;border-radius:10px;padding:14px 16px;
+      margin-bottom:14px;box-shadow:0 1px 3px rgba(16,24,40,.05),0 6px 16px -6px rgba(16,24,40,.08)}
+    #panel-precios .pr-card h3{font-size:.8rem;font-weight:700;color:#3d4552;margin-bottom:10px;
+      text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:8px;
+      padding-bottom:9px;border-bottom:1px solid #f1f3f6}
+    #panel-precios .pr-card h3::before{content:'';width:3px;height:13px;border-radius:2px;background:#7ab8ff;flex:0 0 auto}
+    #panel-precios .pr-barra{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+      background:#fff;border:1px solid #edeff2;border-radius:10px;padding:12px 16px;margin-bottom:14px}
+    #panel-precios .pr-btn{background:#1a1a2e;color:#fff;border:0;border-radius:8px;padding:8px 18px;
+      font-size:.8rem;font-weight:600;cursor:pointer}
+    #panel-precios .pr-btn:disabled{opacity:.5;cursor:default}
+    #panel-precios .pr-reloj{font-size:.72rem;color:#666;line-height:1.35}
+    #panel-precios .pr-reloj b{color:#1a1a2e}
+    #panel-precios .pr-vivo{display:inline-block;width:7px;height:7px;border-radius:50%;
+      background:#1e7e34;margin-right:5px;vertical-align:middle}
+    #panel-precios .pr-demora{display:inline-block;width:7px;height:7px;border-radius:50%;
+      background:#d97706;margin-right:5px;vertical-align:middle}
+    #panel-precios table{width:100%;border-collapse:collapse;font-size:.74rem}
+    #panel-precios th{text-align:right;font-size:.62rem;text-transform:uppercase;letter-spacing:.4px;
+      color:#8a8a8a;font-weight:600;padding:5px 6px;border-bottom:1px solid #edeff2}
+    #panel-precios th:first-child,#panel-precios td:first-child{text-align:left}
+    #panel-precios td{text-align:right;padding:6px;border-bottom:1px solid #f5f6f8;white-space:nowrap}
+    #panel-precios .pr-sep{border-left:1px solid #e6e9ee}
+    #panel-precios .pos{color:#1e7e34;font-weight:600}
+    #panel-precios .neg{color:#9b1c1c;font-weight:600}
+    #panel-precios .pr-aprox{color:#d97706;font-size:.62rem;margin-left:3px;cursor:help}
+    #panel-precios .pr-nota{font-size:.68rem;color:#8a8a8a;font-style:italic;line-height:1.5;margin-top:10px}
+    #panel-precios .pr-err{background:#fff4f4;border:1px solid #f3d0d0;color:#9b1c1c;
+      border-radius:8px;padding:9px 12px;font-size:.72rem;margin-bottom:12px}
     #panel-usda .u-subtabs{position:sticky;top:0;z-index:30;background:#f0f2f5;
       padding-top:8px;box-shadow:0 6px 10px -8px rgba(16,24,40,.18)}
     #panel-usda .cn-tabla{font-size:.7rem}
@@ -599,6 +628,7 @@ canvas { max-height: 100%; }
   <div class="tab" onclick="showTab('noticias')">📰 Noticias</div>
   <div class="tab" onclick="showTab('brief-granos')">🌾 Brief Granos</div>
   <div class="tab usda-tab" onclick="showTab('usda')">🇺🇸 USDA</div>
+        <div class="tab" onclick="showTab('precios');buildPreciosPanel()">💵 Precios en vivo</div>
   <div class="tab ds-tab" onclick="showTab('deuda-stock')">💳 Deuda/Stock</div>
   </div>
 <div class="content">
@@ -633,6 +663,7 @@ canvas { max-height: 100%; }
   <div class="panel" id="panel-insumo-producto"></div>
   <div class="panel" id="panel-brief-granos"></div>
   <div class="panel" id="panel-usda"></div>
+    <div class="panel" id="panel-precios"></div>
   <div class="panel" id="panel-deuda-stock"></div>
   <div class="panel" id="panel-posicion-fondos"></div>
 </div>
@@ -9683,6 +9714,185 @@ function chinaTablaHTML(cr) {
     '<th>USDA hoy</th><th>Mes anterior</th><th>Camp. anterior</th>' +
     '<th>Prom. 5 camp.</th><th>CASDE</th><th>Brecha</th>' +
     '</tr></thead><tbody>' + filas + '</tbody></table>';
+}
+
+// ── Precios en vivo: A3 contra Chicago ───────────────────────────────
+// Los datos los trae una funcion del propio Netlify (/.netlify/functions/precios),
+// porque ni A3 ni Yahoo permiten que el navegador les pegue directo. Se consulta
+// al abrir la pestana y despues solo cuando se aprieta Actualizar: nada corre solo.
+//
+// A3 es tiempo real. Chicago viene de Yahoo con unos 10 minutos de retraso, y eso
+// se avisa en pantalla en vez de disimularlo.
+
+var PRECIOS_DATOS = null;
+var _prCargando = false;
+
+var PR_MES = {ENE:'Ene', FEB:'Feb', MAR:'Mar', ABR:'Abr', MAY:'May', JUN:'Jun',
+              JUL:'Jul', AGO:'Ago', SEP:'Sep', OCT:'Oct', NOV:'Nov', DIC:'Dic'};
+
+function _prNum(v, dec) {
+  if (v === null || v === undefined || !isFinite(v)) return '—';
+  var d = dec === undefined ? 2 : dec;
+  return v.toLocaleString('es-AR', {minimumFractionDigits: d, maximumFractionDigits: d});
+}
+
+function _prVar(v) {
+  if (v === null || v === undefined || !isFinite(v)) return '—';
+  if (Math.abs(v) < 0.005) return '0,00%';
+  return '<span class="' + (v > 0 ? 'pos' : 'neg') + '">' + (v > 0 ? '+' : '') +
+         v.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '%</span>';
+}
+
+function _prHora(epochSeg) {
+  if (!epochSeg) return '—';
+  return new Date(epochSeg * 1000).toLocaleTimeString('es-AR',
+    {hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Argentina/Buenos_Aires'});
+}
+
+function _prVenc(p) { return (PR_MES[p.mes] || p.mes) + '-' + p.anio; }
+
+// ZWZ26.CBT -> Dic-26. Armarlo del simbolo evita depender del texto que
+// manda Yahoo, que no es uniforme entre granos.
+var PR_COD = {F:'Ene', G:'Feb', H:'Mar', J:'Abr', K:'May', M:'Jun',
+              N:'Jul', Q:'Ago', U:'Sep', V:'Oct', X:'Nov', Z:'Dic'};
+
+function _prVencCh(simbolo) {
+  var m = String(simbolo || '').match(/^[A-Z]{2}([A-Z])(\d{2})/);
+  if (!m) return simbolo || '—';
+  return (PR_COD[m[1]] || m[1]) + '-' + m[2];
+}
+
+function buildPreciosPanel() {
+  var p = document.getElementById('panel-precios');
+  if (!p || p.dataset.armado === '1') return;
+  p.dataset.armado = '1';
+  p.innerHTML =
+    '<div class="pr-barra">' +
+      '<button id="pr-btn" class="pr-btn" onclick="preciosActualizar()">Actualizar</button>' +
+      '<div id="pr-estado" class="pr-reloj">Consultando…</div>' +
+    '</div><div id="pr-cuerpo"></div>';
+  preciosActualizar();
+}
+
+function preciosActualizar() {
+  if (_prCargando) return;
+  _prCargando = true;
+  var btn = document.getElementById('pr-btn');
+  var est = document.getElementById('pr-estado');
+  if (btn) { btn.disabled = true; btn.textContent = 'Buscando…'; }
+  if (est) est.textContent = 'Consultando A3 y Chicago…';
+
+  fetch('/.netlify/functions/precios', {cache: 'no-store'})
+    .then(function (r) { if (!r.ok) throw new Error('el servidor respondio ' + r.status); return r.json(); })
+    .then(function (j) { PRECIOS_DATOS = j; preciosRender(j); })
+    .catch(function (e) {
+      var c = document.getElementById('pr-cuerpo');
+      if (c) c.innerHTML = '<div class="pr-err">No se pudieron traer los precios: ' + e.message + '.</div>';
+      if (est) est.textContent = 'Sin datos.';
+    })
+    .then(function () {
+      _prCargando = false;
+      if (btn) { btn.disabled = false; btn.textContent = 'Actualizar'; }
+    });
+}
+
+function preciosRender(j) {
+  var est = document.getElementById('pr-estado');
+  var cuerpo = document.getElementById('pr-cuerpo');
+  if (!cuerpo) return;
+
+  var contratos = (j.chicago && j.chicago.contratos) || {};
+  var horas = Object.keys(contratos).map(function (k) { return contratos[k].hora; })
+                    .filter(Boolean);
+  var horaCh = horas.length ? Math.max.apply(null, horas) : null;
+  var consulta = new Date(j.generado).toLocaleTimeString('es-AR',
+    {hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Argentina/Buenos_Aires'});
+
+  if (est) {
+    est.innerHTML = '<span class="pr-vivo"></span>A3 en vivo · consultado a las <b>' + consulta + '</b>' +
+      '&nbsp;&nbsp;·&nbsp;&nbsp;<span class="pr-demora"></span>Chicago con unos 10 minutos de retraso · ' +
+      'ultimo dato de las <b>' + _prHora(horaCh) + '</b>';
+  }
+
+  var html = '';
+  if (j.errores && j.errores.length) {
+    html += '<div class="pr-err">' + j.errores.join('. ') + '.</div>';
+  }
+
+  var pos = (j.a3 && j.a3.posiciones) || [];
+  if (!pos.length) {
+    html += '<div class="pr-err">A3 no devolvio posiciones. Puede ser que el mercado este cerrado.</div>';
+  }
+
+  ['Soja', 'Maiz', 'Trigo'].forEach(function (g) {
+    var filas = pos.filter(function (p) { return p.grano === g; });
+    if (!filas.length) return;
+    var tit = g === 'Maiz' ? 'Maíz' : g;
+    var cuerpoTabla = '';
+    filas.forEach(function (p) {
+      var c = contratos[p.chicago];
+      var ref = p.ultimo || p.ajusteAnterior;
+      var dif = (c && c.usdTn && ref) ? (ref / c.usdTn - 1) * 100 : null;
+      cuerpoTabla +=
+        '<tr><td><b>' + _prVenc(p) + '</b></td>' +
+        '<td>' + _prNum(p.compra) + '</td>' +
+        '<td>' + _prNum(p.venta) + '</td>' +
+        '<td><b>' + _prNum(p.ultimo) + '</b></td>' +
+        '<td>' + (p.ultimo ? _prVar(p.variacion) : '—') + '</td>' +
+        '<td>' + (p.volumen ? p.volumen.toLocaleString('es-AR') : '—') + '</td>' +
+        '<td class="pr-sep">' + (c ? _prVencCh(c.simbolo) : '—') +
+          (c && p.chicagoExacto === false ? '<span class="pr-aprox" title="Chicago no lista ese mes: es el vencimiento siguiente que si cotiza">≈</span>' : '') + '</td>' +
+        '<td>' + (c ? _prNum(c.usdTn) : '—') + '</td>' +
+        '<td>' + (c ? _prVar(c.variacion) : '—') + '</td>' +
+        '<td class="pr-sep">' + (dif === null ? '—' :
+            '<b>' + (dif > 0 ? '+' : '') + _prNum(dif, 1) + '%</b>') + '</td></tr>';
+    });
+    html += '<div class="pr-card"><h3>' + tit + '</h3><table><thead><tr>' +
+      '<th>Posición A3</th><th>Compra</th><th>Venta</th><th>Último</th><th>Var.</th><th>Volumen</th>' +
+      '<th class="pr-sep">Chicago</th><th>USD/tn</th><th>Var.</th>' +
+      '<th class="pr-sep">Dif. local</th></tr></thead><tbody>' + cuerpoTabla + '</tbody></table></div>';
+  });
+
+  // aceite y harina no tienen contrato local: van solos
+  var subs = Object.keys(contratos).filter(function (k) {
+    return contratos[k].raiz === 'ZL' || contratos[k].raiz === 'ZM';
+  }).sort(function (x, y) {
+    // ordenar por vencimiento, no alfabeticamente: Dic-26 va antes que Ene-27
+    var o = 'FGHJKMNQUVXZ';
+    function clave(s) {
+      var m = String(s).match(/^([A-Z]{2})([A-Z])(\d{2})/);
+      return m ? (m[1] === 'ZL' ? 0 : 1) * 10000 + parseInt(m[3], 10) * 100 + o.indexOf(m[2]) : 0;
+    }
+    return clave(x) - clave(y);
+  });
+  if (subs.length) {
+    var f = '';
+    subs.forEach(function (k) {
+      var c = contratos[k];
+      f += '<tr><td><b>' + (c.raiz === 'ZL' ? 'Aceite' : 'Harina') + ' ' + _prVencCh(c.simbolo) + '</b></td>' +
+           '<td>' + _prNum(c.usdTn) + '</td>' +
+           '<td>' + _prVar(c.variacion) + '</td>' +
+           '<td>' + _prNum(c.min52UsdTn, 0) + '</td>' +
+           '<td>' + _prNum(c.max52UsdTn, 0) + '</td></tr>';
+    });
+    html += '<div class="pr-card"><h3>Subproductos de la soja en Chicago</h3><table><thead><tr>' +
+      '<th>Contrato</th><th>USD/tn</th><th>Var.</th><th>Mín. 52 sem.</th><th>Máx. 52 sem.</th>' +
+      '</tr></thead><tbody>' + f + '</tbody></table>' +
+      '<div class="pr-nota">No tienen contrato equivalente en A3, así que van por separado. ' +
+      'El aceite cotiza en centavos por libra y la harina en dólares por tonelada corta; ' +
+      'acá están pasados a tonelada métrica.</div></div>';
+  }
+
+  html += '<div class="pr-card"><div class="pr-nota">Todo en dólares por tonelada. ' +
+    'A3 es tiempo real por su canal público; Chicago sale de Yahoo Finance con unos 10 minutos ' +
+    'de retraso, porque el dato en vivo del CBOT es licenciado. ' +
+    '"Dif. local" es el último de A3 contra su equivalente de Chicago: negativa significa que ' +
+    'el mercado local paga menos que el exterior, que es lo habitual por retenciones y flete. ' +
+    'El signo ≈ marca los vencimientos que Chicago no lista, donde se toma el siguiente que sí cotiza. ' +
+    'Cuando A3 no operó una posición, el último queda vacío y la diferencia se calcula sobre el ajuste anterior.' +
+    '</div></div>';
+
+  cuerpo.innerHTML = html;
 }
 
 // La barra de cultivos de arriba manda sobre las secciones que tienen botones
