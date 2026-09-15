@@ -123,6 +123,32 @@ function redondear(v, d) {
   return Math.round(v * f) / f;
 }
 
+// ZSX26.CBT no se lee de un vistazo como SOJ.ROS/NOV26, asi que lo traducimos.
+const NOMBRE = {ZC: 'Maiz', ZW: 'Trigo', ZS: 'Soja',
+                ZL: 'Aceite de soja', ZM: 'Harina de soja'};
+const COD_MES = {F: 'Ene', G: 'Feb', H: 'Mar', J: 'Abr', K: 'May', M: 'Jun',
+                 N: 'Jul', Q: 'Ago', U: 'Sep', V: 'Oct', X: 'Nov', Z: 'Dic'};
+
+function describirChicago(simbolo, raiz) {
+  const m = String(simbolo || '').match(/^([A-Z]{2})([A-Z])(\d{2})/);
+  if (!m) return simbolo || '';
+  return (NOMBRE[raiz || m[1]] || m[1]) + ' ' + (COD_MES[m[2]] || m[2]) + '-' + m[3];
+}
+
+// para A3 el ticker ya es legible, pero conviene que la columna diga lo mismo
+// en las dos mitades del archivo
+function describirA3(ticker) {
+  const m = String(ticker || '').match(/^([A-Z]{3})\.([A-Z]{3})(?:\.P)?\/([A-Z]{3})(\d{2})$/);
+  if (!m) return ticker || '';
+  const g = {SOJ: 'Soja', MAI: 'Maiz', TRI: 'Trigo', GIR: 'Girasol', SOR: 'Sorgo',
+             SOY: 'Soja', CRN: 'Maiz'}[m[1]] || m[1];
+  const mes = {ENE:'Ene',FEB:'Feb',MAR:'Mar',ABR:'Abr',MAY:'May',JUN:'Jun',
+               JUL:'Jul',AGO:'Ago',SEP:'Sep',OCT:'Oct',NOV:'Nov',DIC:'Dic',
+               DIS:'Disponible',DISPO:'Disponible'}[m[3]] || m[3];
+  const donde = m[2] === 'CME' ? ' (Chicago en A3)' : '';
+  return g + ' ' + mes + '-' + m[4] + donde;
+}
+
 export default async (req) => {
   const salida = {generado: new Date().toISOString(), a3: null, chicago: null, errores: []};
 
@@ -193,7 +219,8 @@ export default async (req) => {
     // Dos fechas distintas, porque son dos cosas distintas: cuando se genero el
     // dato en el mercado y cuando lo fuimos a buscar. Mezclarlas hacia parecer
     // fresco un precio viejo con el mercado cerrado.
-    const filas = [['Posicion', 'Precio', 'Estado', 'FechaDato', 'Consultado'].join(';')];
+    const filas = [['Posicion', 'Precio', 'Estado', 'FechaDato', 'Consultado',
+                    'Descripcion'].join(';')];
     const yaEsta = new Set();
     const ahoraMs = Date.parse(salida.generado);
 
@@ -204,13 +231,13 @@ export default async (req) => {
       // queda vacia a proposito en vez de inventar la hora de la consulta.
       filas.push([p.ticker, num(operado ? p.ultimo : p.ajusteAnterior),
         operado ? 'A3, ultimo operado' : 'A3, sin operar hoy, ajuste anterior',
-        '', ahora].join(';'));
+        '', ahora, describirA3(p.ticker)].join(';'));
     }
 
     for (const t of Object.keys(ajustes)) {
       if (yaEsta.has(t)) continue;
       filas.push([t, num(ajustes[t].ajuste), 'A3, cierre anterior',
-                  (ajustes[t].fecha || ''), ahora].join(';'));
+                  (ajustes[t].fecha || ''), ahora, describirA3(t)].join(';'));
     }
 
     for (const k of Object.keys(chicago)) {
@@ -224,7 +251,7 @@ export default async (req) => {
       filas.push([c.simbolo, num(c.usdTn), estado,
         c.hora ? new Date(c.hora * 1000).toLocaleString('es-AR',
           {timeZone: 'America/Argentina/Buenos_Aires', hour12: false}) : '',
-        ahora].join(';'));
+        ahora, describirChicago(c.simbolo, c.raiz)].join(';'));
     }
 
     return new Response(filas.join('\r\n'), {
