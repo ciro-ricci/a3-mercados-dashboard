@@ -486,6 +486,15 @@ canvas { max-height: 100%; }
 
 /* gráficos más bajos: en media columna no necesitan tanta altura */
 #panel-usda .u-canvas-sm { height:230px; }
+    #panel-usda .u-subtabs{position:sticky;top:0;z-index:30;background:#f0f2f5;
+      padding-top:8px;box-shadow:0 6px 10px -8px rgba(16,24,40,.18)}
+    #panel-usda .cn-tabla{font-size:.7rem}
+    #panel-usda .cn-tabla th,.cn-tabla td{padding:5px 4px;white-space:nowrap}
+    #panel-usda .cn-tabla th:first-child,.cn-tabla td:first-child{white-space:normal}
+    #panel-usda .cn-vistas{display:flex;gap:4px;justify-content:center;margin-bottom:6px}
+    #panel-usda .cn-vista{font-size:.68rem;font-weight:600;padding:4px 10px;border-radius:6px;
+      cursor:pointer;color:#888;background:#f5f6f8}
+    #panel-usda .cn-vista.activa{color:#1a1a2e;background:#e4e8ef}
 
 /* tablas comprimidas: entran en media columna sin perder legibilidad */
 #panel-usda .u-compact .u-table { font-size:.74rem; }
@@ -9670,8 +9679,8 @@ function chinaTablaHTML(cr) {
 
   return '<table class="u-table cn-tabla"><thead><tr>' +
     '<th>Variable<span>Mt · campaña ' + S.campanias[n] + '</span></th>' +
-    '<th>USDA hoy</th><th>Dato anterior</th><th>Campaña anterior</th>' +
-    '<th>Prom. 5 campañas</th><th>Según CASDE</th><th>Brecha</th>' +
+    '<th>USDA hoy</th><th>Mes anterior</th><th>Camp. anterior</th>' +
+    '<th>Prom. 5 camp.</th><th>CASDE</th><th>Brecha</th>' +
     '</tr></thead><tbody>' + filas + '</tbody></table>';
 }
 
@@ -9680,83 +9689,63 @@ function chinaRender() {
   if (!cont) return;
   var cr = (typeof _usdaCrop !== 'undefined') ? _usdaCrop : 'soja';
   cont.innerHTML = chinaTablaHTML(cr);
-  var abierto = document.getElementById('u-china-graf');
-  if (abierto && abierto.dataset.abierto === '1') chinaDrawCharts(cr);
+  chinaDrawChart(cr);
 }
 
-function chinaToggle() {
-  var zona = document.getElementById('u-china-graf');
-  var btn = document.getElementById('u-china-btn');
-  if (!zona) return;
-  var abrir = zona.dataset.abierto !== '1';
-  zona.dataset.abierto = abrir ? '1' : '0';
-  zona.style.display = abrir ? 'block' : 'none';
-  btn.textContent = abrir ? '▴ ocultar gráficos' : '▾ ver gráficos';
-  if (abrir) chinaDrawCharts((typeof _usdaCrop !== 'undefined') ? _usdaCrop : 'soja');
+var _cnVista = 'imp';
+
+function chinaSetVista(v) {
+  _cnVista = v;
+  var b = document.querySelectorAll('.cn-vista');
+  for (var i = 0; i < b.length; i++) b[i].classList.toggle('activa', b[i].dataset.vista === v);
+  chinaDrawChart((typeof _usdaCrop !== 'undefined') ? _usdaCrop : 'soja');
 }
 
-function chinaDrawCharts(cr) {
+function chinaDrawChart(cr) {
   if (typeof Chart === 'undefined') return;
+  var c = document.getElementById('u-chart-china');
+  if (!c) return;
+  _uDestroy('u-chart-china');
   var S = USDA_DATA.series[cr];
   if (!S || !S.china) return;
-  var lab = S.campanias, ch = S.china;
+  var lab = S.campanias, ch = S.china, cfg;
 
-  var id1 = 'u-chart-cn-imp';
-  var c1 = document.getElementById(id1);
-  if (c1) {
-    _uDestroy(id1);
-    var ds1 = [{
+  if (_cnVista === 'imp') {
+    var ds = [{
       type: 'bar', label: 'Importaciones de China (Mt)', data: ch.importaciones,
       backgroundColor: '#7ab8ff', borderColor: '#4f97d1', borderWidth: 1, order: 2
     }];
-    // la previsión de Beijing, como línea de referencia sobre la última campaña
+    // la previsión de Beijing, como referencia sobre la campaña en curso
     var C = (typeof CASDE_DATA !== 'undefined' && CASDE_DATA.cultivos) ? CASDE_DATA.cultivos[cr] : null;
     if (C && C.filas.importaciones) {
-      var iC = C.campanias.length - 1;
-      var v = C.filas.importaciones[iC];
-      ds1.push({
-        type: 'line', label: 'Lo que dice CASDE para la campaña en curso',
+      var v = C.filas.importaciones[C.campanias.length - 1];
+      ds.push({
+        type: 'line', label: 'Previsión de CASDE',
         data: lab.map(function (_, i) { return i === lab.length - 1 ? v : null; }),
         borderColor: '#d97706', backgroundColor: '#d97706',
         pointRadius: 6, pointStyle: 'rectRot', showLine: false, order: 1
       });
     }
-    _usdaCharts[id1] = new Chart(c1.getContext('2d'), {
-      data: { labels: lab, datasets: ds1 },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } },
-        scales: {
-          x: { ticks: { font: { size: 9 }, maxRotation: 90, minRotation: 45 }, grid: { display: false } },
-          y: { title: { display: true, text: 'Mt', font: { size: 10 } }, ticks: { font: { size: 10 } } }
-        }
-      }
-    });
+    cfg = { data: { labels: lab, datasets: ds } };
+  } else {
+    cfg = { type: 'line', data: { labels: lab, datasets: [
+      { label: 'Producción propia (Mt)', data: ch.produccion, borderColor: '#1e7e34',
+        backgroundColor: 'rgba(30,126,52,0.08)', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: true },
+      { label: 'Consumo (Mt)', data: ch.consumo, borderColor: '#9b1c1c',
+        borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false }
+    ]}};
   }
 
-  var id2 = 'u-chart-cn-bal';
-  var c2 = document.getElementById(id2);
-  if (c2) {
-    _uDestroy(id2);
-    _usdaCharts[id2] = new Chart(c2.getContext('2d'), {
-      type: 'line',
-      data: { labels: lab, datasets: [
-        { label: 'Producción propia (Mt)', data: ch.produccion, borderColor: '#1e7e34',
-          backgroundColor: 'rgba(30,126,52,0.08)', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: true },
-        { label: 'Consumo (Mt)', data: ch.consumo, borderColor: '#9b1c1c',
-          borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false }
-      ]},
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } },
-        scales: {
-          x: { ticks: { font: { size: 9 }, maxRotation: 90, minRotation: 45 }, grid: { display: false } },
-          y: { title: { display: true, text: 'Mt', font: { size: 10 } }, ticks: { font: { size: 10 } } }
-        }
-      }
-    });
-  }
+  cfg.options = {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { labels: { boxWidth: 12, font: { size: 10 } } } },
+    scales: {
+      x: { ticks: { font: { size: 9 }, maxRotation: 90, minRotation: 45 }, grid: { display: false } },
+      y: { title: { display: true, text: 'Mt', font: { size: 10 } }, ticks: { font: { size: 10 } } }
+    }
+  };
+  _usdaCharts['u-chart-china'] = new Chart(c.getContext('2d'), cfg);
 }
 
 function chinaHTML() {
@@ -9768,29 +9757,27 @@ function chinaHTML() {
 
   var pie = 'Todo en millones de toneladas. La brecha es el USDA menos el CASDE: ' +
     'positiva significa que el USDA le asigna a China más de lo que China dice de sí misma. ' +
-    'El contexto histórico sale de la serie del USDA, que es la única de las dos con historia ' +
-    'larga y revisada; CASDE publica solo cuatro columnas por informe. ' +
-    '"Dato anterior" es el último valor distinto que tuvo el USDA para esta misma campaña, ' +
-    'normalmente el del WASDE del mes pasado. CASDE no publica trigo, y el USDA no abre ' +
-    'molienda ni uso forrajero por país.';
+    'El contexto histórico sale de la serie del USDA, la única de las dos con historia larga y ' +
+    'revisada. "Mes anterior" es el último valor distinto que tuvo el USDA para esta misma campaña. ' +
+    'CASDE no publica trigo, y el USDA no abre molienda ni uso forrajero por país.';
   if (typeof CASDE_DATA !== 'undefined' && CASDE_DATA.titulo) {
     pie += ' Informe chino: <a class="u-src" href="' + CASDE_DATA.url +
       '" target="_blank" rel="noopener">' + CASDE_DATA.titulo + '</a>.';
   }
 
-  return '<div class="u-card u-compact"><h3>China — el USDA contra Beijing' +
-    '<span class="u-freq">CASDE sale el mismo día que el WASDE</span></h3>' +
-    '<div id="u-china-body"></div>' +
-    '<div class="cn-acciones"><span id="u-china-btn" class="u-condbtn" onclick="chinaToggle()">▾ ver gráficos</span></div>' +
-    '<div id="u-china-graf" data-abierto="0" style="display:none">' +
-      '<div class="u-pair">' +
-        '<div><div class="u-subtit">Importaciones de China — 20 campañas</div>' +
-          '<div class="u-canvas u-canvas-sm"><canvas id="u-chart-cn-imp"></canvas></div></div>' +
-        '<div><div class="u-subtit">Producción propia vs. consumo — 20 campañas</div>' +
-          '<div class="u-canvas u-canvas-sm"><canvas id="u-chart-cn-bal"></canvas></div></div>' +
+  return '<div class="u-pair">' +
+    '<div class="u-card u-compact"><h3>China — el USDA contra Beijing' +
+      '<span class="u-freq">CASDE sale el mismo día que el WASDE</span></h3>' +
+      '<div id="u-china-body"></div>' +
+      '<div class="u-note">' + pie + '</div></div>' +
+    '<div class="u-card u-compact"><h3>China según la serie del USDA' +
+      '<span class="u-freq">20 campañas</span></h3>' +
+      '<div class="cn-vistas">' +
+        '<span class="cn-vista activa" data-vista="imp" onclick="chinaSetVista(&#39;imp&#39;)">Importaciones</span>' +
+        '<span class="cn-vista" data-vista="bal" onclick="chinaSetVista(&#39;bal&#39;)">Producción vs. consumo</span>' +
       '</div>' +
-    '</div>' +
-    '<div class="u-note">' + pie + '</div></div>';
+      '<div class="u-canvas"><canvas id="u-chart-china"></canvas></div></div>' +
+  '</div>';
 }
 
 function ensoIndicesHTML() {
