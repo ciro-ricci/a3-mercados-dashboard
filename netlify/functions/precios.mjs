@@ -218,7 +218,7 @@ export default async (req) => {
       const minutos = c.hora ? (ahoraMs - c.hora * 1000) / 60000 : null;
       // el retraso normal es de unos 10 minutos: bastante mas que eso significa
       // que la rueda cerro y el precio dejo de moverse
-      const estado = (minutos != null && minutos > 25)
+      const estado = (minutos != null && minutos > 20)
         ? 'Chicago, rueda cerrada, ultimo de la sesion'
         : 'Chicago, unos 10 min de retraso';
       filas.push([c.simbolo, num(c.usdTn), estado,
