@@ -8980,6 +8980,7 @@ function usdaSetCrop(crop) {
   usdaDrawCropCharts(crop);
   // la tarjeta de China sigue al cultivo elegido arriba
   if (typeof chinaRender === 'function') chinaRender();
+  usdaSincronizarCultivo(crop);
   // El grafico de condicion sigue al cultivo elegido arriba. El girasol no
   // tiene datos de NASS, asi que en ese caso se deja el que estaba.
   if (USDA_DATA.condicion && USDA_DATA.condicion[crop] && crop !== _usdaCondCrop) {
@@ -9682,6 +9683,29 @@ function chinaTablaHTML(cr) {
     '<th>USDA hoy</th><th>Mes anterior</th><th>Camp. anterior</th>' +
     '<th>Prom. 5 camp.</th><th>CASDE</th><th>Brecha</th>' +
     '</tr></thead><tbody>' + filas + '</tbody></table>';
+}
+
+// La barra de cultivos de arriba manda sobre las secciones que tienen botones
+// propios, siempre que el cultivo exista ahí. ENSO y la Bolsa de Buenos Aires no
+// siguen girasol, y la Bolsa parte el maíz en temprano y tardío: si ya estabas
+// parado en una de las dos, se respeta esa; si no, arranca por el temprano.
+function usdaSincronizarCultivo(crop) {
+  if (typeof ensoSetCrop === 'function' && ['soja', 'maiz', 'trigo'].indexOf(crop) >= 0 &&
+      typeof _ensoCrop !== 'undefined' && _ensoCrop !== crop) {
+    ensoSetCrop(crop);
+  }
+  if (typeof eccSetCrop === 'function' && typeof _eccCrop !== 'undefined') {
+    var destino = null;
+    if (crop === 'soja' || crop === 'trigo') {
+      destino = crop;
+    } else if (crop === 'maiz') {
+      destino = (_eccCrop === 'maiz_tardio') ? 'maiz_tardio' : 'maiz_temprano';
+    }
+    if (destino && destino !== _eccCrop &&
+        typeof ECC_DATA !== 'undefined' && ECC_DATA.cultivos && ECC_DATA.cultivos[destino]) {
+      eccSetCrop(destino);
+    }
+  }
 }
 
 function chinaRender() {
