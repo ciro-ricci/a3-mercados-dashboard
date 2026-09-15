@@ -35,6 +35,9 @@ FIN = "// USDA_DATA:END"
 CLAVES_DUROS = ("series", "condicion", "crop_progress", "enso", "sequia",
                 "condicion_hist", "conab_prog")
 
+# De China seguimos importaciones, produccion, consumo y stocks
+CHINA_METRICAS = ("importaciones", "produccion", "consumo", "stocks")
+
 
 def _completar_prom5_desde_hist(datos):
     """
@@ -76,6 +79,49 @@ def _completar_prom5_desde_hist(datos):
               f"{d['promedio_5a']}% (n={len(vals)})")
 
 
+def _guardar_china_previo(actual, nuevos, combinado):
+    """
+    Conserva el valor anterior de cada variable de China antes de pisarlo.
+
+    El workflow corre varias veces por semana, así que "el dato anterior" no
+    puede ser simplemente el de la corrida pasada: casi siempre sería idéntico.
+    Se guarda el último valor DISTINTO, que es lo que de verdad interesa — la
+    cifra que el USDA tenía antes de la última revisión, normalmente la del
+    WASDE del mes pasado.
+    """
+    viejo = (actual.get("series") or {})
+    nuevo = (nuevos.get("series") or {})
+    if not nuevo:
+        return
+    previo = dict(combinado.get("china_previo") or {})
+
+    for crop in ("soja", "maiz", "trigo"):
+        vn = (nuevo.get(crop) or {}).get("china")
+        if not vn:
+            continue
+        camp_n = (nuevo.get(crop) or {}).get("campanias") or []
+        if not camp_n:
+            continue
+        i_n = len(camp_n) - 1
+        vv = (viejo.get(crop) or {}).get("china")
+        camp_v = (viejo.get(crop) or {}).get("campanias") or []
+        prev_crop = dict(previo.get(crop) or {})
+
+        for m in CHINA_METRICAS:
+            val_n = (vn.get(m) or [None])[i_n] if vn.get(m) else None
+            val_v = None
+            if vv and vv.get(m) and camp_v and camp_v[-1] == camp_n[i_n]:
+                val_v = vv[m][len(camp_v) - 1]
+            # solo se registra cuando el numero cambio de verdad
+            if val_v is not None and val_n is not None and abs(val_v - val_n) > 0.001:
+                prev_crop[m] = val_v
+        prev_crop["campania"] = camp_n[i_n]
+        previo[crop] = prev_crop
+
+    if previo:
+        combinado["china_previo"] = previo
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", required=True)
@@ -108,10 +154,14 @@ def main():
     # El histórico de condición es una tabla fija (las 5 campañas de
     # referencia ya cerradas). Si la corrida no lo trajo porque QuickStats no
     # contestó, se conserva el que ya estaba: no cambia de una semana a otra.
+    if not combinado.get("china_previo") and actual.get("china_previo"):
+        combinado["china_previo"] = actual["china_previo"]
+
     if not combinado.get("condicion_hist") and (actual.get("condicion_hist")):
         combinado["condicion_hist"] = actual["condicion_hist"]
         print("Aviso: se conserva el histórico de condición anterior.")
 
+    _guardar_china_previo(actual, nuevos, combinado)
     _completar_prom5_desde_hist(combinado)
 
     # El RONI vive en un servidor universitario que se cae seguido. Si esta
