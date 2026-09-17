@@ -77,6 +77,9 @@ async function leerA3() {
 async function leerChicago(simbolo) {
   const r = await fetch(YAHOO + encodeURIComponent(simbolo) + '?range=1d&interval=1d',
                         {signal: AbortSignal.timeout(8000)});
+  // Un 404 no es una falla: es un contrato que ya vencio y Chicago dejo de
+  // listar. Se marca como tal para no mostrarlo como error en pantalla.
+  if (r.status === 404) { const e = new Error(simbolo + ' ya no cotiza'); e.vencido = true; throw e; }
   if (!r.ok) throw new Error(simbolo + ' respondio ' + r.status);
   const j = await r.json();
   const m = j.chart && j.chart.result && j.chart.result[0] && j.chart.result[0].meta;
@@ -187,7 +190,10 @@ export default async (req) => {
   const chicago = {};
   res.forEach((r, i) => {
     const s = simbolos[i], raiz = pedidos.get(s);
-    if (r.status !== 'fulfilled') { salida.errores.push('Chicago ' + s + ': ' + r.reason.message); return; }
+    if (r.status !== 'fulfilled') {
+      if (!r.reason.vencido) salida.errores.push('Chicago ' + s + ': ' + r.reason.message);
+      return;
+    }
     const d = r.value, conv = FACTOR[raiz];
     chicago[s] = {simbolo: s, raiz: raiz, descripcion: d.descripcion, nativo: d.precio,
       usdTn: redondear(conv(d.precio), 2),
