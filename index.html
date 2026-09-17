@@ -486,35 +486,46 @@ canvas { max-height: 100%; }
 
 /* gráficos más bajos: en media columna no necesitan tanta altura */
 #panel-usda .u-canvas-sm { height:230px; }
-    #panel-precios .pr-card{background:#fff;border:1px solid #edeff2;border-radius:10px;padding:14px 16px;
-      margin-bottom:14px;box-shadow:0 1px 3px rgba(16,24,40,.05),0 6px 16px -6px rgba(16,24,40,.08)}
-    #panel-precios .pr-card h3{font-size:.8rem;font-weight:700;color:#3d4552;margin-bottom:10px;
-      text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:8px;
-      padding-bottom:9px;border-bottom:1px solid #f1f3f6}
-    #panel-precios .pr-card h3::before{content:'';width:3px;height:13px;border-radius:2px;background:#7ab8ff;flex:0 0 auto}
+    #panel-precios{background:#f7f5f5;font-family:'Lato','Inter',system-ui,sans-serif}
+    #panel-precios .pr-card{background:#fff;border:1px solid #c9c7c7;border-radius:0;
+      padding:0;margin-bottom:10px;box-shadow:none;overflow:hidden}
+    #panel-precios .pr-card h3{background:#4e4e4e;color:#fff;font-size:.72rem;font-weight:800;
+      letter-spacing:.3px;text-transform:uppercase;margin:0;padding:7px 12px;border:0;
+      display:flex;align-items:center;gap:8px}
+    #panel-precios .pr-card h3::before{display:none}
     #panel-precios .pr-barra{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-      background:#fff;border:1px solid #edeff2;border-radius:10px;padding:12px 16px;margin-bottom:14px}
-    #panel-precios .pr-btn{background:#1a1a2e;color:#fff;border:0;border-radius:8px;padding:8px 18px;
-      font-size:.8rem;font-weight:600;cursor:pointer}
+      background:#1c0d1e;border:0;border-radius:0;padding:9px 12px;margin-bottom:10px}
+    #panel-precios .pr-btn{background:#2f7ed8;color:#fff;border:0;border-radius:3px;
+      padding:6px 16px;font-size:.74rem;font-weight:800;cursor:pointer;font-family:inherit}
+    #panel-precios .pr-btn:hover{background:#3f8ee8}
     #panel-precios .pr-btn:disabled{opacity:.5;cursor:default}
-    #panel-precios .pr-reloj{font-size:.72rem;color:#666;line-height:1.35}
-    #panel-precios .pr-reloj b{color:#1a1a2e}
+    #panel-precios .pr-reloj{font-size:.7rem;color:#d8d4d4;line-height:1.35;font-weight:600}
+    #panel-precios .pr-reloj b{color:#fff}
     #panel-precios .pr-vivo{display:inline-block;width:7px;height:7px;border-radius:50%;
-      background:#1e7e34;margin-right:5px;vertical-align:middle}
+      background:#22c55e;margin-right:5px;vertical-align:middle}
     #panel-precios .pr-demora{display:inline-block;width:7px;height:7px;border-radius:50%;
-      background:#d97706;margin-right:5px;vertical-align:middle}
-    #panel-precios table{width:100%;border-collapse:collapse;font-size:.74rem}
-    #panel-precios th{text-align:right;font-size:.62rem;text-transform:uppercase;letter-spacing:.4px;
-      color:#8a8a8a;font-weight:600;padding:5px 6px;border-bottom:1px solid #edeff2}
-    #panel-precios th:first-child,#panel-precios td:first-child{text-align:left}
-    #panel-precios td{text-align:right;padding:6px;border-bottom:1px solid #f5f6f8;white-space:nowrap}
-    #panel-precios .pr-sep{border-left:1px solid #e6e9ee}
-    #panel-precios .pos{color:#1e7e34;font-weight:600}
-    #panel-precios .neg{color:#9b1c1c;font-weight:600}
-    #panel-precios .pr-aprox{color:#d97706;font-size:.62rem;margin-left:3px;cursor:help}
-    #panel-precios .pr-nota{font-size:.68rem;color:#8a8a8a;font-style:italic;line-height:1.5;margin-top:10px}
+      background:#f59e0b;margin-right:5px;vertical-align:middle}
+    #panel-precios table{width:100%;border-collapse:collapse;font-size:.75rem}
+    #panel-precios thead th{background:#1c0d1e;color:#fff;font-size:.63rem;font-weight:700;
+      letter-spacing:0;text-transform:none;text-align:center;padding:6px 5px;border:0;white-space:nowrap}
+    #panel-precios thead th:first-child{text-align:left;padding-left:12px}
+    #panel-precios tbody td{text-align:center;font-size:.75rem;font-weight:800;color:#051646;
+      padding:6px 5px;border:.8px solid rgba(95,95,95,.3);white-space:nowrap;background:#fff}
+    #panel-precios tbody td:first-child{background:#051646;color:#fff;text-align:left;
+      padding-left:12px;border-color:rgba(237,237,237,.2)}
+    /* las puntas van sobre gris, como en el visor; lo operado sobre blanco */
+    #panel-precios .pr-t-grano tbody td:nth-child(2),
+    #panel-precios .pr-t-grano tbody td:nth-child(3){background:#cecccc}
+    #panel-precios .pr-t-grano tbody td:nth-child(4){color:#070791}
+    #panel-precios .pr-t-grano tbody td:nth-child(6){color:#4a4a4a;font-weight:700}
+    #panel-precios .pr-sep{border-left:2px solid #1c0d1e !important}
+    #panel-precios .pos{color:#008000;font-weight:800}
+    #panel-precios .neg{color:#f90701;font-weight:800}
+    #panel-precios .pr-aprox{color:#c2410c;font-size:.62rem;margin-left:3px;cursor:help}
+    #panel-precios .pr-nota{font-size:.68rem;color:#6b6b6b;font-style:normal;line-height:1.5;
+      padding:9px 12px;background:#f7f5f5;border-top:1px solid #e0dede;margin:0}
     #panel-precios .pr-err{background:#fff4f4;border:1px solid #f3d0d0;color:#9b1c1c;
-      border-radius:8px;padding:9px 12px;font-size:.72rem;margin-bottom:12px}
+      padding:9px 12px;font-size:.72rem;margin-bottom:10px}
     #panel-usda .u-subtabs{position:sticky;top:0;z-index:30;background:#f0f2f5;
       padding-top:8px;box-shadow:0 6px 10px -8px rgba(16,24,40,.18)}
     #panel-usda .cn-tabla{font-size:.7rem}
@@ -9848,7 +9859,7 @@ function preciosRender(j) {
         '<td class="pr-sep">' + (dif === null ? '—' :
             '<b>' + (dif > 0 ? '+' : '') + _prNum(dif, 1) + '%</b>') + '</td></tr>';
     });
-    html += '<div class="pr-card"><h3>' + tit + '</h3><table><thead><tr>' +
+    html += '<div class="pr-card"><h3>' + tit + '</h3><table class="pr-t-grano"><thead><tr>' +
       '<th>Posición A3</th><th>Compra</th><th>Venta</th><th>Último</th><th>Var.</th><th>Volumen</th>' +
       '<th class="pr-sep">Chicago</th><th>USD/tn</th><th>Var.</th>' +
       '<th class="pr-sep">Dif. local</th></tr></thead><tbody>' + cuerpoTabla + '</tbody></table></div>';
@@ -9876,7 +9887,7 @@ function preciosRender(j) {
            '<td>' + _prNum(c.min52UsdTn, 0) + '</td>' +
            '<td>' + _prNum(c.max52UsdTn, 0) + '</td></tr>';
     });
-    html += '<div class="pr-card"><h3>Subproductos de la soja en Chicago</h3><table><thead><tr>' +
+    html += '<div class="pr-card"><h3>Subproductos de la soja en Chicago</h3><table class="pr-t-sub"><thead><tr>' +
       '<th>Contrato</th><th>USD/tn</th><th>Var.</th><th>Mín. 52 sem.</th><th>Máx. 52 sem.</th>' +
       '</tr></thead><tbody>' + f + '</tbody></table>' +
       '<div class="pr-nota">No tienen contrato equivalente en A3, así que van por separado. ' +
