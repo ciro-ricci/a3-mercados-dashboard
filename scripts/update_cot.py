@@ -157,8 +157,8 @@ def build_cot_data(index_html, backfill_years):
     for key, meta in CODES.items():
         prev_series = existing.get(key, {}).get("series", [])
         if prev_series:
-            since = None
-            fresh = fetch_series(meta["code"], limit=20)
+            since = prev_series[-1]["fecha"]
+            fresh = fetch_series(meta["code"], since_date=since)
         else:
             import datetime
             since = (datetime.date.today() - datetime.timedelta(days=365 * backfill_years)).isoformat()
