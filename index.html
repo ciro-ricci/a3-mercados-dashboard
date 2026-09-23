@@ -10804,7 +10804,7 @@ let _finTNA=32;
 let _finVA={soj:null,mai:null,tri:null};
 let _finModo='pesos';
 let _finTasaUsd=7;
-  const FIN_TARGET_VENC={soj:['SEP26','NOV26','ENE27'],mai:['SEP26','DIC26','ENE27'],tri:['SEP26','NOV26','ENE27']};
+  const FIN_TARGET_VENC={soj:['NOV26','ENE27','MAY27'],mai:['NOV26','ENE27','FEB27'],tri:['NOV26','DIC26','MAR27']};
   function _finPickVenc(futs,cultKey){
   const targets=FIN_TARGET_VENC[cultKey]||[];
   const picked=targets.map(v=>(futs||[]).find(r=>r.venc_display===v&&r.ajuste&&r.ajuste!=='N/A'&&!isNaN(parseFloat(r.ajuste)))).filter(Boolean);
