@@ -1,0 +1,26 @@
+name: Publicar sitio (1 deploy diario)
+on:
+  schedule:
+    - cron: '30 21 * * *'   # 18:30 ART, despues de cruces (21:00 UTC)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Commit vacio con [deploy] si hay cambios sin publicar
+        run: |
+          ultimo=$(git log --grep='\[deploy\]' -1 --format=%H || true)
+          if [ -n "$ultimo" ] && [ "$(git rev-list --count "$ultimo"..HEAD)" = "0" ]; then
+            echo "Nada nuevo para publicar"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "[deploy] Publicar cambios acumulados - $(date -u +%Y-%m-%d)"
+          git push
