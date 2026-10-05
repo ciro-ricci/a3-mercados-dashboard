@@ -1,0 +1,6 @@
+# Ahorro de creditos: los commits automaticos (github-actions) NO disparan deploy.
+# Se publica 1 vez por dia via el workflow "publicar.yml" (commit con [deploy]).
+# Commits manuales (cualquier otro autor) siguen desplegando al instante.
+# Exit 0 = saltear build, exit 1 = construir.
+[build]
+  ignore = "git log -1 --pretty=%B $COMMIT_REF | grep -q '\\[deploy\\]' && exit 1; git log -1 --pretty=%an $COMMIT_REF | grep -qi 'github-actions' && exit 0; exit 1"
