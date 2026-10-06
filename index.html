@@ -707,9 +707,9 @@ window.LANDING_LINKS = {
    BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
    oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
    valores (oficial, CCL, soja/maíz/trigo, etc.) siguen viniendo de la sheet.
-   Última actualización: 2026-10-03
+   Última actualización: 2026-10-06
    ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
-const BCRA_TC_OVERRIDE = 1523.0868;
+const BCRA_TC_OVERRIDE = 1519.2481;
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 // Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
 const PIZARRA_SOJ_2025={
@@ -11149,9 +11149,13 @@ window._initDeviceFlow=function(){
 /* ═══════════════════════════════════════════════════════════════════════
    NEWS_DATA — Claude actualiza este bloque cada vez que corre el scraping.
    Las noticias con más de 7 días son eliminadas automáticamente del array.
-   Última actualización: 2026-10-05
+   Última actualización: 2026-10-06
    ═══════════════════════════════════════════════════════════════════════ */
 const NEWS_DATA = [
+  {fecha:'2026-10-06',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 6 octubre 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-6-octubre-2026/'},
+  {fecha:'2026-10-06',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 6 octubre 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-6-octubre-2026/'},
+  {fecha:'2026-10-06',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 6 octubre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-6-octubre-2026/'},
+  {fecha:'2026-10-06',fuente:'Infocampo',cultivo:'Maíz',titulo:'“Nos faltan 10.000 hectáreas”: el plan de Río Negro para producir más maíz y dejar de “importarlo”',resumen:'De la mano de la explosión ganadera, la provincia del norte patagónico duplicó en los últimos años su producción de maíz. No obstante, aún “pierde” cada año unos U$S 20 millones para traer el cereal de otras provincias y cubrir toda su necesidad de alimentación animal.',link:'https://www.infocampo.com.ar/nos-faltan-10-000-hectareas-el-plan-de-rio-negro-para-producir-mas-maiz-y-dejar-de-importarlo/'},
   {fecha:'2026-10-05',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 5 octubre 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-5-octubre-2026/'},
   {fecha:'2026-10-05',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 5 octubre 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-5-octubre-2026/'},
   {fecha:'2026-10-05',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 5 octubre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-5-octubre-2026/'},
@@ -11196,10 +11200,7 @@ const NEWS_DATA = [
   {fecha:'2026-09-26',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 26 septiembre 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-26-septiembre-2026/'},
   {fecha:'2026-09-26',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 26 septiembre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-26-septiembre-2026/'},
   {fecha:'2026-09-26',fuente:'Bichos de Campo',cultivo:'Maíz / Soja',titulo:'Un cumbre Trump-Xi Jinping sin grandes anuncios terminó “pinchando” expectativas en el mercado estadounidense de soja y maíz',resumen:'Esta semana los precios de la soja y el maíz en el CME Group (“Chicago”) terminaron con bajas intersemanales ante la ausencia de noticias provenientes del frente geopolítico. La visita del presidente chino Xi Jinping a Washington finalizó sin grandes anuncios para el sector agroindustrial estadounidense. El comunicado oficial de la Casa Blanca señala que […]',link:'https://bichosdecampo.com/un-cumbre-trump-xi-jinping-sin-grandes-anuncios-termino-pinchando-expectativas-en-el-mercado-estadounidense-de-soja-y-maiz/'},
-  {fecha:'2026-09-26',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Inédito: Las coberturas de Soja Mayo 2027 en el mercado a término superan a las realizadas en el mercado físico',resumen:'Un hecho inédito se está registrando en el mercado argentino de soja: las coberturas en el mercado a término superan a las instrumentadas en la plaza física. El contrato Soja Rosario Mayo 2027 en A3 Mercados cuenta ya con un interés abierto de 1,325 millones de toneladas luego de registrar esta semana operaciones por 626.800 […]',link:'https://bichosdecampo.com/inedito-las-coberturas-de-soja-mayo-2027-en-el-mercado-a-termino-superan-a-las-realizadas-en-el-mercado-fisico/'},
-  {fecha:'2026-09-25',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 25 septiembre 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-25-septiembre-2026/'},
-  {fecha:'2026-09-25',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 25 septiembre 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-25-septiembre-2026/'},
-  {fecha:'2026-09-25',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 25 septiembre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-25-septiembre-2026/'}
+  {fecha:'2026-09-26',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Inédito: Las coberturas de Soja Mayo 2027 en el mercado a término superan a las realizadas en el mercado físico',resumen:'Un hecho inédito se está registrando en el mercado argentino de soja: las coberturas en el mercado a término superan a las instrumentadas en la plaza física. El contrato Soja Rosario Mayo 2027 en A3 Mercados cuenta ya con un interés abierto de 1,325 millones de toneladas luego de registrar esta semana operaciones por 626.800 […]',link:'https://bichosdecampo.com/inedito-las-coberturas-de-soja-mayo-2027-en-el-mercado-a-termino-superan-a-las-realizadas-en-el-mercado-fisico/'}
 ];
 /* ═══════════════════════════════════════════════════════════════════════ */
 
