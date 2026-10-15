@@ -486,6 +486,7 @@ canvas { max-height: 100%; }
 
 /* gráficos más bajos: en media columna no necesitan tanta altura */
 #panel-usda .u-canvas-sm { height:230px; }
+    #panel-usda .ecc-metricas{display:flex;gap:4px;justify-content:center;margin:2px 0 6px}
     #panel-usda .cp-eta{color:#8a8a8a;font-weight:400;font-size:.68rem;display:block}
     #panel-precios{background:#f7f5f5;font-family:'Lato','Inter',system-ui,sans-serif}
     #panel-precios .pr-card{background:#fff;border:1px solid #c9c7c7;border-radius:0;
@@ -9580,6 +9581,25 @@ function eccHTML() {
 // ── Gráfico de condición, campaña en curso contra la historia ─────────
 var _eccCrop = 'soja';
 
+// Qué se grafica de Argentina: 0 condición, 1 siembra, 2 cosecha. Son los tres
+// índices de cada fila del histórico, así que el gráfico es el mismo y solo
+// cambia la columna que se lee.
+var _eccMetrica = 0;
+var ECC_METRICAS = [
+  {i: 0, id: 'cond',    boton: 'Condición', eje: '% bueno + excelente'},
+  {i: 1, id: 'siembra', boton: 'Siembra',   eje: '% del área sembrada'},
+  {i: 2, id: 'cosecha', boton: 'Cosecha',   eje: '% del área cosechada'}
+];
+
+function eccSetMetrica(i) {
+  _eccMetrica = i;
+  var b = document.querySelectorAll('.u-eccmet');
+  for (var k = 0; k < b.length; k++) {
+    b[k].classList.toggle('active', parseInt(b[k].dataset.met, 10) === i);
+  }
+  eccDrawChart();
+}
+
 function eccSetCrop(c) {
   _eccCrop = c;
   document.querySelectorAll('#panel-usda .u-eccbtn').forEach(function (b) {
@@ -9642,16 +9662,17 @@ function eccDrawChart() {
     if (!enEje[s]) { eje.push(s); enEje[s] = 1; }
   });
 
+  var IDX = _eccMetrica;
   var serie = function (camp) {
     return eje.map(function (s) {
       var f = H[camp] && H[camp][String(s)];
-      return f ? f[0] : null;
+      return f ? f[IDX] : null;
     });
   };
   var promedio = eje.map(function (s) {
     var vals = prevs.map(function (c) {
       var f = H[c] && H[c][String(s)];
-      return f ? f[0] : null;
+      return f ? f[IDX] : null;
     }).filter(function (v) { return v !== null && v !== undefined; });
     return vals.length ? Math.round(vals.reduce(function (a, b) { return a + b; }, 0) / vals.length * 10) / 10 : null;
   });
@@ -9689,11 +9710,31 @@ function eccDrawChart() {
       scales: {
         x: { title: { display: true, text: 'Semana del año', font: { size: 10 } },
              ticks: { font: { size: 9 } }, grid: { display: false } },
-        y: { title: { display: true, text: '% bueno + excelente', font: { size: 10 } },
+        y: { title: { display: true, text: ECC_METRICAS[IDX].eje, font: { size: 10 } },
+             min: 0, max: 100,
              ticks: { font: { size: 10 }, callback: function (v) { return v + '%'; } } }
       }
     }
   });
+
+  // La advertencia del tramo final solo aplica a la condición; en siembra y
+  // cosecha la curva es acumulada y se lee directo.
+  var nota = document.getElementById('u-ecc-nota');
+  if (nota) {
+    nota.innerHTML = (IDX === 0)
+      ? '% del área en condición buena + excelente, alineado por semana del año. ' +
+        'La línea punteada es el promedio de las campañas anteriores disponibles. ' +
+        'Las curvas cubren solo el tramo con el cultivo en pie (más del 50% sembrado y ' +
+        'menos del 90% cosechado), que es cuando la Bolsa releva la condición de verdad. ' +
+        'Ojo con el tramo final: si la cosecha de este año va atrasada, en la misma semana ' +
+        'del calendario los cultivos no están en la misma etapa. ' +
+        'Fuente: Bolsa de Cereales de Buenos Aires.'
+      : ECC_METRICAS[IDX].eje + ', acumulado y alineado por semana del año. ' +
+        'La línea punteada es el promedio de las campañas anteriores disponibles. ' +
+        'Si la curva en curso va por encima del promedio, la labor está adelantada ' +
+        'respecto de un año normal; por debajo, atrasada. ' +
+        'Fuente: Bolsa de Cereales de Buenos Aires.';
+  }
 }
 
 function eccChartHTML() {
@@ -9707,16 +9748,17 @@ function eccChartHTML() {
   }).join('');
   if (!botones) return '';
 
-  return '<div class="u-card u-compact"><h3>Argentina — condición, campaña en curso vs. historia' +
+  var metricas = ECC_METRICAS.map(function (m) {
+    return '<span class="u-condbtn u-eccmet' + (m.i === _eccMetrica ? ' active' : '') +
+      '" data-met="' + m.i + '" onclick="eccSetMetrica(' + m.i + ')">' + m.boton + '</span>';
+  }).join('');
+
+  return '<div class="u-card u-compact"><h3>Argentina — campaña en curso vs. historia' +
     '<span style="float:right;font-weight:400;text-transform:none;letter-spacing:0">' +
     botones + '</span></h3>' +
+    '<div class="ecc-metricas">' + metricas + '</div>' +
     '<div class="u-canvas u-canvas-sm"><canvas id="u-chart-ecc"></canvas></div>' +
-    '<div class="u-note">% del área en condición buena + excelente, alineado por semana ' +
-    'del año. La línea punteada es el promedio de las campañas anteriores disponibles. ' +
-    'Las curvas cubren solo el tramo con el cultivo en pie (más del 50% sembrado y ' +
-    'menos del 90% cosechado), que es cuando la Bolsa releva la condición de verdad. Ojo con el tramo final: si la cosecha de este año va ' +
-    'atrasada, en la misma semana del calendario los cultivos no están en la misma etapa. ' +
-    'Fuente: Bolsa de Cereales de Buenos Aires.</div></div>';
+    '<div class="u-note" id="u-ecc-nota"></div></div>';
 }
 
 // ── China: el USDA contra Beijing ─────────────────────────────────────
