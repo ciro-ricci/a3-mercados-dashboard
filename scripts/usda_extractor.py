@@ -521,8 +521,12 @@ def _row_numbers(chunk, label_pattern):
     m = re.search(label_pattern + r"\s*\.*:\s*(.+)$", chunk, re.MULTILINE)
     if not m:
         return None
-    toks = re.findall(r"-|\d+", m.group(1))
-    return [0 if t == "-" else int(t) for t in toks]
+    # (NA) aparece cuando NASS no tiene el dato de esa columna —muy comun en la
+    # columna del anio previo— y hay que conservarlo como hueco, no saltearlo:
+    # si se omite, las columnas se corren y la fila nacional de las tablas de
+    # avance queda con 3 valores en vez de 4 y se descarta entera.
+    toks = re.findall(r"\(NA\)|-|\d+", m.group(1))
+    return [None if t == "(NA)" else (0 if t == "-" else int(t)) for t in toks]
 
 
 def _normalizar(texto):
@@ -569,7 +573,7 @@ def parse_progress(text):
 
         is_condition = "Condition" in title
 
-        if is_condition and len(nums) >= 5:
+        if is_condition and len(nums) >= 5 and all(v is not None for v in nums[:5]):
             vp, poor, fair, good, exc = nums[:5]
             entry = {
                 "tipo": "condicion",
@@ -579,13 +583,16 @@ def parse_progress(text):
             }
             prev_w = _row_numbers(ch, r"^\s*Previous week")
             prev_y = _row_numbers(ch, r"^\s*Previous year")
-            if prev_w and len(prev_w) >= 5:
+            if prev_w and len(prev_w) >= 5 and None not in prev_w[3:5]:
                 entry["ge_semana_previa"] = prev_w[3] + prev_w[4]
-            if prev_y and len(prev_y) >= 5:
+            if prev_y and len(prev_y) >= 5 and None not in prev_y[3:5]:
                 entry["ge_anio_previo"] = prev_y[3] + prev_y[4]
             tables[title] = entry
 
-        elif not is_condition and len(nums) >= 4:
+        elif not is_condition and len(nums) >= 4 and nums[2] is not None:
+            # Las cuatro columnas son posicionales: anio previo, semana previa,
+            # actual y promedio 2021-2025. Solo "actual" es obligatorio; el
+            # resto puede venir vacio y se guarda como null.
             tables[title] = {
                 "tipo": "avance",
                 "anio_previo": nums[0],
