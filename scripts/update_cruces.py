@@ -113,6 +113,12 @@ def parse_spot_csv(text):
     i_soja = find_idx("soja", "usd")
     i_maiz = find_idx("maiz", "usd")
     i_trigo = find_idx("trigo", "usd")
+    # Columnas en pesos y tipo de cambio: se usan como respaldo cuando las
+    # columnas "... USD" de la planilla quedan vacias (paso desde el 30/09/2026).
+    i_soja_ars = next((i for i, h in enumerate(hdrs) if h == "soja"), -1)
+    i_maiz_ars = next((i for i, h in enumerate(hdrs) if h in ("maiz", "maíz")), -1)
+    i_trigo_ars = next((i for i, h in enumerate(hdrs) if h == "trigo"), -1)
+    i_tc = find_idx("mayorista")
     if i_fecha < 0 or i_soja < 0:
         raise RuntimeError("No se encontraron las columnas esperadas en la planilla.")
 
@@ -129,6 +135,19 @@ def parse_spot_csv(text):
         soja = to_float_ar(row[i_soja])
         maiz = to_float_ar(row[i_maiz]) if i_maiz >= 0 else None
         trigo = to_float_ar(row[i_trigo]) if i_trigo >= 0 else None
+        # Respaldo: si la planilla no trae el USD, se calcula ARS / USD Mayorista
+        # (verificado contra filas con ambos datos: coincide al centavo).
+        tc = to_float_ar(row[i_tc]) if 0 <= i_tc < len(row) else None
+
+        def _usd(ars_idx, usd_val):
+            if usd_val is not None or tc in (None, 0) or ars_idx < 0 or ars_idx >= len(row):
+                return usd_val
+            ars = to_float_ar(row[ars_idx])
+            return round(ars / tc, 2) if ars else None
+
+        soja = _usd(i_soja_ars, soja)
+        maiz = _usd(i_maiz_ars, maiz)
+        trigo = _usd(i_trigo_ars, trigo)
         if soja is None:
             continue
         out[fecha] = {"soja": soja, "maiz": maiz, "trigo": trigo}
