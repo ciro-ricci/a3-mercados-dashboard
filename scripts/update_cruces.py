@@ -23,6 +23,10 @@ import sys
 import requests
 
 INDEX_PATH = "index.html"
+# Hasta esta fecha la serie es la base historica (CSV pizarra Rosario, depurada).
+# El script solo agrega/actualiza fechas POSTERIORES a BASE_END.
+BASE_END = "2026-10-14"
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
@@ -215,10 +219,23 @@ def main():
     for cult, key in (("soja", "soja"), ("maiz", "maiz"), ("trigo", "trigo")):
         existing = data.get(cult, [])
         by_fecha = {p["fecha"]: p["valor"] for p in existing}
-        for fecha, vals in sheet.items():
+        for fecha, vals in sorted(sheet.items()):
+            if fecha <= BASE_END:
+                continue
             v = vals.get(key)
             if v is None:
                 continue
+            # Guarda anti-errores de carga: si el valor se desvia >10% del dia
+            # anterior y es ese mismo valor x10 / x100 / /10 / /100 (decimal
+            # corrido), se descarta y se usa el dato del dia anterior.
+            previos = [f for f in by_fecha if f < fecha]
+            if previos:
+                pv = by_fecha[max(previos)]
+                if pv and abs(v / pv - 1) > 0.10 and any(
+                    abs(v * f / pv - 1) <= 0.10 for f in (10, 100, 0.1, 0.01)
+                ):
+                    print(f"[AVISO] {cult} {fecha}: {v} parece error de carga, se usa {pv}")
+                    v = pv
             if by_fecha.get(fecha) != v:
                 by_fecha[fecha] = v
                 changed = True
