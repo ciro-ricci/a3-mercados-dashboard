@@ -11030,7 +11030,7 @@ function conabHTML(crop) {
 }
 
 function showTab(id){
-  const ids=['soj-fut','mai-fut','tri-fut','posicion-fondos','girasol-mani','opciones','estrategia','financiamiento','insumo-producto','noticias','brief-granos','usda','deuda-stock'];
+  const ids=['soj-fut','mai-fut','tri-fut','posicion-fondos','girasol-mani','opciones','estrategia','financiamiento','insumo-producto','noticias','brief-granos','usda','precios','deuda-stock'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',ids[i]===id));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
