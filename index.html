@@ -1073,7 +1073,6 @@ function lookupFuturosTri2025(fecha){
 let CHICAGO=null;
 let CHICAGO_ERROR=false;
 let CHICAGO_STATUS='';
-const BCR_CHICAGO_URL='https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1';
 const CHICAGO_SHEET_ID='1ZJhaQADjDzbQhtVemivVMv9dvIn9RkE1nmCpK8g1ZhY';
 const CHICAGO_SHEET_URL='https://docs.google.com/spreadsheets/d/'+CHICAGO_SHEET_ID+'/export?format=csv&gid=1438718704'; // Hoja 1: precios Chicago
 const CHICAGO_FOB_URL='https://docs.google.com/spreadsheets/d/'+CHICAGO_SHEET_ID+'/export?format=csv&gid=107418392'; // Hoja 2: FAS Teórico
@@ -1195,59 +1194,6 @@ function parseSpotDataCSV(text){
     if(tc!=null)acc.tc=tc;if(su!=null)acc.soja_usd=su;if(mu!=null)acc.maiz_usd=mu;
   }
   return acc.soja_ars?acc:null;
-}
-function parseChicagoPrices(text){
-  // Si viene HTML, hacer strip de tags primero
-  if(text.includes('<')){
-    text=text.replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&#\d+;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ');
-  }
-  const pN=s=>{s=String(s||'').replace(/[$\s"]/g,'').trim();if(!s||s==='N/A')return null;const ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');const norm=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');const n=parseFloat(norm);return isNaN(n)?null:n;};
-  const mmap={ene:'ENE',feb:'FEB',mar:'MAR',abr:'ABR',may:'MAY',jun:'JUN',jul:'JUL',ago:'AGO',sep:'SEP',oct:'OCT',nov:'NOV',dic:'DIC'};
-  const res={};
-  for(const line of text.split(/[\n;]/)){
-    const m=line.match(/([A-Za-z]{3,4})-(\d{2})\s+([\d\s,.\-+]+)/);
-    if(!m)continue;
-    const mc=mmap[m[1].toLowerCase()];if(!mc)continue;
-    const key=mc+m[2];
-    const nums=m[3].trim().split(/\s+/).map(pN).filter(v=>v!==null);
-    if(nums.length<2)continue;
-    const entry={};let trigoCount=0;
-    for(let i=0;i<nums.length-1;i+=2){
-      const p=nums[i];
-      if(p>900)entry.aceite=p;
-      else if(p>370)entry.soja=p;
-      else if(p>290)entry.harina=p;
-      else if(p>185){if(trigoCount===0){entry.trigo=p;trigoCount++;}else{entry.trigo_kan=p;trigoCount++;}}
-      else if(p>120)entry.maiz=p;
-    }
-    if(Object.keys(entry).length)res[key]=entry;
-  }
-  return Object.keys(res).length?res:null;
-}
-function parseChicagoMarkdown(text){
-  // Columnas fijas del BCR (precio | variación por par):
-  // 0=mes, 1=Trigo/1, 2=var, 3=Trigo/2(Kansas), 4=var,
-  // 5=Maíz, 6=var, 7=Soja, 8=var, 9=Aceite, 10=var, 11=Harina, 12=var
-  const COLS={1:'trigo',3:'trigo_kan',5:'maiz',7:'soja',9:'aceite',11:'harina'};
-  const pN=s=>{if(!s)return null;s=s.replace(/[$\s"\\]/g,'').trim();if(!s||s==='N/A'||s==='-')return null;const ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');const norm=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');const n=parseFloat(norm);return isNaN(n)?null:n;};
-  const mmap={ene:'ENE',feb:'FEB',mar:'MAR',abr:'ABR',may:'MAY',jun:'JUN',jul:'JUL',ago:'AGO',sep:'SEP',oct:'OCT',nov:'NOV',dic:'DIC'};
-  const res={};
-  for(const line of text.split('\n')){
-    const l=line.trim();
-    if(!l.startsWith('|'))continue;
-    if(/^[|:\s\-]+$/.test(l))continue;
-    const cells=l.replace(/^\||\|$/g,'').split('|').map(s=>s.replace(/\\/g,'').trim());
-    if(!cells[0])continue;
-    const mRaw=cells[0].toLowerCase().replace(/[^a-záéíóú0-9]/g,' ').trim();
-    const mMatch=mRaw.match(/^([a-záéíóú]+)\s*(\d{2})$/);
-    if(!mMatch)continue;
-    const mc=mmap[mMatch[1]];if(!mc)continue;
-    const key=mc+mMatch[2];
-    const entry={};
-    Object.entries(COLS).forEach(([ci,ck])=>{const v=pN(cells[+ci]);if(v!==null&&v>0)entry[ck]=v;});
-    if(entry.soja||entry.maiz||entry.trigo)res[key]=entry;
-  }
-  return Object.keys(res).length?res:null;
 }
 function parseChicagoSheetCSV(text){
   // Columnas fijas del BCR (precio | variación por par):
@@ -2712,7 +2658,6 @@ function buildBriefGranosPanel(){
 // ══════════════════════════════════════════════════════════════════════
 const DS_STORAGE_KEY='ds_state_v1';
 const DS_GRAIN_LABEL={soja:'Soja',maiz:'Maíz',trigo:'Trigo'};
-const DS_GRAIN_COLOR={soja:'#2e7d32',maiz:'#e65100',trigo:'#1565c0'};
 const DS_GRAIN_BADGE={soja:'ds-badge-soja',maiz:'ds-badge-maiz',trigo:'ds-badge-trigo'};
 const DS_MONEDA_LABEL={usd:'USD',ars:'ARS',soja:'Soja (tn)',maiz:'Maíz (tn)',trigo:'Trigo (tn)'};
 const DS_MONEDAS=['usd','ars','soja','maiz','trigo'];
@@ -11278,11 +11223,9 @@ function renderLecapPanel(){
 
   const bestTNA=withYield.length?Math.max(...withYield.map(d=>d.tna)):null;
   const bestTicker=withYield.find(d=>d.tna===bestTNA);
-  const avgTEM=withYield.length?(withYield.reduce((s,d)=>s+d.tem,0)/withYield.length):null;
   const proxVenc=items.length?items.reduce((m,d)=>d.dias<m.dias?d:m,items[0]):null;
   const tcActual=SPOT?.tc||null;
   const withDeq=items.filter(d=>d.dolar_eq!==null);
-  const avgDeq=withDeq.length?(withDeq.reduce((s,d)=>s+d.dolar_eq,0)/withDeq.length):null;
   const now=new Date();
   const ts=now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
 
