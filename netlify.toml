@@ -1,6 +1,10 @@
-# Ahorro de creditos: los commits automaticos (github-actions) NO disparan deploy.
-# Se publica 1 vez por dia via el workflow "publicar.yml" (commit con [deploy]).
-# Commits manuales (cualquier otro autor) siguen desplegando al instante.
+# Ahorro de creditos de Netlify (~15 creditos por deploy de produccion).
+# NO se despliega cuando el ultimo commit es:
+#   - de github-actions (noticias, USDA, cruces, COT, girasol/mani)
+#   - un informe automatico (Brief Granos, WASDE, WWCB, informes semanales)
+# Esos cambios se publican juntos 1 vez por dia (workflow publicar.yml, commit con [deploy]).
+# Cualquier otro commit (cambios manuales de codigo) sigue desplegando al instante.
+# Tip: un commit con "[skip ci]" en el mensaje tampoco despliega (util para agrupar varios cambios).
 # Exit 0 = saltear build, exit 1 = construir.
 [build]
-  ignore = "git log -1 --pretty=%B $COMMIT_REF | grep -q '\\[deploy\\]' && exit 1; git log -1 --pretty=%an $COMMIT_REF | grep -qi 'github-actions' && exit 0; exit 1"
+  ignore = '''msg=$(git log -1 --pretty=%B $COMMIT_REF); echo "$msg" | grep -q '\[deploy\]' && exit 1; echo "$msg" | grep -qiE '^(Actualizar Brief Granos|Analisis WASDE|Actualizacion WWCB|Actualización semanal automática)' && exit 0; git log -1 --pretty=%an $COMMIT_REF | grep -qi 'github-actions' && exit 0; exit 1'''
