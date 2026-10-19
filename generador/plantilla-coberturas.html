@@ -206,8 +206,7 @@
       </nav>
       <div class="globales" id="globales">
         <div class="seg" id="segGrano"><button data-g="soja" class="on">Soja</button><button data-g="maiz">Maíz</button></div>
-        <label class="campo">Contratos <input type="number" id="gContratos" class="corto" value="1" min="1" step="1"></label>
-        <label class="campo">Tamaño <select id="gTn"><option value="100" selected>Rosario · 100 tn</option><option value="10">Mini · 10 tn</option></select></label>
+        <label class="campo">Toneladas <input type="number" id="gToneladas" class="corto" style="width:90px" value="1" min="1" step="1"></label>
       </div>
     </div>
   </div>
@@ -416,14 +415,14 @@ function margenOpciones(legs,F,T,rango){
 
 /* ================= Estado ================= */
 const st = {
-  grano:'soja', tab:'resumen', contratos:1, tnc:100,
+  grano:'soja', tab:'resumen', tn:1,
   fut:{soja:'MAY27', maiz:'ABR27'},
   opt:{soja:'MAY27', maiz:'ABR27'},
   strikes:{},           // por estrategia y grano+posición
   vista:{futuros:'neto', cc:'neto', put:'neto', bps:'res'},
   dias:[5,3,-6,8,-4]
 };
-const N = () => st.contratos*st.tnc;
+const N = () => st.tn;
 
 /* ================= Gráfico SVG ================= */
 function dibujar(svg, cfg){
@@ -491,7 +490,7 @@ function renderFuturos(){
 
   $('futKpis').innerHTML =
     kpi('Precio fijado', ptn(F)+'<span style="font-size:16px;color:var(--gris-2)"> /tn</span>', `${posNombre(f.pos)} · vence ${fechaCorta(f.venc)}`) +
-    kpi('Toneladas cubiertas', nf0.format(n)+' tn', `${st.contratos} contrato${st.contratos>1?'s':''} × ${st.tnc} tn`, 'arena') +
+    kpi('Toneladas cubiertas', nf0.format(n)+' tn', `${nf0.format(n)} tonelada${n>1?'s':''}`, 'arena') +
     kpi('Valor asegurado', usd(F*n), 'Precio × toneladas', 'ok') +
     kpi('Margen inicial', usd(mg*n), `U$S ${mg}/tn · se devuelve al cerrar`, 'rojo');
 
@@ -739,9 +738,9 @@ function renderSpread(){
   $('spArmado').innerHTML = `<div class="chart-cab"><h2>Cómo se arma</h2></div>
     <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center">
       ${alt==='A' ? pata('Argentina · comprado','#027A48','Mercadería física',`${nf0.format(tn)} tn en poder de Luga`,ptn(R0)+' <span style="font-size:14px;color:var(--gris-2)">ref. Rosario '+posNombre(p.ros)+'</span>')
-                  : pata('Argentina · compra','#027A48',`${grano} Rosario ${posNombre(p.ros)}`,`${st.contratos} contrato${st.contratos>1?'s':''} × ${st.tnc} tn`,ptn(R0))}
+                  : pata('Argentina · compra','#027A48',`${grano} Rosario ${posNombre(p.ros)}`,`${nf0.format(tn)} tonelada${tn>1?'s':''}`,ptn(R0))}
       <div style="text-align:center"><div class="campo" style="justify-content:center">Spread</div><div style="font-size:26px;font-weight:700;color:${sp<0?'var(--rojo)':'var(--ok)'}">${nf1.format(sp)}</div><div style="font-size:13.5px;color:var(--gris-2)">${nf1.format((R0/C0-1)*100)}% vs Chicago</div></div>
-      ${pata('Chicago · venta','#B42318',`${grano} Chicago ${posNombre(p.chi)}`,`${nf0.format(nChi)} contratos × 5 tn`,ptn(C0))}
+      ${pata('Chicago · venta','#B42318',`${grano} Chicago ${posNombre(p.chi)}`,`${nf0.format(tn)} tn (${nf1.format(nChi)} contratos × 5 tn)`,ptn(C0))}
     </div>
     <div style="margin-top:12px">${alerta('info','i',`Chicago ${posNombre(p.chi)} de A3 replica CBOT ${posNombre(p.cbot)} y vence antes (${fechaCorta(p.chiVenc)}). Por eso el mes no coincide con Rosario.`)}</div>`;
 
@@ -880,7 +879,7 @@ function metricasOpcion(clave){
 }
 function renderResumen(){
   const gr=st.grano, g=DATA[gr], n=N(), grano=gr==='soja'?'Soja':'Maíz';
-  $('resLema').textContent=`${grano} · ${st.contratos} contrato${st.contratos>1?'s':''} × ${st.tnc} tn = ${nf0.format(n)} tn · precios A3 al ${DATA.fecha}`;
+  $('resLema').textContent=`${grano} · ${nf0.format(n)} tn · precios A3 al ${DATA.fecha}`;
   const val=(v,d)=>`<div class="rs-v">${v}</div>${d?`<div class="rs-d">${d}</div>`:''}`;
   const tagP=(neta)=>neta>0.005?`<div class="rs-v pos">${usd(neta*n)}</div><span class="rs-tag cobra">Cobrás</span><div class="rs-d">U$S ${nf2.format(neta)}/tn</div>`
                    :neta<-0.005?`<div class="rs-v neg">${usd(-neta*n)}</div><span class="rs-tag paga">Pagás</span><div class="rs-d">U$S ${nf2.format(-neta)}/tn</div>`
@@ -956,8 +955,7 @@ document.querySelectorAll('#segGrano button').forEach(b=>b.onclick=()=>{
 document.querySelector('[data-vista="futuros"]').querySelectorAll('button').forEach(b=>b.onclick=()=>{
   st.vista.futuros=b.dataset.v; b.parentElement.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); renderFuturos();
 });
-$('gContratos').oninput=e=>{ st.contratos=Math.max(1,Math.round(val(e.target.value))||1); renderTodo(); };
-$('gTn').onchange=e=>{ st.tnc=+e.target.value; renderTodo(); };
+$('gToneladas').oninput=e=>{ st.tn=Math.max(1,Math.round(val(e.target.value))||1); renderTodo(); };
 $('fechaDatos').textContent=DATA.fecha;
 ['cc','put','bps'].forEach(plantillaOpcion);
 renderTodo();
