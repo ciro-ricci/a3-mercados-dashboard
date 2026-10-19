@@ -373,10 +373,11 @@ const HOY = new Date(DATA.fechaISO+'T12:00:00');
 
 /* ================= Utilidades ================= */
 const nf0 = new Intl.NumberFormat('es-AR',{maximumFractionDigits:0});
-const nf1 = new Intl.NumberFormat('es-AR',{minimumFractionDigits:0,maximumFractionDigits:1});
-const nf2 = new Intl.NumberFormat('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
-const usd = v => (v<0?'−':'') + 'U$S ' + nf0.format(Math.abs(Math.round(v)));
-const usdS = v => (v>0?'+':v<0?'−':'') + 'U$S ' + nf0.format(Math.abs(Math.round(v)));
+const nf1 = new Intl.NumberFormat('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const nfc = new Intl.NumberFormat('es-AR',{minimumFractionDigits:0,maximumFractionDigits:1});
+const nf2 = nf1; // un único decimal en todos los importes
+const usd = v => (v<0?'−':'') + 'U$S ' + nf1.format(Math.abs(v));
+const usdS = v => (v>0?'+':v<0?'−':'') + 'U$S ' + nf1.format(Math.abs(v));
 const ptn = v => 'U$S ' + nf2.format(v);
 const ptnS = v => (v>0?'+':v<0?'−':'') + nf2.format(Math.abs(v));
 const $ = id => document.getElementById(id);
@@ -740,7 +741,7 @@ function renderSpread(){
       ${alt==='A' ? pata('Argentina · comprado','#027A48','Mercadería física',`${nf0.format(tn)} tn en poder de Luga`,ptn(R0)+' <span style="font-size:14px;color:var(--gris-2)">ref. Rosario '+posNombre(p.ros)+'</span>')
                   : pata('Argentina · compra','#027A48',`${grano} Rosario ${posNombre(p.ros)}`,`${nf0.format(tn)} tonelada${tn>1?'s':''}`,ptn(R0))}
       <div style="text-align:center"><div class="campo" style="justify-content:center">Spread</div><div style="font-size:26px;font-weight:700;color:${sp<0?'var(--rojo)':'var(--ok)'}">${nf1.format(sp)}</div><div style="font-size:13.5px;color:var(--gris-2)">${nf1.format((R0/C0-1)*100)}% vs Chicago</div></div>
-      ${pata('Chicago · venta','#B42318',`${grano} Chicago ${posNombre(p.chi)}`,`${nf0.format(tn)} tn (${nf1.format(nChi)} contratos × 5 tn)`,ptn(C0))}
+      ${pata('Chicago · venta','#B42318',`${grano} Chicago ${posNombre(p.chi)}`,`${nf0.format(tn)} tn (${nfc.format(nChi)} contratos × 5 tn)`,ptn(C0))}
     </div>
     <div style="margin-top:12px">${alerta('info','i',`Chicago ${posNombre(p.chi)} de A3 replica CBOT ${posNombre(p.cbot)} y vence antes (${fechaCorta(p.chiVenc)}). Por eso el mes no coincide con Rosario.`)}</div>`;
 
@@ -752,13 +753,13 @@ function renderSpread(){
       + kpi('Precio neto obtenido', ptn(R0+comp), 'Rosario hoy + compresión', 'ok')
       + kpi('vs. vender Rosario hoy', `<span class="${clsN(tot)}">${usdS(tot)}</span>`, `U$S ${nf0.format(tn)} por cada U$S 1 de compresión`, tot>=0?'ok':'rojo')
       + kpi('Resultado futuros Chicago', `<span class="${clsN(resChi)}">${usdS(resChi)}</span>`, 'Compensa el cambio de Chicago', 'arena')
-      + kpi('Margen requerido', usd(mC*tn), `Chicago U$S ${mC}/tn`, 'rojo');
+      + kpi('Margen requerido', usd(mC*tn), `Chicago U$S ${nf1.format(mC)}/tn`, 'rojo');
   } else {
     $('spKpis').innerHTML = kpi('Spread actual', nf1.format(sp)+' <span style="font-size:15px;color:var(--gris-2)">U$S/tn</span>', 'Rosario − Chicago')
       + kpi('Resultado Rosario (comprado)', `<span class="${clsN(resRos)}">${usdS(resRos)}</span>`, `${sg(R1-R0)} U$S/tn`, 'ok')
       + kpi('Resultado Chicago (vendido)', `<span class="${clsN(resChi)}">${usdS(resChi)}</span>`, `${sg(-dC)} U$S/tn`, 'rojo')
       + kpi('Resultado total', `<span class="${clsN(tot)}">${usdS(tot)}</span>`, `Compresión × ${nf0.format(tn)} tn`, tot>=0?'ok':'rojo')
-      + kpi('Margen requerido', usd((mR+mC)*tn), `Rosario ${mR} + Chicago ${mC} U$S/tn`, 'rojo');
+      + kpi('Margen requerido', usd((mR+mC)*tn), `Rosario ${nf1.format(mR)} + Chicago ${nf1.format(mC)} U$S/tn`, 'rojo');
   }
 
   const xs=[]; for(let x=-40;x<=40;x+=1) xs.push(x);
@@ -807,7 +808,7 @@ const Calc=(function(){
     {n:'ONs Tier 2 (otras)',a:40,mon:'USD',monto:0},{n:'Cheques / ECHEQs',a:0,mon:'ARS',monto:0}
   ];
   let uid=1, pos=[{id:uid++,c:'soja_ros',s:'Vendido',q:10,m:17},{id:uid++,c:'maiz_ros',s:'Vendido',q:10,m:8}];
-  const ars=v=>'$ '+nf0.format(Math.round(v||0)), u=v=>'U$S '+nf0.format(Math.round(v||0));
+  const ars=v=>'$ '+nf0.format(Math.round(v||0)), u=v=>'U$S '+nf1.format(v||0);
   function renderPos(){
     const tb=$('tPos').querySelector('tbody'); tb.innerHTML='';
     pos.forEach(p=>{ const tr=document.createElement('tr'); tr.dataset.id=p.id;
@@ -836,11 +837,11 @@ const Calc=(function(){
   function calc(){
     const tc=val($('tc').value); let tn=0,req=0;
     pos.forEach(p=>{ const c=CONTRATOS[p.c], t=p.q*c.tn, s=t*p.m; tn+=t; req+=s;
-      const tr=document.querySelector(`#tPos tr[data-id="${p.id}"]`); tr.querySelector('.tn').textContent=nf0.format(t)+' tn'; tr.querySelector('.sub').textContent=nf0.format(Math.round(s)); });
+      const tr=document.querySelector(`#tPos tr[data-id="${p.id}"]`); tr.querySelector('.tn').textContent=nf0.format(t)+' tn'; tr.querySelector('.sub').textContent=nf1.format(s); });
     $('totTn').textContent=nf0.format(tn)+' tn'; $('totReq').textContent=u(req);
     let vt=0,gar=0;
     ACTIVOS.forEach((a,i)=>{ const x=a.mon==='ARS'?(tc>0?a.monto/tc:0):a.monto, c=x*a.a/100; vt+=x; gar+=c;
-      const tr=document.querySelector(`#tAct tr[data-i="${i}"]`); tr.querySelector('.val').textContent=x?nf0.format(Math.round(x)):'—'; tr.querySelector('.comp').textContent=x?nf0.format(Math.round(c)):'—'; });
+      const tr=document.querySelector(`#tAct tr[data-i="${i}"]`); tr.querySelector('.val').textContent=x?nf1.format(x):'—'; tr.querySelector('.comp').textContent=x?nf1.format(c):'—'; });
     $('totVal').textContent=u(vt); $('totComp').textContent=u(gar);
     $('kReq').textContent=u(req); $('kReqA').textContent=ars(req*tc); $('kGar').textContent=u(gar); $('kGarA').textContent=ars(gar*tc);
     const est=$('estado');
@@ -895,7 +896,7 @@ function renderResumen(){
     if(!lf.find(f=>f.pos===st.fut[gr])) st.fut[gr]=lf[0].pos;
     const f=lf.find(x=>x.pos===st.fut[gr]);
     h+=fila('futuros',1,'Venta de futuros',`${posNombre(f.pos)} · fija U$S ${nf1.format(f.precio)}/tn`, tagP(0),
-      val('Precio fijo','Ni más ni menos que el futuro'), val('Renuncia a subas','Ajustes diarios si sube'), val(ptn(f.precio),'Precio fijado'), val(usd(MARGEN_TN[gr]*n),`U$S ${MARGEN_TN[gr]}/tn`));
+      val('Precio fijo','Ni más ni menos que el futuro'), val('Renuncia a subas','Ajustes diarios si sube'), val(ptn(f.precio),'Precio fijado'), val(usd(MARGEN_TN[gr]*n),`U$S ${nf1.format(MARGEN_TN[gr])}/tn`));
   } else h+=sinDatosF('futuros',1,'Venta de futuros');
 
   // 2. Lanzamiento cubierto
@@ -926,9 +927,9 @@ function renderResumen(){
     const pa=pares.find(x=>x.ros===st.par[gr]), sp=pa.rosPrecio-pa.chiPrecio;
     const sub=`${posNombre(pa.ros)} vs Chicago ${posNombre(pa.chi)} · spread ${nf1.format(sp)}`;
     h+=fila('spread','5A','Vender Chicago',sub, tagP(0),
-      val(`${usd(n)} por U$S 1`,'Si el spread se achica'), val(`${usd(n)} por U$S 1`,'Si el spread se amplía'), val(nf1.format(sp)+' U$S/tn','Spread actual'), val(usd(MARGEN_CHI[gr]*n),`Chicago U$S ${MARGEN_CHI[gr]}/tn`));
+      val(`${usd(n)} por U$S 1`,'Si el spread se achica'), val(`${usd(n)} por U$S 1`,'Si el spread se amplía'), val(nf1.format(sp)+' U$S/tn','Spread actual'), val(usd(MARGEN_CHI[gr]*n),`Chicago U$S ${nf1.format(MARGEN_CHI[gr])}/tn`));
     h+=fila('spread','5B','Vender Chicago + comprar Argentina',sub, tagP(0),
-      val(`${usd(n)} por U$S 1`,'Si el spread se achica'), val(`${usd(n)} por U$S 1`,'Si el spread se amplía'), val(nf1.format(sp)+' U$S/tn','Spread actual'), val(usd((MARGEN_TN[gr]+MARGEN_CHI[gr])*n),`Rosario ${MARGEN_TN[gr]} + Chicago ${MARGEN_CHI[gr]} U$S/tn`));
+      val(`${usd(n)} por U$S 1`,'Si el spread se achica'), val(`${usd(n)} por U$S 1`,'Si el spread se amplía'), val(nf1.format(sp)+' U$S/tn','Spread actual'), val(usd((MARGEN_TN[gr]+MARGEN_CHI[gr])*n),`Rosario ${nf1.format(MARGEN_TN[gr])} + Chicago ${nf1.format(MARGEN_CHI[gr])} U$S/tn`));
   } else h+=sinDatosF('spread',5,'Spread Argentina–Chicago');
 
   $('resTabla').innerHTML=h+'</tbody>';
