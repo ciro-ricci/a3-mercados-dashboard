@@ -18,6 +18,8 @@
   --dm-gris-2:#6B7280;
   --dm-borde:#E5E7EB;
   --dm-fondo:#F9FAFB;
+  --dm-card:#E8F0EB;
+  --dm-card-borde:#C9DACF;
   --dm-fondo-2:#F3F4F6;
   --dm-ok:#027A48;
   --dm-rojo:#B42318;
@@ -107,6 +109,18 @@ body .card h3, body .full-card h3, body .lc-chart-card h3, body #panel-usda .u-c
 body #panel-usda .u-card h3{border-bottom-color:var(--dm-borde);}
 body #panel-usda .u-card h3::before{background:var(--dm-arena);}
 body .full-card h3 span[style*="color:#888"], body .full-card h3 span[style*="color: #888"]{color:var(--dm-gris-2) !important;}
+
+/* ---------- 3b. Tarjetas internas con fondo verde suave (contraste sobre blanco) ---------- */
+body .kpi, body .lc-kpi, body .ds-kpi, body .ds-stock-card, body .preset-card, body .fin-venc-card,
+body [onclick*="_showCruceChart"], body [onclick*="_showManiCruceChart"],
+body [style*="background:#f7f8fa"], body [style*="background: #f7f8fa"]{
+  background:var(--dm-card) !important;
+  border-color:var(--dm-card-borde) !important;
+}
+body .preset-card.selected{background:#D5E5DB !important;border-color:var(--dm-verde) !important;}
+body .fin-venc-card.conviene{background:linear-gradient(160deg,rgba(2,122,72,.16) 0%,var(--dm-card) 70%) !important;border-color:var(--dm-ok) !important;}
+body .fin-venc-card.no-conviene{background:linear-gradient(160deg,rgba(180,35,24,.10) 0%,var(--dm-card) 70%) !important;border-color:var(--dm-rojo) !important;}
+body [onclick*="_showCruceChart"], body [onclick*="_showManiCruceChart"]{border-radius:var(--dm-radio) !important;}
 
 /* KPIs y tarjeta spot */
 body .kpi .label, body .lc-kpi .kl, body .ds-kpi-label, body .fin-section-title, body .spot-card-title{
@@ -483,4 +497,10 @@ html body #landing-gate .text-slate-400{color:rgba(255,255,255,.65);}
 @media (max-width:520px){
   html body #landing-gate nav .text-2xl{font-size:1.1rem;line-height:1.3;}
   html body #landing-gate nav button{padding-left:12px;padding-right:12px;}
+}
+
+/* Tarjetas internas (cruces, etc.): fondo verde suave — va al final para ganar a las reglas inline previas */
+html body [style*="background:#f7f8fa"], html body [onclick*="_showCruceChart"], html body [onclick*="_showManiCruceChart"]{
+  background-color:var(--dm-card) !important;
+  border-color:var(--dm-card-borde) !important;
 }
