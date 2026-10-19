@@ -164,6 +164,19 @@
   .estado.ok .t{color:var(--ok)} .estado.falta .t{color:var(--rojo)} .estado.vacio .t{color:var(--gris)}
   .estado .d{font-size:15.5px;color:var(--gris);margin-top:2px}
 
+  /* Resumen */
+  .resumen-tabla td,.resumen-tabla th{padding:14px 10px;vertical-align:top}
+  .resumen-tabla tbody tr{cursor:pointer;transition:background .12s}
+  .resumen-tabla tbody tr:hover td{background:var(--verde-5)}
+  .resumen-tabla td{white-space:normal}
+  .rs-n{display:flex;gap:12px;align-items:flex-start}
+  .rs-n .badge{flex:0 0 auto;width:30px;height:30px;font-size:14px}
+  .rs-t{font-size:18px;font-weight:700;color:var(--verde);line-height:1.15}
+  .rs-s{font-size:14.5px;color:var(--gris-2);font-weight:600;margin-top:2px}
+  .rs-v{font-size:18px;font-weight:700;line-height:1.15}
+  .rs-d{font-size:13.5px;color:var(--gris-2);font-weight:600;margin-top:2px}
+  .rs-tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:6px;margin-top:4px}
+  .rs-tag.paga{background:var(--rojo-10);color:var(--rojo)} .rs-tag.cobra{background:var(--ok-10);color:var(--ok)} .rs-tag.neutro{background:var(--fondo-2);color:var(--gris)}
   footer{font-size:13.5px;color:var(--gris-2);padding:0 0 30px}
 
   @media (max-width:1100px){ .g5{grid-template-columns:repeat(3,minmax(0,1fr))} .g-chart{grid-template-columns:1fr} .layout-calc{grid-template-columns:1fr} .resumen{position:static} }
@@ -183,7 +196,8 @@
     </div>
     <div class="h2">
       <nav class="tabs" id="tabs">
-        <button class="tab on" data-tab="futuros"><span class="n">1</span>Venta de futuros</button>
+        <button class="tab on" data-tab="resumen"><span class="n">★</span>Resumen</button>
+        <button class="tab" data-tab="futuros"><span class="n">1</span>Venta de futuros</button>
         <button class="tab" data-tab="cc"><span class="n">2</span>Lanzamiento cubierto</button>
         <button class="tab" data-tab="put"><span class="n">3</span>Compra de put</button>
         <button class="tab" data-tab="bps"><span class="n">4</span>Bull put spread</button>
@@ -203,7 +217,15 @@
 <div class="contenedor">
 
   <!-- ============ 1. FUTUROS ============ -->
-  <section class="pagina on" id="p-futuros">
+  <section class="pagina on" id="p-resumen">
+    <div class="tit-pag">
+      <div><div class="etq">Resumen</div><h1>Estrategias de cobertura</h1><div class="lema" id="resLema"></div></div>
+    </div>
+    <div class="card"><div class="tabla-wrap"><table class="resumen-tabla" id="resTabla"></table></div></div>
+    <div class="leyenda" style="margin-top:12px;justify-content:space-between"><span id="resNota"></span><span>Tocá una estrategia para ver el detalle →</span></div>
+  </section>
+
+  <section class="pagina" id="p-futuros">
     <div class="tit-pag">
       <div><div class="etq">Estrategia 1 · Futuros</div><h1>Venta de futuros</h1><div class="lema">Fijo hoy el precio de venta de mi mercadería.</div></div>
     </div>
@@ -394,7 +416,7 @@ function margenOpciones(legs,F,T,rango){
 
 /* ================= Estado ================= */
 const st = {
-  grano:'soja', tab:'futuros', contratos:1, tnc:100,
+  grano:'soja', tab:'resumen', contratos:1, tnc:100,
   fut:{soja:'MAY27', maiz:'ABR27'},
   opt:{soja:'MAY27', maiz:'ABR27'},
   strikes:{},           // por estrategia y grano+posición
@@ -836,8 +858,90 @@ const Calc=(function(){
 })();
 
 /* ================= Navegación ================= */
+/* ================= RESUMEN ================= */
+function metricasOpcion(clave){
+  const g=DATA[st.grano], posiciones=Object.keys(g.opciones);
+  if(!posiciones.length) return null;
+  if(!g.opciones[st.opt[st.grano]]) st.opt[st.grano]=posiciones[0];
+  const pos=st.opt[st.grano], o=g.opciones[pos], F=o.fut, mg=MARGEN_TN[st.grano];
+  const T=Math.max((new Date(o.venc+'T12:00:00')-HOY)/(365*864e5), 1/365);
+  const sk=st.grano+'|'+pos+'|'+clave;
+  if(!st.strikes[sk]) st.strikes[sk]=strikesDef(clave,o);
+  const K=st.strikes[sk];
+  const prima=(t,k)=>{ const a=(t==='C'?o.calls:o.puts).find(x=>x[0]===k); return a?a[1]:null; };
+  let legs;
+  if(clave==='cc'){ if(K.K==null) return null; legs=[{t:'C',K:K.K,q:-1,p:prima('C',K.K)}]; }
+  if(clave==='put'){ if(K.K==null) return null; legs=[{t:'P',K:K.K,q:1,p:prima('P',K.K)}]; }
+  if(clave==='bps'){ if(K.K2==null||K.K1==null||K.K1>=K.K2) return null; legs=[{t:'P',K:K.K2,q:-1,p:prima('P',K.K2)},{t:'P',K:K.K1,q:1,p:prima('P',K.K1)}]; }
+  legs.forEach(l=>l.iv=iv(l.t,F,l.K,T,l.p));
+  const neta=legs.reduce((a,l)=>a-l.q*l.p,0);
+  const mgOpt=legs.some(l=>l.q<0)?margenOpciones(legs,F,T,mg):0;
+  return {pos,F,legs,neta,mgOpt};
+}
+function renderResumen(){
+  const gr=st.grano, g=DATA[gr], n=N(), grano=gr==='soja'?'Soja':'Maíz';
+  $('resLema').textContent=`${grano} · ${st.contratos} contrato${st.contratos>1?'s':''} × ${st.tnc} tn = ${nf0.format(n)} tn · precios A3 al ${DATA.fecha}`;
+  const val=(v,d)=>`<div class="rs-v">${v}</div>${d?`<div class="rs-d">${d}</div>`:''}`;
+  const tagP=(neta)=>neta>0.005?`<div class="rs-v pos">${usd(neta*n)}</div><span class="rs-tag cobra">Cobrás</span><div class="rs-d">U$S ${nf2.format(neta)}/tn</div>`
+                   :neta<-0.005?`<div class="rs-v neg">${usd(-neta*n)}</div><span class="rs-tag paga">Pagás</span><div class="rs-d">U$S ${nf2.format(-neta)}/tn</div>`
+                   :`<div class="rs-v">—</div><span class="rs-tag neutro">Sin prima</span>`;
+  const fila=(tab,num,nombre,sub,prima,gan,per,be,mg)=>`<tr data-ir="${tab}"><td><div class="rs-n"><span class="badge">${num}</span><div><div class="rs-t">${nombre}</div><div class="rs-s">${sub}</div></div></div></td>
+    <td>${prima}</td><td>${gan}</td><td>${per}</td><td>${be}</td><td>${mg}</td></tr>`;
+  const sinDatosF=(tab,num,nombre)=>fila(tab,num,nombre,'Sin datos para este grano','—','—','—','—','—');
+  let h=`<thead><tr><th>Estrategia</th><th>Prima</th><th>Ganancia máxima</th><th>Pérdida máxima</th><th>Break-even</th><th>Margen de garantía</th></tr></thead><tbody>`;
+
+  // 1. Futuros
+  const lf=g.futuros;
+  if(lf.length){
+    if(!lf.find(f=>f.pos===st.fut[gr])) st.fut[gr]=lf[0].pos;
+    const f=lf.find(x=>x.pos===st.fut[gr]);
+    h+=fila('futuros',1,'Venta de futuros',`${posNombre(f.pos)} · fija U$S ${nf1.format(f.precio)}/tn`, tagP(0),
+      val('Precio fijo','Ni más ni menos que el futuro'), val('Renuncia a subas','Ajustes diarios si sube'), val(ptn(f.precio),'Precio fijado'), val(usd(MARGEN_TN[gr]*n),`U$S ${MARGEN_TN[gr]}/tn`));
+  } else h+=sinDatosF('futuros',1,'Venta de futuros');
+
+  // 2. Lanzamiento cubierto
+  const cc=metricasOpcion('cc');
+  if(cc){ const c=cc.legs[0].p, Kc=cc.legs[0].K;
+    h+=fila('cc',2,'Lanzamiento cubierto',`${posNombre(cc.pos)} · vende call ${nf0.format(Kc)}`, tagP(cc.neta),
+      val(usd((Kc-cc.F+c)*n),`Techo U$S ${nf2.format(Kc+c)}/tn`), val('Sin piso',`Amortigua U$S ${nf2.format(c)}/tn`), val(ptn(cc.F-c),'Futuro − prima'), val(usd(cc.mgOpt*n),'Estimado · call vendido'));
+  } else h+=sinDatosF('cc',2,'Lanzamiento cubierto');
+
+  // 3. Compra de put
+  const pu=metricasOpcion('put');
+  if(pu){ const p=pu.legs[0].p, Kp=pu.legs[0].K;
+    h+=fila('put',3,'Compra de put',`${posNombre(pu.pos)} · compra put ${nf0.format(Kp)}`, tagP(pu.neta),
+      val('Ilimitada','Conserva las subas'), val(usd(p*n),'La prima pagada'), val(ptn(Kp-p),`Piso U$S ${nf2.format(Kp-p)}/tn`), val('No requiere','Solo paga la prima'));
+  } else h+=sinDatosF('put',3,'Compra de put');
+
+  // 4. Bull put spread
+  const bp=metricasOpcion('bps');
+  if(bp){ const K2=bp.legs[0].K, K1=bp.legs[1].K;
+    h+=fila('bps',4,'Bull put spread',`${posNombre(bp.pos)} · vende ${nf0.format(K2)} / compra ${nf0.format(K1)}`, tagP(bp.neta),
+      val(usd(bp.neta*n),`Si queda ≥ ${nf0.format(K2)}`), val(usd((K2-K1-bp.neta)*n),`Si cae ≤ ${nf0.format(K1)}`), val(ptn(K2-bp.neta),'Put vendido − prima'), val(usd(bp.mgOpt*n),'Estimado · spread'));
+  } else h+=sinDatosF('bps',4,'Bull put spread');
+
+  // 5. Spread Argentina–Chicago
+  const pares=g.pares;
+  if(pares.length){
+    if(!pares.find(x=>x.ros===st.par[gr])) st.par[gr]=pares[0].ros;
+    const pa=pares.find(x=>x.ros===st.par[gr]), sp=pa.rosPrecio-pa.chiPrecio;
+    const sub=`${posNombre(pa.ros)} vs Chicago ${posNombre(pa.chi)} · spread ${nf1.format(sp)}`;
+    h+=fila('spread','5A','Vender Chicago',sub, tagP(0),
+      val(`${usd(n)} por U$S 1`,'Si el spread se achica'), val(`${usd(n)} por U$S 1`,'Si el spread se amplía'), val(nf1.format(sp)+' U$S/tn','Spread actual'), val(usd(MARGEN_CHI[gr]*n),`Chicago U$S ${MARGEN_CHI[gr]}/tn`));
+    h+=fila('spread','5B','Vender Chicago + comprar Argentina',sub, tagP(0),
+      val(`${usd(n)} por U$S 1`,'Si el spread se achica'), val(`${usd(n)} por U$S 1`,'Si el spread se amplía'), val(nf1.format(sp)+' U$S/tn','Spread actual'), val(usd((MARGEN_TN[gr]+MARGEN_CHI[gr])*n),`Rosario ${MARGEN_TN[gr]} + Chicago ${MARGEN_CHI[gr]} U$S/tn`));
+  } else h+=sinDatosF('spread',5,'Spread Argentina–Chicago');
+
+  $('resTabla').innerHTML=h+'</tbody>';
+  $('resTabla').querySelectorAll('tbody tr').forEach(tr=>tr.onclick=()=>{
+    const t=tr.dataset.ir; if(t==='spread') st.alt=tr.querySelector('.badge').textContent.includes('B')?'B':'A';
+    document.querySelector(`#tabs .tab[data-tab="${t}"]`).click();
+  });
+  $('resNota').textContent='Valores totales para las toneladas seleccionadas. Margen de opciones: estimación.';
+}
+
 function renderTodo(){
-  renderFuturos(); ['cc','put','bps'].forEach(renderOpcion); renderSpread();
+  renderResumen(); renderFuturos(); ['cc','put','bps'].forEach(renderOpcion); renderSpread();
 }
 document.querySelectorAll('#tabs .tab').forEach(b=>b.onclick=()=>{
   st.tab=b.dataset.tab;
