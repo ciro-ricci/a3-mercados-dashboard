@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<!-- Plantilla del generador de HTML para clientes (Estrategia → Generar HTML).
+     Los marcadores de datos y de cliente los completa generador-coberturas.js. -->
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estrategias de Cobertura · {{CLIENTE}} · DATA Miazzo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --verde:#024627; --verde-2:#035c34; --verde-5:rgba(2,70,39,.05); --verde-10:rgba(2,70,39,.10);
+    --arena:#C3A38C; --arena-osc:#9a7a62; --arena-10:rgba(195,163,140,.18);
+    --texto:#333; --gris:#4B5563; --gris-2:#6B7280; --borde:#E5E7EB; --fondo:#F9FAFB; --fondo-2:#F3F4F6;
+    --rojo:#B42318; --rojo-10:rgba(180,35,24,.08); --ok:#027A48; --ok-10:rgba(2,122,72,.09);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Rajdhani',system-ui,sans-serif;font-size:17px;font-weight:500;color:var(--texto);background:var(--fondo);line-height:1.4;font-variant-numeric:tabular-nums}
+  .contenedor{max-width:1320px;margin:0 auto;padding:0 20px}
+
+  /* Header */
+  header{background:#fff;border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:20}
+  .h1{display:flex;align-items:center;justify-content:space-between;gap:16px;height:70px}
+  .logo img{height:34px;display:block}
+  .logo-texto{display:none;font-size:30px;letter-spacing:.12em;font-weight:500}
+  .logo-texto sup{font-size:10px;font-weight:600}
+  .cab-der{text-align:right}
+  .cab-tit{font-size:20px;font-weight:700;color:var(--verde);line-height:1.1}
+  .cab-sub{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--arena-osc)}
+  .h2{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:10px 0 12px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap}
+  .tab{font-family:inherit;font-size:16px;font-weight:700;color:var(--gris);background:transparent;border:1.5px solid transparent;border-radius:10px;padding:8px 14px;cursor:pointer;display:flex;align-items:center;gap:8px}
+  .tab .n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:var(--fondo-2);color:var(--gris);font-size:13px}
+  .tab:hover{background:var(--verde-5);color:var(--verde)}
+  .tab.on{background:var(--verde);color:#fff}
+  .tab.on .n{background:var(--arena);color:#1f2a22}
+  .globales{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .seg{display:inline-flex;background:var(--fondo-2);border-radius:10px;padding:3px}
+  .seg button{font-family:inherit;font-size:15.5px;font-weight:700;border:0;background:transparent;color:var(--gris);padding:6px 16px;border-radius:8px;cursor:pointer}
+  .seg button.on{background:#fff;color:var(--verde);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .campo{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2)}
+
+  select,input{font-family:inherit;font-size:16px;font-weight:600;color:var(--texto);background:#fff;border:1px solid #D1D5DB;border-radius:8px;padding:6px 8px;outline:none}
+  select:focus,input:focus{border-color:var(--verde);box-shadow:0 0 0 3px var(--verde-10)}
+  input{text-align:right;width:96px}
+  input.corto{width:66px}
+
+  main{padding:26px 0 36px}
+  .pagina{display:none}
+  .pagina.on{display:block}
+  .tit-pag{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  .etq{font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--arena-osc)}
+  h1{font-size:34px;line-height:1.1;font-weight:700;color:var(--verde);margin-top:4px}
+  .lema{font-size:18px;color:var(--gris);margin-top:4px}
+  h2{font-size:21px;font-weight:700;color:var(--verde)}
+  .card{background:#fff;border:1px solid var(--borde);border-radius:16px;padding:22px}
+  .grid{display:grid;gap:18px}
+  .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g-chart{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+  .mb{margin-bottom:18px}
+
+  /* Controles */
+  .controles{display:flex;gap:14px 22px;flex-wrap:wrap;align-items:center}
+  .pills{display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-family:inherit;border:1.5px solid var(--borde);background:#fff;border-radius:10px;padding:6px 12px;cursor:pointer;text-align:left;line-height:1.1}
+  .pill b{display:block;font-size:16px;color:var(--texto)}
+  .pill span{font-size:13.5px;color:var(--gris-2);font-weight:600}
+  .pill:hover{border-color:var(--verde)}
+  .pill.on{border-color:var(--verde);background:var(--verde)}
+  .pill.on b,.pill.on span{color:#fff}
+
+  /* KPIs */
+  .kpi{background:#fff;border:1px solid var(--borde);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden}
+  .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--verde)}
+  .kpi.arena::before{background:var(--arena)}
+  .kpi.rojo::before{background:var(--rojo)}
+  .kpi.ok::before{background:var(--ok)}
+  .kpi .l{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2)}
+  .kpi .v{font-size:28px;font-weight:700;color:var(--verde);line-height:1.1;margin-top:6px}
+  .kpi.rojo .v{color:var(--rojo)} .kpi.ok .v{color:var(--ok)}
+  .kpi .s{font-size:14.5px;color:var(--gris-2);margin-top:2px}
+
+  /* Alertas */
+  .alerta{display:flex;gap:12px;align-items:center;border-radius:12px;padding:12px 16px;font-size:16.5px;font-weight:600}
+  .alerta .ic{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+  .alerta.info{background:var(--verde-5);color:var(--verde)} .alerta.info .ic{background:var(--verde)}
+  .alerta.warn{background:var(--arena-10);color:#5b4636} .alerta.warn .ic{background:var(--arena-osc)}
+  .alerta.mal{background:var(--rojo-10);color:var(--rojo)} .alerta.mal .ic{background:var(--rojo)}
+  .alerta.bien{background:var(--ok-10);color:var(--ok)} .alerta.bien .ic{background:var(--ok)}
+
+  /* Gráfico */
+  .chart-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .leyenda{display:flex;gap:16px;flex-wrap:wrap;font-size:14.5px;font-weight:600;color:var(--gris)}
+  .leyenda i{display:inline-block;width:18px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .leyenda i.dash{background:repeating-linear-gradient(90deg,#9CA3AF 0 5px,transparent 5px 9px)!important}
+  .chart-wrap{position:relative}
+  svg.chart{width:100%;height:auto;display:block}
+  .tooltip{position:absolute;pointer-events:none;background:#1f2a22;color:#fff;font-size:14px;font-weight:600;padding:8px 10px;border-radius:8px;white-space:nowrap;display:none;z-index:5}
+  .tooltip b{color:var(--arena)}
+  .seg.chico button{font-size:14px;padding:5px 11px}
+
+  /* Tablas */
+  .tabla-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:15.5px}
+  th{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris-2);text-align:right;padding:8px 6px;border-bottom:1.5px solid var(--borde);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:7px 6px;border-bottom:1px solid var(--borde);text-align:right;white-space:nowrap}
+  tr.actual td{background:var(--verde-5);font-weight:700}
+  .pos{color:var(--ok);font-weight:700} .neg{color:var(--rojo);font-weight:700}
+  .fuerte{font-weight:700;color:var(--verde)}
+  tfoot td{border-top:1.5px solid var(--verde);border-bottom:none;font-weight:700;color:var(--verde)}
+
+  /* Pros / contras */
+  .pc{list-style:none;display:grid;gap:8px}
+  .pc li{display:flex;gap:10px;align-items:flex-start;font-size:16px;font-weight:600}
+  .pc li::before{flex:0 0 auto;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;margin-top:1px}
+  .pc.pro li::before{content:"✓";background:var(--ok)}
+  .pc.con li::before{content:"✕";background:var(--rojo)}
+  .pc-tit{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
+  .cuando{margin-top:16px;padding-top:14px;border-top:1px solid var(--borde);font-size:16px;font-weight:600;color:var(--gris)}
+  .cuando b{color:var(--verde)}
+
+  /* Ajustes diarios */
+  .dias{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+  .dia{border:1px solid var(--borde);border-radius:12px;padding:10px;text-align:center}
+  .dia .d{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2)}
+  .dia input{width:100%;text-align:center;margin:6px 0}
+  .dia .p{font-size:14px;color:var(--gris-2)}
+  .dia .a{font-size:18px;font-weight:700;margin-top:4px}
+
+  /* Calculadora */
+  .layout-calc{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:24px;align-items:start}
+  .calc .card{margin-bottom:24px}
+  .card-cab{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .tit{display:flex;align-items:center;gap:12px}
+  .badge{width:34px;height:34px;border-radius:9px;background:var(--verde);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:14px;font-weight:600;background:var(--verde-5);color:var(--verde);padding:4px 10px;border-radius:7px}
+  .calc td{white-space:nowrap} .calc td:first-child{white-space:normal}
+  .btn{font-family:inherit;font-size:15px;font-weight:700;border-radius:8px;padding:8px 14px;cursor:pointer;border:1.5px solid var(--verde);background:var(--verde);color:#fff}
+  .quitar{width:32px;height:32px;border-radius:8px;border:1px solid var(--borde);background:#fff;color:var(--gris-2);font-size:18px;cursor:pointer}
+  .quitar:hover{color:var(--rojo);border-color:var(--rojo)}
+  .no{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rojo);background:var(--rojo-10);padding:2px 8px;border-radius:5px}
+  .barra{height:8px;width:56px;border-radius:999px;background:var(--fondo-2);overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px}
+  .barra span{display:block;height:100%;background:var(--verde)}
+  .resumen{position:sticky;top:150px;background:var(--verde);color:#fff;border-radius:16px;padding:22px}
+  .resumen h2{color:#fff}
+  .lbl{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--arena)}
+  .tc{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 4px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18)}
+  .rk{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.15)}
+  .rk-v{font-size:30px;font-weight:700;line-height:1.1;margin-top:4px}
+  .rk-s{font-size:15px;color:rgba(255,255,255,.72)}
+  .medidor{height:12px;border-radius:999px;background:rgba(255,255,255,.15);position:relative;margin:12px 0 6px}
+  .medidor .rel{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--arena);transition:width .3s}
+  .medidor .marca{position:absolute;left:66.66%;top:-4px;bottom:-4px;width:2px;background:#fff}
+  .escala{position:relative;height:18px;font-size:13px;color:rgba(255,255,255,.7)}
+  .escala span{position:absolute;white-space:nowrap}
+  .estado{margin-top:14px;background:#fff;color:var(--texto);border-radius:12px;padding:14px 16px}
+  .estado .t{font-size:19px;font-weight:700}
+  .estado.ok .t{color:var(--ok)} .estado.falta .t{color:var(--rojo)} .estado.vacio .t{color:var(--gris)}
+  .estado .d{font-size:15.5px;color:var(--gris);margin-top:2px}
+
+  footer{font-size:13.5px;color:var(--gris-2);padding:0 0 30px}
+
+  @media (max-width:1100px){ .g5{grid-template-columns:repeat(3,minmax(0,1fr))} .g-chart{grid-template-columns:1fr} .layout-calc{grid-template-columns:1fr} .resumen{position:static} }
+  @media (max-width:760px){ .g4,.g5{grid-template-columns:repeat(2,minmax(0,1fr))} .g2{grid-template-columns:1fr} .dias{grid-template-columns:repeat(2,minmax(0,1fr))} .cab-der{display:none} header{position:static} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="contenedor">
+    <div class="h1">
+      <a class="logo" href="#">
+        <img src="https://datamiazzo.com.ar/assets/logo-color.png" alt="DATA Miazzo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+        <span class="logo-texto">DATA<sup>MIAZZO</sup></span>
+      </a>
+      <div class="cab-der"><div class="cab-tit">Estrategias de Cobertura en Granos</div><div class="cab-sub">{{CLIENTE}}</div></div>
+    </div>
+    <div class="h2">
+      <nav class="tabs" id="tabs">
+        <button class="tab on" data-tab="futuros"><span class="n">1</span>Venta de futuros</button>
+        <button class="tab" data-tab="cc"><span class="n">2</span>Lanzamiento cubierto</button>
+        <button class="tab" data-tab="put"><span class="n">3</span>Compra de put</button>
+        <button class="tab" data-tab="bps"><span class="n">4</span>Bull put spread</button>
+        <button class="tab" data-tab="spread"><span class="n">5</span>Spread Argentina–Chicago</button>
+        <button class="tab" data-tab="calc"><span class="n">6</span>Márgenes y aforos</button>
+      </nav>
+      <div class="globales" id="globales">
+        <div class="seg" id="segGrano"><button data-g="soja" class="on">Soja</button><button data-g="maiz">Maíz</button></div>
+        <label class="campo">Contratos <input type="number" id="gContratos" class="corto" value="1" min="1" step="1"></label>
+        <label class="campo">Tamaño <select id="gTn"><option value="100" selected>Rosario · 100 tn</option><option value="10">Mini · 10 tn</option></select></label>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="contenedor">
+
+  <!-- ============ 1. FUTUROS ============ -->
+  <section class="pagina on" id="p-futuros">
+    <div class="tit-pag">
+      <div><div class="etq">Estrategia 1 · Futuros</div><h1>Venta de futuros</h1><div class="lema">Fijo hoy el precio de venta de mi mercadería.</div></div>
+    </div>
+
+    <div class="card mb">
+      <div class="controles"><span class="campo">Posición</span><div class="pills" id="futPills"></div></div>
+    </div>
+
+    <div class="grid g4 mb" id="futKpis"></div>
+
+    <div class="grid g-chart mb">
+      <div class="card">
+        <div class="chart-cab">
+          <h2>Precio obtenido según el precio al vencimiento</h2>
+          <div class="seg chico" data-vista="futuros"><button data-v="neto" class="on">Precio neto</button><button data-v="res">Resultado del futuro</button></div>
+        </div>
+        <div class="leyenda" id="futLey"></div>
+        <div class="chart-wrap"><svg class="chart" id="futChart" viewBox="0 0 760 370"></svg><div class="tooltip"></div></div>
+      </div>
+      <div class="card">
+        <div class="pc-tit" style="color:var(--ok)">A favor</div>
+        <ul class="pc pro"><li>Precio fijo: elimina el riesgo de baja</li><li>Simple y líquido</li><li>Sin costo de prima</li></ul>
+        <div class="pc-tit" style="color:var(--rojo);margin-top:18px">En contra</div>
+        <ul class="pc con"><li>Renuncia a las subas</li><li>Inmoviliza garantía (margen)</li><li>Ajustes diarios: si sube, hay que poner plata</li></ul>
+        <div class="cuando"><b>Conviene</b> cuando el precio actual cierra el negocio y la prioridad es asegurarlo.</div>
+      </div>
+    </div>
+
+    <div class="card mb">
+      <div class="chart-cab"><h2>Ajustes diarios · posición vendida</h2><span class="campo">Variación del ajuste en U$S/tn · editable</span></div>
+      <div class="dias" id="dias"></div>
+      <div class="grid g2" style="margin-top:16px">
+        <div class="chart-wrap"><svg class="chart" id="diasChart" viewBox="0 0 760 220"></svg></div>
+        <div style="display:grid;gap:10px;align-content:start" id="diasInfo"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="chart-cab"><h2>Análisis de sensibilidad</h2></div>
+      <div class="tabla-wrap"><table id="futSens"></table></div>
+    </div>
+  </section>
+
+  <!-- ============ 2/3/4. OPCIONES (plantilla) ============ -->
+  <section class="pagina" id="p-cc"></section>
+  <section class="pagina" id="p-put"></section>
+  <section class="pagina" id="p-bps"></section>
+
+  <!-- ============ 5. SPREAD ARGENTINA–CHICAGO ============ -->
+  <section class="pagina" id="p-spread">
+    <div class="tit-pag">
+      <div><div class="etq">Estrategia 5 · Futuros</div><h1>Spread Argentina–Chicago</h1><div class="lema">Si bajan las retenciones, el precio local sube contra Chicago y el descuento se achica.</div></div>
+      <div class="seg" id="segAlt"><button data-a="A" class="on">A · Vender Chicago</button><button data-a="B">B · Vender Chicago + comprar Argentina</button></div>
+    </div>
+
+    <div class="card mb">
+      <div class="controles">
+        <span class="campo">Posición</span><div class="pills" id="spPills"></div>
+      </div>
+    </div>
+
+    <div class="grid g2 mb">
+      <div class="card" id="spArmado"></div>
+      <div class="card">
+        <div class="chart-cab"><h2>Escenario</h2></div>
+        <div style="display:grid;gap:14px">
+          <label class="campo" style="justify-content:space-between">Compresión del spread (U$S/tn)
+            <span style="display:flex;gap:10px;align-items:center"><input type="range" id="spComp" min="-40" max="40" step="1" style="width:200px;accent-color:#024627"><input type="number" id="spCompN" class="corto" step="1"></span></label>
+          <label class="campo" style="justify-content:space-between">Variación de Chicago (U$S/tn)
+            <span style="display:flex;gap:10px;align-items:center"><input type="range" id="spChi" min="-80" max="80" step="1" style="width:200px;accent-color:#C3A38C"><input type="number" id="spChiN" class="corto" step="1"></span></label>
+          <div id="spEsc" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g5 mb" id="spKpis"></div>
+
+    <div class="grid g-chart mb">
+      <div class="card">
+        <div class="chart-cab"><h2 id="spChartTit"></h2></div>
+        <div class="leyenda" id="spLey"></div>
+        <div class="chart-wrap"><svg class="chart" id="spChart" viewBox="0 0 760 370"></svg><div class="tooltip"></div></div>
+      </div>
+      <div class="card" id="spPc"></div>
+    </div>
+
+    <div class="card">
+      <div class="chart-cab"><h2>Análisis de sensibilidad</h2><span class="campo" id="spSensSub"></span></div>
+      <div class="tabla-wrap"><table id="spSens"></table></div>
+    </div>
+  </section>
+
+  <!-- ============ 6. CALCULADORA ============ -->
+  <section class="pagina calc" id="p-calc">
+    <div class="tit-pag"><div><div class="etq">Herramienta</div><h1>Calculadora de márgenes y aforos</h1></div></div>
+    <div class="layout-calc">
+      <div>
+        <div class="card">
+          <div class="card-cab">
+            <div class="tit"><span class="badge">1</span><h2>Posiciones en futuros</h2></div>
+            <div class="chips"><span class="chip">Rosario: <b>100 tn</b></span><span class="chip">Mini: <b>10 tn</b></span><span class="chip">Chicago: <b>5 tn</b></span></div>
+          </div>
+          <div class="tabla-wrap">
+            <table id="tPos">
+              <thead><tr><th>Contrato</th><th style="text-align:left">Posición</th><th>Contratos</th><th>Toneladas</th><th>Margen U$S/tn</th><th>Margen U$S</th><th></th></tr></thead>
+              <tbody></tbody>
+              <tfoot><tr><td colspan="3">Total</td><td id="totTn"></td><td></td><td id="totReq"></td><td></td></tr></tfoot>
+            </table>
+          </div>
+          <div style="margin-top:14px"><button class="btn" id="addPos" type="button">+ Agregar contrato</button></div>
+        </div>
+        <div class="card">
+          <div class="card-cab"><div class="tit"><span class="badge">2</span><h2>Activos en garantía</h2></div></div>
+          <div class="tabla-wrap">
+            <table id="tAct">
+              <thead><tr><th>Activo</th><th>Aforo</th><th style="text-align:left">Moneda</th><th>Monto</th><th>Valor U$S</th><th>Computa U$S</th></tr></thead>
+              <tbody></tbody>
+              <tfoot><tr><td colspan="4">Total</td><td id="totVal"></td><td id="totComp"></td></tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+      <aside class="resumen">
+        <h2>Resumen</h2>
+        <div class="tc"><span class="lbl">Tipo de cambio $/U$S</span><input type="number" id="tc" value="1540" min="1" step="1"></div>
+        <div class="rk"><div class="lbl">Margen requerido</div><div class="rk-v" id="kReq"></div><div class="rk-s" id="kReqA"></div></div>
+        <div class="rk"><div class="lbl">Garantía computable</div><div class="rk-v" id="kGar"></div><div class="rk-s" id="kGarA"></div></div>
+        <div class="rk" style="border-bottom:none"><div class="lbl">Nivel de cobertura</div><div class="rk-v" id="kCob"></div>
+          <div class="medidor"><div class="rel" id="rel"></div><div class="marca"></div></div>
+          <div class="escala"><span style="left:0">0%</span><span style="left:66.66%;transform:translateX(-50%)">100%</span><span style="right:0">150%</span></div>
+        </div>
+        <div class="estado vacio" id="estado"><div class="t" id="eT"></div><div class="d" id="eD"></div></div>
+      </aside>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer><div class="contenedor">Precios de ajuste A3 Mercados al <span id="fechaDatos"></span>. Márgenes: Argentina Clearing, Comunicación N° 563 (09/10/2026). Margen de opciones lanzadas: estimación propia según metodología de escenarios de Argentina Clearing. Resultados al vencimiento suponiendo convergencia del precio físico al futuro. DATA Miazzo.</div></footer>
+
+<script>
+const DATA = /*DATA*/;
+const MARGEN_TN = {soja:17, maiz:8};
+const HOY = new Date(DATA.fechaISO+'T12:00:00');
+
+/* ================= Utilidades ================= */
+const nf0 = new Intl.NumberFormat('es-AR',{maximumFractionDigits:0});
+const nf1 = new Intl.NumberFormat('es-AR',{minimumFractionDigits:0,maximumFractionDigits:1});
+const nf2 = new Intl.NumberFormat('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const usd = v => (v<0?'−':'') + 'U$S ' + nf0.format(Math.abs(Math.round(v)));
+const usdS = v => (v>0?'+':v<0?'−':'') + 'U$S ' + nf0.format(Math.abs(Math.round(v)));
+const ptn = v => 'U$S ' + nf2.format(v);
+const ptnS = v => (v>0?'+':v<0?'−':'') + nf2.format(Math.abs(v));
+const $ = id => document.getElementById(id);
+const val = x => { const n = parseFloat(x); return isNaN(n)||n<0 ? 0 : n; };
+const clsN = v => v>0.005 ? 'pos' : v<-0.005 ? 'neg' : '';
+const fechaCorta = s => { const [y,m,d] = s.split('-'); return `${d}/${m}/${y.slice(2)}`; };
+const NOMBRE_MES = {ENE:'Ene',FEB:'Feb',MAR:'Mar',ABR:'Abr',MAY:'May',JUN:'Jun',JUL:'Jul',AGO:'Ago',SEP:'Sep',OCT:'Oct',NOV:'Nov',DIC:'Dic'};
+const posNombre = p => NOMBRE_MES[p.slice(0,3)] + ' ' + p.slice(3);
+
+/* ================= Black-76 ================= */
+function ncdf(x){ const t=1/(1+0.2316419*Math.abs(x)); const d=0.3989423*Math.exp(-x*x/2);
+  let p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274)))); return x>0?1-p:p; }
+function b76(tipo,F,K,T,s){
+  if(T<=0||s<=0) return Math.max(tipo==='C'?F-K:K-F,0);
+  const sq=s*Math.sqrt(T), d1=(Math.log(F/K)+0.5*s*s*T)/sq, d2=d1-sq;
+  return tipo==='C' ? F*ncdf(d1)-K*ncdf(d2) : K*ncdf(-d2)-F*ncdf(-d1);
+}
+function iv(tipo,F,K,T,prima){
+  let lo=0.01, hi=2.5;
+  if(prima<=b76(tipo,F,K,T,lo)) return lo;
+  for(let i=0;i<80;i++){ const m=(lo+hi)/2; if(b76(tipo,F,K,T,m)>prima) hi=m; else lo=m; }
+  return (lo+hi)/2;
+}
+/* Margen de opciones por escenarios (metodología ACyRSA): precio ±1/3, ±2/3, ±1 del rango (margen del futuro) y ±2 rangos ponderado 40% */
+function margenOpciones(legs,F,T,rango){
+  const esc=[[0,1],[1/3,1],[-1/3,1],[2/3,1],[-2/3,1],[1,1],[-1,1],[2,0.4],[-2,0.4]];
+  let peor=0;
+  esc.forEach(([f,w])=>{
+    const F2=Math.max(F+f*rango,0.01);
+    let pl=0;
+    legs.forEach(l=>{ pl += l.q*(b76(l.t,F2,l.K,T,l.iv)-b76(l.t,F,l.K,T,l.iv)); });
+    peor=Math.max(peor,-pl*w);
+  });
+  return peor; // U$S por tn
+}
+
+/* ================= Estado ================= */
+const st = {
+  grano:'soja', tab:'futuros', contratos:1, tnc:100,
+  fut:{soja:'MAY27', maiz:'ABR27'},
+  opt:{soja:'MAY27', maiz:'ABR27'},
+  strikes:{},           // por estrategia y grano+posición
+  vista:{futuros:'neto', cc:'neto', put:'neto', bps:'res'},
+  dias:[5,3,-6,8,-4]
+};
+const N = () => st.contratos*st.tnc;
+
+/* ================= Gráfico SVG ================= */
+function dibujar(svg, cfg){
+  const W=760, H=+svg.getAttribute('viewBox').split(' ')[3], m={l:62,r:18,t:70,b:38};
+  const iw=W-m.l-m.r, ih=H-m.t-m.b;
+  const xs=cfg.xs; let ymin=Infinity, ymax=-Infinity;
+  cfg.series.forEach(s=>s.ys.forEach(y=>{ymin=Math.min(ymin,y);ymax=Math.max(ymax,y);}));
+  (cfg.hRefs||[]).forEach(h=>{ymin=Math.min(ymin,h.y);ymax=Math.max(ymax,h.y);});
+  if(cfg.cero){ymin=Math.min(ymin,0);ymax=Math.max(ymax,0);}
+  const pad=(ymax-ymin)*0.1||10; ymin-=pad; ymax+=pad;
+  const X=x=>m.l+(x-xs[0])/(xs[xs.length-1]-xs[0])*iw, Y=y=>m.t+(ymax-y)/(ymax-ymin)*ih;
+  const tick=v=>{const r=(v)/5, p=Math.pow(10,Math.floor(Math.log10(r))), n=r/p; return (n<1.5?1:n<3?2:n<7?5:10)*p;};
+  let g='';
+  const ty=tick(ymax-ymin);
+  for(let y=Math.ceil(ymin/ty)*ty;y<=ymax;y+=ty){ g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(y)}" y2="${Y(y)}" stroke="#EEF0F2"/><text x="${m.l-8}" y="${Y(y)+4}" text-anchor="end" font-size="12" fill="#6B7280">${nf0.format(y)}</text>`; }
+  const tx=tick(xs[xs.length-1]-xs[0]);
+  for(let x=Math.ceil(xs[0]/tx)*tx;x<=xs[xs.length-1];x+=tx){ g+=`<text x="${X(x)}" y="${H-m.b+18}" text-anchor="middle" font-size="12" fill="#6B7280">${nf0.format(x)}</text>`; }
+  g+=`<text x="${m.l+iw/2}" y="${H-4}" text-anchor="middle" font-size="12" font-weight="700" fill="#6B7280">${cfg.xLabel||'PRECIO AL VENCIMIENTO (U$S/tn)'}</text>`;
+  if(cfg.cero && ymin<0 && ymax>0) g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(0)}" y2="${Y(0)}" stroke="#9CA3AF" stroke-width="1.2"/>`;
+  const filas=[]; (cfg.vRefs||[]).filter(v=>v.x>=xs[0]&&v.x<=xs[xs.length-1]).sort((a,b)=>a.x-b.x).forEach(v=>{
+    let f=0; while(filas[f]!==undefined && X(v.x)-filas[f]<82) f++; filas[f]=X(v.x);
+    const yl=m.t-24-f*21;
+    g+=`<line x1="${X(v.x)}" x2="${X(v.x)}" y1="${yl+18}" y2="${H-m.b}" stroke="${v.c}" stroke-dasharray="4 4" stroke-width="1.3"/>
+        <rect x="${X(v.x)-38}" y="${yl}" width="76" height="18" rx="4" fill="${v.c}"/>
+        <text x="${X(v.x)}" y="${yl+13}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff">${v.l}</text>`; });
+  cfg.series.forEach(s=>{
+    const d=s.ys.map((y,i)=>(i?'L':'M')+X(xs[i]).toFixed(1)+' '+Y(y).toFixed(1)).join(' ');
+    g+=`<path d="${d}" fill="none" stroke="${s.c}" stroke-width="${s.w||3}" ${s.dash?'stroke-dasharray="6 5"':''} stroke-linejoin="round"/>`;
+  });
+  (cfg.puntos||[]).forEach(p=>{ g+=`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="5.5" fill="#fff" stroke="${p.c}" stroke-width="2.5"/>`; });
+  g+=`<line class="hl" x1="0" x2="0" y1="${m.t}" y2="${H-m.b}" stroke="#1f2a22" stroke-width="1" opacity="0"/>`;
+  cfg.series.forEach((s,i)=>{ g+=`<circle class="hp" data-i="${i}" r="5" fill="${s.c}" opacity="0"/>`; });
+  g+=`<rect class="ov" x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent"/>`;
+  svg.innerHTML=g;
+  const tip=svg.parentElement.querySelector('.tooltip');
+  if(!tip) return;
+  const ov=svg.querySelector('.ov'), hl=svg.querySelector('.hl'), hps=svg.querySelectorAll('.hp');
+  ov.onmousemove=e=>{
+    const r=svg.getBoundingClientRect(), sx=(e.clientX-r.left)/r.width*W;
+    const x=xs[0]+(sx-m.l)/iw*(xs[xs.length-1]-xs[0]);
+    let i=0,best=1e9; xs.forEach((v,j)=>{const d=Math.abs(v-x); if(d<best){best=d;i=j;}});
+    hl.setAttribute('x1',X(xs[i])); hl.setAttribute('x2',X(xs[i])); hl.setAttribute('opacity',.35);
+    hps.forEach(c=>{const s=cfg.series[c.dataset.i]; c.setAttribute('cx',X(xs[i])); c.setAttribute('cy',Y(s.ys[i])); c.setAttribute('opacity',1);});
+    tip.innerHTML=(cfg.xTip?cfg.xTip(xs[i]):`Precio: <b>U$S ${nf1.format(xs[i])}</b>`)+'<br>'+cfg.series.map(s=>`${s.n}: <b>${cfg.fmt(s.ys[i])}</b>`).join('<br>');
+    tip.style.display='block';
+    const px=(X(xs[i])/W)*r.width; tip.style.left=Math.min(px+14, r.width-tip.offsetWidth-4)+'px'; tip.style.top='10px';
+  };
+  ov.onmouseleave=()=>{tip.style.display='none'; hl.setAttribute('opacity',0); hps.forEach(c=>c.setAttribute('opacity',0));};
+}
+const ley = (el, items) => { el.innerHTML = items.map(i=>`<span><i style="background:${i.c}" class="${i.dash?'dash':''}"></i>${i.n}</span>`).join(''); };
+const kpi = (l,v,s,c='') => `<div class="kpi ${c}"><div class="l">${l}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
+const alerta = (tipo,ic,txt) => `<div class="alerta ${tipo}"><span class="ic">${ic}</span><span>${txt}</span></div>`;
+const rangoPrecios = F => { const xs=[]; const a=F*0.7, b=F*1.3; for(let i=0;i<=120;i++) xs.push(a+(b-a)*i/120); return xs; };
+const ESC = [-20,-15,-10,-5,0,5,10,15,20];
+
+/* ================= 1. FUTUROS ================= */
+function renderFuturos(){
+  const g=DATA[st.grano], lista=g.futuros;
+  if(!lista.length){ $('futPills').innerHTML=''; $('futKpis').innerHTML=alerta('warn','!','No hay futuros con precio para este grano.'); return; }
+  if(!lista.find(f=>f.pos===st.fut[st.grano])) st.fut[st.grano]=lista[0].pos;
+  const f=lista.find(x=>x.pos===st.fut[st.grano]), F=f.precio, n=N(), mg=MARGEN_TN[st.grano];
+
+  $('futPills').innerHTML = lista.map(x=>`<button class="pill ${x.pos===f.pos?'on':''}" data-pos="${x.pos}"><b>${posNombre(x.pos)}</b><span>U$S ${nf1.format(x.precio)}</span></button>`).join('');
+  $('futPills').querySelectorAll('.pill').forEach(b=>b.onclick=()=>{st.fut[st.grano]=b.dataset.pos; renderFuturos();});
+
+  $('futKpis').innerHTML =
+    kpi('Precio fijado', ptn(F)+'<span style="font-size:16px;color:var(--gris-2)"> /tn</span>', `${posNombre(f.pos)} · vence ${fechaCorta(f.venc)}`) +
+    kpi('Toneladas cubiertas', nf0.format(n)+' tn', `${st.contratos} contrato${st.contratos>1?'s':''} × ${st.tnc} tn`, 'arena') +
+    kpi('Valor asegurado', usd(F*n), 'Precio × toneladas', 'ok') +
+    kpi('Margen inicial', usd(mg*n), `U$S ${mg}/tn · se devuelve al cerrar`, 'rojo');
+
+  // Gráfico
+  const xs=rangoPrecios(F), vista=st.vista.futuros;
+  const sinCob={n:'Sin cobertura',c:'#9CA3AF',dash:true,w:2,ys:xs.map(x=>x)};
+  if(vista==='neto'){
+    const s={n:'Con futuro vendido',c:'#024627',ys:xs.map(()=>F)};
+    dibujar($('futChart'),{xs,series:[s,sinCob],vRefs:[{x:F,l:'Futuro '+nf0.format(F),c:'#C3A38C'}],fmt:v=>ptn(v)});
+    ley($('futLey'),[s,sinCob]);
+  } else {
+    const s={n:'Resultado del futuro (total)',c:'#024627',ys:xs.map(x=>(F-x)*n)};
+    dibujar($('futChart'),{xs,series:[s],cero:true,vRefs:[{x:F,l:'Futuro '+nf0.format(F),c:'#C3A38C'}],fmt:v=>usdS(v)});
+    ley($('futLey'),[s]);
+  }
+
+  // Ajustes diarios
+  let precio=F, acum=0, peor=0; const filas=[];
+  $('dias').innerHTML = st.dias.map((d,i)=>`<div class="dia"><div class="d">Día ${i+1}</div><input type="number" step="0.5" value="${d}" data-i="${i}"><div class="p" id="dp${i}"></div><div class="a" id="da${i}"></div></div>`).join('');
+  st.dias.forEach((d,i)=>{ precio+=d; const aj=-d*n; acum+=aj; peor=Math.min(peor,acum); filas.push({precio,aj,acum});
+    $('dp'+i).textContent='Ajuste U$S '+nf1.format(precio);
+    $('da'+i).innerHTML=`<span class="${clsN(aj)}">${usdS(aj)}</span>`; });
+  $('dias').querySelectorAll('input').forEach(inp=>inp.oninput=e=>{ st.dias[+e.target.dataset.i]=parseFloat(e.target.value)||0; renderFuturos(); const el=$('dias').querySelector(`input[data-i="${e.target.dataset.i}"]`); el.focus(); el.setSelectionRange?.(el.value.length,el.value.length); });
+  // barras
+  (function(){
+    const svg=$('diasChart'), W=760,H=220,m={l:62,r:10,t:16,b:30}, iw=W-m.l-m.r, ih=H-m.t-m.b;
+    const vals=filas.map(f=>f.aj), acs=filas.map(f=>f.acum);
+    let mx=Math.max(...vals.map(Math.abs),...acs.map(Math.abs),1)*1.15;
+    const Y=v=>m.t+(mx-v)/(2*mx)*ih, bw=iw/vals.length;
+    let g=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(0)}" y2="${Y(0)}" stroke="#9CA3AF"/>`;
+    [-mx/1.15,0,mx/1.15].forEach(v=>g+=`<text x="${m.l-8}" y="${Y(v)+4}" text-anchor="end" font-size="12" fill="#6B7280">${nf0.format(v)}</text>`);
+    vals.forEach((v,i)=>{ const x=m.l+i*bw+bw*0.22, w=bw*0.56, y=Math.min(Y(v),Y(0)), h=Math.abs(Y(v)-Y(0));
+      g+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(h,1)}" rx="5" fill="${v>=0?'#027A48':'#B42318'}" opacity=".85"/><text x="${x+w/2}" y="${H-8}" text-anchor="middle" font-size="12" font-weight="700" fill="#6B7280">DÍA ${i+1}</text>`; });
+    const d=acs.map((v,i)=>(i?'L':'M')+(m.l+i*bw+bw/2)+' '+Y(v)).join(' ');
+    g+=`<path d="${d}" fill="none" stroke="#C3A38C" stroke-width="3"/>`+acs.map((v,i)=>`<circle cx="${m.l+i*bw+bw/2}" cy="${Y(v)}" r="4.5" fill="#fff" stroke="#C3A38C" stroke-width="2.5"/>`).join('');
+    svg.innerHTML=g;
+  })();
+  const mgTot=mg*n;
+  $('diasInfo').innerHTML =
+    `<div class="leyenda"><span><i style="background:#027A48"></i>Ganancia del día (se acredita)</span><span><i style="background:#B42318"></i>Pérdida del día (se debita)</span><span><i style="background:#C3A38C"></i>Acumulado</span></div>` +
+    kpi('Resultado acumulado', `<span class="${clsN(acum)}">${usdS(acum)}</span>`, `Precio de ajuste final U$S ${nf1.format(precio)}`, acum>=0?'ok':'rojo') +
+    (peor<-mgTot ? alerta('mal','!',`La pérdida acumulada (${usd(-peor)}) supera el margen inicial (${usd(mgTot)}): hay que reponer garantía.`)
+                 : alerta('info','i',`Si el precio sube, la posición vendida pierde y se debita en efectivo cada día. La mercadería física gana lo mismo, pero se cobra recién al venderla.`));
+
+  // Sensibilidad
+  let h=`<thead><tr><th>Escenario</th><th>Precio al vencimiento</th><th>Resultado futuro U$S/tn</th><th>Resultado futuro total</th><th>Venta física U$S/tn</th><th>Precio neto U$S/tn</th><th>vs. sin cobertura</th></tr></thead><tbody>`;
+  ESC.forEach(e=>{ const S=F*(1+e/100), r=F-S;
+    h+=`<tr class="${e===0?'actual':''}"><td>${e>0?'+':''}${e}%</td><td>${nf2.format(S)}</td><td class="${clsN(r)}">${ptnS(r)}</td><td class="${clsN(r)}">${usdS(r*n)}</td><td>${nf2.format(S)}</td><td class="fuerte">${nf2.format(F)}</td><td class="${clsN(r)}">${usdS(r*n)}</td></tr>`; });
+  $('futSens').innerHTML=h+'</tbody>';
+}
+
+/* ================= 2-4. OPCIONES ================= */
+const ESTR = {
+  cc:{ n:'Lanzamiento cubierto', etq:'Estrategia 2 · Opciones', lema:'Tengo la mercadería y vendo un call más arriba: cobro una prima a cambio de poner un techo.',
+       pros:['Cobro la prima hoy','Mejora el precio si el mercado queda lateral','Se combina con la mercadería que ya tengo'],
+       contras:['Techo de precio: strike + prima','Solo amortigua bajas por el valor de la prima','Requiere margen por el call vendido'],
+       cuando:'el mercado se espera lateral o con subas moderadas.' },
+  put:{ n:'Compra de put', etq:'Estrategia 3 · Opciones', lema:'Pago una prima para asegurarme un precio mínimo, sin resignar las subas.',
+       pros:['Precio piso asegurado','Conserva todas las subas','No requiere margen ni ajustes diarios'],
+       contras:['Costo de la prima','Si el precio sube, la prima se pierde'],
+       cuando:'hay temor a bajas pero también expectativa de suba.' },
+  bps:{ n:'Bull put spread', etq:'Estrategia 4 · Opciones', lema:'Vendo un put y compro otro más abajo: cobro prima con riesgo acotado.',
+       pros:['Cobro prima neta hoy','Pérdida máxima acotada','Menor margen que un put vendido solo'],
+       contras:['Pierde si el precio cae debajo del put vendido','No protege la mercadería ante bajas fuertes','Ganancia limitada a la prima cobrada'],
+       cuando:'se espera que el precio se mantenga o suba.' }
+};
+
+function strikesDef(clave, o){
+  const F=o.fut, calls=o.calls.map(c=>c[0]), puts=o.puts.map(p=>p[0]);
+  const cerca=(arr,obj)=>arr.reduce((a,b)=>Math.abs(b-obj)<Math.abs(a-obj)?b:a, arr[0]);
+  if(clave==='cc') return {K: calls.length ? cerca(calls.filter(k=>k>=F).length?calls.filter(k=>k>=F):calls, F*1.05) : null};
+  if(clave==='put') return {K: puts.length ? cerca(puts, F*0.95) : null};
+  if(clave==='bps'){ if(puts.length<2) return {K2:null,K1:null};
+    const K2=cerca(puts, F*0.97); const bajos=puts.filter(k=>k<K2); return {K2, K1: bajos.length?cerca(bajos,K2-F*0.06):null}; }
+}
+
+function plantillaOpcion(clave){
+  const e=ESTR[clave];
+  $('p-'+clave).innerHTML = `
+    <div class="tit-pag"><div><div class="etq">${e.etq}</div><h1>${e.n}</h1><div class="lema">${e.lema}</div></div></div>
+    <div class="card mb"><div class="controles">
+      <span class="campo">Posición</span><div class="pills" data-pills="${clave}"></div>
+      <div class="controles" data-strikes="${clave}"></div>
+    </div></div>
+    <div data-aviso="${clave}" class="mb"></div>
+    <div class="grid g5 mb" data-kpis="${clave}"></div>
+    <div class="grid g-chart mb">
+      <div class="card">
+        <div class="chart-cab"><h2>Resultado según el precio al vencimiento</h2>
+          <div class="seg chico" data-vista="${clave}"><button data-v="neto">Precio neto con mercadería</button><button data-v="res">Resultado de las opciones</button></div></div>
+        <div class="leyenda" data-ley="${clave}"></div>
+        <div class="chart-wrap"><svg class="chart" data-chart="${clave}" viewBox="0 0 760 370"></svg><div class="tooltip"></div></div>
+      </div>
+      <div class="card">
+        <div data-alertas="${clave}" style="display:grid;gap:10px;margin-bottom:18px"></div>
+        <div class="pc-tit" style="color:var(--ok)">A favor</div>
+        <ul class="pc pro">${e.pros.map(p=>`<li>${p}</li>`).join('')}</ul>
+        <div class="pc-tit" style="color:var(--rojo);margin-top:18px">En contra</div>
+        <ul class="pc con">${e.contras.map(p=>`<li>${p}</li>`).join('')}</ul>
+        <div class="cuando"><b>Conviene</b> cuando ${e.cuando}</div>
+      </div>
+    </div>
+    <div class="card"><div class="chart-cab"><h2>Análisis de sensibilidad</h2></div><div class="tabla-wrap"><table data-sens="${clave}"></table></div></div>`;
+}
+
+function renderOpcion(clave){
+  const pag=$('p-'+clave), g=DATA[st.grano], posiciones=Object.keys(g.opciones);
+  if(!posiciones.length){ pag.querySelector(`[data-pills="${clave}"]`).innerHTML=''; pag.querySelector(`[data-strikes="${clave}"]`).innerHTML=''; return sinDatos(pag,clave,'No hay opciones con primas para este grano.'); }
+  if(!g.opciones[st.opt[st.grano]]) st.opt[st.grano]=posiciones[0];
+  const pos=st.opt[st.grano], o=g.opciones[pos], F=o.fut, n=N(), mg=MARGEN_TN[st.grano];
+  const T=Math.max((new Date(o.venc+'T12:00:00')-HOY)/(365*864e5), 1/365);
+  const sk=st.grano+'|'+pos+'|'+clave;
+  if(!st.strikes[sk]) st.strikes[sk]=strikesDef(clave,o);
+  const K=st.strikes[sk];
+
+  // Posiciones
+  const pills=pag.querySelector(`[data-pills="${clave}"]`);
+  pills.innerHTML = posiciones.map(p=>`<button class="pill ${p===pos?'on':''}" data-pos="${p}"><b>${posNombre(p)}</b><span>Fut. U$S ${nf1.format(g.opciones[p].fut)}</span></button>`).join('');
+  pills.querySelectorAll('.pill').forEach(b=>b.onclick=()=>{st.opt[st.grano]=b.dataset.pos; renderTodo();});
+
+  // Selectores de strike
+  const opcs=(arr,sel)=>arr.map(([k,p])=>`<option value="${k}" ${k===sel?'selected':''}>${nf0.format(k)} · prima ${nf2.format(p)}</option>`).join('');
+  const box=pag.querySelector(`[data-strikes="${clave}"]`);
+  if(clave==='cc') box.innerHTML=`<label class="campo">Call vendido <select data-k="K">${opcs(o.calls,K.K)}</select></label>`;
+  if(clave==='put') box.innerHTML=`<label class="campo">Put comprado <select data-k="K">${opcs(o.puts,K.K)}</select></label>`;
+  if(clave==='bps') box.innerHTML=`<label class="campo">Put vendido <select data-k="K2">${opcs(o.puts,K.K2)}</select></label><label class="campo">Put comprado <select data-k="K1">${opcs(o.puts,K.K1)}</select></label>`;
+  box.querySelectorAll('select').forEach(s=>s.onchange=e=>{ st.strikes[sk][e.target.dataset.k]=parseFloat(e.target.value); renderOpcion(clave); });
+
+  const aviso=pag.querySelector(`[data-aviso="${clave}"]`); aviso.innerHTML='';
+  const prima=(t,k)=>{ const a=(t==='C'?o.calls:o.puts).find(x=>x[0]===k); return a?a[1]:null; };
+
+  // Patas
+  let legs=[];
+  if(clave==='cc'){ if(K.K==null) return sinDatos(pag,clave,'No hay calls para esta posición.'); legs=[{t:'C',K:K.K,q:-1,p:prima('C',K.K)}]; }
+  if(clave==='put'){ if(K.K==null) return sinDatos(pag,clave,'No hay puts para esta posición.'); legs=[{t:'P',K:K.K,q:1,p:prima('P',K.K)}]; }
+  if(clave==='bps'){
+    if(K.K2==null||K.K1==null) return sinDatos(pag,clave,'Esta posición no tiene dos puts para armar el spread. Elegí otra posición.');
+    if(K.K1>=K.K2) aviso.innerHTML=alerta('mal','!','El put comprado debe tener un strike menor al put vendido.');
+    legs=[{t:'P',K:K.K2,q:-1,p:prima('P',K.K2)},{t:'P',K:K.K1,q:1,p:prima('P',K.K1)}];
+  }
+  legs.forEach(l=>l.iv=iv(l.t,F,l.K,T,l.p));
+  const neta=legs.reduce((a,l)=>a-l.q*l.p,0);            // >0 cobrada, <0 pagada (U$S/tn)
+  const res=S=>legs.reduce((a,l)=>a+l.q*Math.max(l.t==='C'?S-l.K:l.K-S,0),0)+neta;
+  const cortos=legs.some(l=>l.q<0);
+  const mgOpt=cortos?margenOpciones(legs,F,T,mg):0;
+
+  // KPIs
+  let kp='', alertas='', refs=[{x:F,l:'Futuro '+nf0.format(F),c:'#C3A38C'}], be=null;
+  if(clave==='cc'){
+    const c=legs[0].p, Kc=legs[0].K; be=F-c;
+    kp = kpi('Prima cobrada', usd(c*n), `U$S ${nf2.format(c)}/tn`, 'ok')
+       + kpi('Precio máximo', ptn(Kc+c), 'Strike + prima')
+       + kpi('Ganancia máxima', usd((Kc-F+c)*n), 'Si el precio llega al strike', 'ok')
+       + kpi('Break-even', ptn(be), 'Futuro − prima', 'arena')
+       + kpi('Margen estimado', usd(mgOpt*n), 'Por el call vendido', 'rojo');
+    alertas = alerta('warn','⌃',`Techo: por encima de U$S ${nf0.format(Kc)} la suba se cede al comprador del call.`)
+            + alerta('info','↓',`Ante bajas, la prima amortigua U$S ${nf2.format(c)}/tn. No hay piso.`);
+    refs.push({x:Kc,l:'Strike '+nf0.format(Kc),c:'#024627'});
+  }
+  if(clave==='put'){
+    const p=legs[0].p, Kp=legs[0].K; be=Kp-p;
+    kp = kpi('Prima a pagar', usd(p*n), `U$S ${nf2.format(p)}/tn`, 'rojo')
+       + kpi('Precio piso', ptn(Kp-p), 'Strike − prima', 'ok')
+       + kpi('Pérdida máxima', usd(p*n), 'La prima pagada', 'rojo')
+       + kpi('Break-even del put', ptn(be), 'Debajo de este precio, el put gana', 'arena')
+       + kpi('Margen', 'No requiere', 'Comprado: solo se paga la prima', 'ok');
+    alertas = alerta('bien','✓',`Piso asegurado en U$S ${nf2.format(Kp-p)}/tn, con todas las subas a favor.`)
+            + alerta('info','$',`Costo: U$S ${nf2.format(p)}/tn (${nf1.format(p/F*100)}% del precio del futuro).`);
+    refs.push({x:Kp,l:'Strike '+nf0.format(Kp),c:'#024627'});
+  }
+  if(clave==='bps'){
+    const ancho=legs[0].K-legs[1].K; be=legs[0].K-neta;
+    kp = kpi('Prima neta cobrada', usd(neta*n), `U$S ${nf2.format(neta)}/tn`, neta>=0?'ok':'rojo')
+       + kpi('Ganancia máxima', usd(neta*n), `Si el precio queda ≥ ${nf0.format(legs[0].K)}`, 'ok')
+       + kpi('Pérdida máxima', usd((ancho-neta)*n), `Si el precio cae ≤ ${nf0.format(legs[1].K)}`, 'rojo')
+       + kpi('Break-even', ptn(be), 'Put vendido − prima neta', 'arena')
+       + kpi('Margen estimado', usd(mgOpt*n), 'Spread: riesgo acotado');
+    alertas = alerta('bien','✓',`Si el precio se mantiene sobre U$S ${nf0.format(legs[0].K)}, se queda con toda la prima.`)
+            + alerta('mal','!',`Entre ${nf0.format(legs[1].K)} y ${nf0.format(legs[0].K)} pierde; debajo de ${nf0.format(legs[1].K)} la pérdida queda topeada.`);
+    refs.push({x:legs[0].K,l:'Vende '+nf0.format(legs[0].K),c:'#B42318'},{x:legs[1].K,l:'Compra '+nf0.format(legs[1].K),c:'#024627'});
+  }
+  pag.querySelector(`[data-kpis="${clave}"]`).innerHTML=kp;
+  pag.querySelector(`[data-alertas="${clave}"]`).innerHTML=alertas;
+
+  // Gráfico
+  const segV=pag.querySelector(`[data-vista="${clave}"]`);
+  segV.querySelectorAll('button').forEach(b=>{ b.classList.toggle('on',b.dataset.v===st.vista[clave]); b.onclick=()=>{st.vista[clave]=b.dataset.v; renderOpcion(clave);}; });
+  const xs=rangoPrecios(F), svg=pag.querySelector(`[data-chart="${clave}"]`);
+  if(st.vista[clave]==='neto'){
+    const s1={n:'Con '+ESTR[clave].n.toLowerCase(),c:'#024627',ys:xs.map(S=>S+res(S))};
+    const s2={n:'Solo mercadería',c:'#9CA3AF',dash:true,w:2,ys:xs.map(S=>S)};
+    const s3={n:'Futuro vendido',c:'#C3A38C',w:2,ys:xs.map(()=>F)};
+    dibujar(svg,{xs,series:[s1,s2,s3],vRefs:refs,puntos:be!=null?[{x:be,y:be+res(be),c:'#024627'}]:[],fmt:v=>ptn(v)});
+    ley(pag.querySelector(`[data-ley="${clave}"]`),[s1,s2,s3]);
+  } else {
+    const s1={n:'Resultado de las opciones (total)',c:'#024627',ys:xs.map(S=>res(S)*n)};
+    dibujar(svg,{xs,series:[s1],cero:true,vRefs:refs,puntos:be!=null?[{x:be,y:0,c:'#C3A38C'}]:[],fmt:v=>usdS(v)});
+    ley(pag.querySelector(`[data-ley="${clave}"]`),[s1,{n:'Break-even',c:'#C3A38C'}]);
+  }
+
+  // Sensibilidad
+  let h=`<thead><tr><th>Escenario</th><th>Precio al vencimiento</th><th>Resultado opciones U$S/tn</th><th>Resultado opciones total</th><th>Precio neto U$S/tn</th><th>Ingreso total</th><th>vs. sin cobertura</th><th>vs. futuro vendido</th></tr></thead><tbody>`;
+  ESC.forEach(e=>{ const S=F*(1+e/100), r=res(S), neto=S+r;
+    h+=`<tr class="${e===0?'actual':''}"><td>${e>0?'+':''}${e}%</td><td>${nf2.format(S)}</td><td class="${clsN(r)}">${ptnS(r)}</td><td class="${clsN(r)}">${usdS(r*n)}</td><td class="fuerte">${nf2.format(neto)}</td><td>${usd(neto*n)}</td><td class="${clsN(r)}">${usdS(r*n)}</td><td class="${clsN(neto-F)}">${usdS((neto-F)*n)}</td></tr>`; });
+  pag.querySelector(`[data-sens="${clave}"]`).innerHTML=h+'</tbody>';
+}
+function sinDatos(pag,clave,msg){
+  pag.querySelector(`[data-aviso="${clave}"]`).innerHTML=alerta('warn','!',msg);
+  ['kpis','alertas'].forEach(k=>pag.querySelector(`[data-${k}="${clave}"]`).innerHTML='');
+  pag.querySelector(`[data-chart="${clave}"]`).innerHTML=''; pag.querySelector(`[data-sens="${clave}"]`).innerHTML='';
+  pag.querySelector(`[data-ley="${clave}"]`).innerHTML='';
+}
+
+/* ================= 5. SPREAD ARGENTINA–CHICAGO ================= */
+const MARGEN_CHI = {soja:18, maiz:9};
+const sg = v => (v>0?'+':v<0?'−':'')+nf1.format(Math.abs(v));
+Object.assign(st, {alt:'A', par:{soja:'MAY27', maiz:'ABR27'}, spComp:{soja:20, maiz:5}, spChi:{soja:0, maiz:0}});
+const ALT = {
+  A:{ pros:['Cubre la baja del precio internacional','Captura la mejora local si bajan las retenciones','Usa la mercadería que ya tengo: un solo margen'],
+      contras:['Si el spread se amplía, el precio neto empeora','Ajustes diarios si sube Chicago','Contratos chicos: 20 por cada 100 tn'],
+      cuando:'hay mercadería y se espera una baja de retenciones.' },
+  B:{ pros:['Neutral a Chicago: solo juega el spread','No requiere tener mercadería','Ganancia directa por cada U$S de compresión'],
+      contras:['Margen en las dos patas','Pierde si el spread se amplía','Ajustes diarios en ambas posiciones'],
+      cuando:'se quiere tomar la visión de retenciones sin exposición al precio.' }
+};
+function renderSpread(){
+  const g=DATA[st.grano], pares=g.pares, gr=st.grano;
+  if(!pares.length){ $('spPills').innerHTML=''; $('spArmado').innerHTML=alerta('warn','!','No hay pares Rosario–Chicago con precio para este grano.'); ['spKpis','spEsc','spSens','spLey','spPc'].forEach(id=>$(id).innerHTML=''); $('spChart').innerHTML=''; return; }
+  if(!pares.find(p=>p.ros===st.par[gr])) st.par[gr]=pares[0].ros;
+  const p=pares.find(x=>x.ros===st.par[gr]), alt=st.alt;
+  const R0=p.rosPrecio, C0=p.chiPrecio, sp=R0-C0, tn=N(), nChi=tn/5;
+  const comp=st.spComp[gr], dC=st.spChi[gr], C1=C0+dC, R1=R0+dC+comp;
+  const mR=MARGEN_TN[gr], mC=MARGEN_CHI[gr], grano=gr==='soja'?'Soja':'Maíz';
+
+  document.querySelectorAll('#segAlt button').forEach(b=>b.classList.toggle('on',b.dataset.a===alt));
+  $('spPills').innerHTML = pares.map(x=>`<button class="pill ${x.ros===p.ros?'on':''}" data-r="${x.ros}"><b>${posNombre(x.ros)}</b><span>${nf1.format(x.rosPrecio-x.chiPrecio)} U$S/tn</span></button>`).join('');
+  $('spPills').querySelectorAll('.pill').forEach(b=>b.onclick=()=>{st.par[gr]=b.dataset.r; renderSpread();});
+
+  ['spComp','spCompN'].forEach(id=>$(id).value=comp);
+  ['spChi','spChiN'].forEach(id=>$(id).value=dC);
+
+  const pata=(tag,col,tit,det,precio)=>`<div style="border:1.5px solid ${col};border-radius:12px;padding:14px">
+      <div class="campo" style="color:${col}">${tag}</div><div style="font-size:19px;font-weight:700;margin-top:4px">${tit}</div>
+      <div style="font-size:15px;color:var(--gris-2)">${det}</div><div style="font-size:24px;font-weight:700;color:var(--verde);margin-top:6px">${precio}</div></div>`;
+  $('spArmado').innerHTML = `<div class="chart-cab"><h2>Cómo se arma</h2></div>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center">
+      ${alt==='A' ? pata('Argentina · comprado','#027A48','Mercadería física',`${nf0.format(tn)} tn en poder de Luga`,ptn(R0)+' <span style="font-size:14px;color:var(--gris-2)">ref. Rosario '+posNombre(p.ros)+'</span>')
+                  : pata('Argentina · compra','#027A48',`${grano} Rosario ${posNombre(p.ros)}`,`${st.contratos} contrato${st.contratos>1?'s':''} × ${st.tnc} tn`,ptn(R0))}
+      <div style="text-align:center"><div class="campo" style="justify-content:center">Spread</div><div style="font-size:26px;font-weight:700;color:${sp<0?'var(--rojo)':'var(--ok)'}">${nf1.format(sp)}</div><div style="font-size:13.5px;color:var(--gris-2)">${nf1.format((R0/C0-1)*100)}% vs Chicago</div></div>
+      ${pata('Chicago · venta','#B42318',`${grano} Chicago ${posNombre(p.chi)}`,`${nf0.format(nChi)} contratos × 5 tn`,ptn(C0))}
+    </div>
+    <div style="margin-top:12px">${alerta('info','i',`Chicago ${posNombre(p.chi)} de A3 replica CBOT ${posNombre(p.cbot)} y vence antes (${fechaCorta(p.chiVenc)}). Por eso el mes no coincide con Rosario.`)}</div>`;
+
+  $('spEsc').innerHTML = kpi('Chicago', ptn(C1), `${sg(dC)}`,'rojo') + kpi('Rosario', ptn(R1), `${sg(dC+comp)}`,'ok') + kpi('Spread final', nf1.format(R1-C1), `${comp>=0?'se comprime':'se amplía'} ${nf1.format(Math.abs(comp))}`,'arena');
+
+  const resChi=-dC*tn, resRos=(R1-R0)*tn, tot=comp*tn;
+  if(alt==='A'){
+    $('spKpis').innerHTML = kpi('Spread actual', nf1.format(sp)+' <span style="font-size:15px;color:var(--gris-2)">U$S/tn</span>', `Rosario − Chicago`)
+      + kpi('Precio neto obtenido', ptn(R0+comp), 'Rosario hoy + compresión', 'ok')
+      + kpi('vs. vender Rosario hoy', `<span class="${clsN(tot)}">${usdS(tot)}</span>`, `U$S ${nf0.format(tn)} por cada U$S 1 de compresión`, tot>=0?'ok':'rojo')
+      + kpi('Resultado futuros Chicago', `<span class="${clsN(resChi)}">${usdS(resChi)}</span>`, 'Compensa el cambio de Chicago', 'arena')
+      + kpi('Margen requerido', usd(mC*tn), `Chicago U$S ${mC}/tn`, 'rojo');
+  } else {
+    $('spKpis').innerHTML = kpi('Spread actual', nf1.format(sp)+' <span style="font-size:15px;color:var(--gris-2)">U$S/tn</span>', 'Rosario − Chicago')
+      + kpi('Resultado Rosario (comprado)', `<span class="${clsN(resRos)}">${usdS(resRos)}</span>`, `${sg(R1-R0)} U$S/tn`, 'ok')
+      + kpi('Resultado Chicago (vendido)', `<span class="${clsN(resChi)}">${usdS(resChi)}</span>`, `${sg(-dC)} U$S/tn`, 'rojo')
+      + kpi('Resultado total', `<span class="${clsN(tot)}">${usdS(tot)}</span>`, `Compresión × ${nf0.format(tn)} tn`, tot>=0?'ok':'rojo')
+      + kpi('Margen requerido', usd((mR+mC)*tn), `Rosario ${mR} + Chicago ${mC} U$S/tn`, 'rojo');
+  }
+
+  const xs=[]; for(let x=-40;x<=40;x+=1) xs.push(x);
+  const refs=[{x:0,l:'Hoy',c:'#9CA3AF'}]; if(comp!==0) refs.push({x:comp,l:'Escenario',c:'#C3A38C'});
+  const xTip=x=>`Compresión: <b>${x>=0?'+':''}${x} U$S/tn</b>`, xLabel='COMPRESIÓN DEL SPREAD (U$S/tn) · NEGATIVO = SE AMPLÍA';
+  if(alt==='A'){
+    $('spChartTit').textContent='Precio neto obtenido según el spread';
+    const s1={n:'Vender Chicago (con mercadería)',c:'#024627',ys:xs.map(x=>R0+x)}, s2={n:'Vender Rosario hoy',c:'#C3A38C',w:2,ys:xs.map(()=>R0)};
+    dibujar($('spChart'),{xs,series:[s1,s2],vRefs:refs,puntos:[{x:comp,y:R0+comp,c:'#024627'}],fmt:v=>ptn(v),xLabel,xTip});
+    ley($('spLey'),[s1,s2]);
+  } else {
+    $('spChartTit').textContent='Resultado total según el spread';
+    const s1={n:'Resultado total',c:'#024627',ys:xs.map(x=>x*tn)};
+    dibujar($('spChart'),{xs,series:[s1],cero:true,vRefs:refs,puntos:[{x:comp,y:comp*tn,c:'#024627'}],fmt:v=>usdS(v),xLabel,xTip});
+    ley($('spLey'),[s1]);
+  }
+
+  const a=ALT[alt];
+  $('spPc').innerHTML = `<div class="pc-tit" style="color:var(--ok)">A favor</div><ul class="pc pro">${a.pros.map(x=>`<li>${x}</li>`).join('')}</ul>
+    <div class="pc-tit" style="color:var(--rojo);margin-top:18px">En contra</div><ul class="pc con">${a.contras.map(x=>`<li>${x}</li>`).join('')}</ul>
+    <div class="cuando"><b>Conviene</b> cuando ${a.cuando}</div>`;
+
+  const comps=[-30,-20,-10,0,10,20,30], chis=[-15,-5,0,5,15];
+  $('spSensSub').textContent = alt==='A' ? 'Precio neto U$S/tn · columnas: variación de Chicago' : 'Resultado total · columnas: variación de Chicago';
+  let h=`<thead><tr><th>Compresión</th><th>Spread final</th>${chis.map(c=>`<th>Chicago ${c>0?'+':''}${c}%</th>`).join('')}<th>${alt==='A'?'vs. vender Rosario':'U$S/tn'}</th></tr></thead><tbody>`;
+  comps.forEach(c=>{
+    const celdas=chis.map(pc=>{ const d=C0*pc/100; return alt==='A' ? `<td class="fuerte">${nf2.format(R0+d+c-d)}</td>` : `<td class="${clsN(c)}">${usdS(c*tn)}</td>`; }).join('');
+    h+=`<tr class="${c===0?'actual':''}"><td>${c>0?'+':''}${c}</td><td>${nf1.format(sp+c)}</td>${celdas}<td class="${clsN(c)}">${alt==='A'?usdS(c*tn):ptnS(c)}</td></tr>`;
+  });
+  $('spSens').innerHTML=h+'</tbody>';
+}
+$('segAlt').querySelectorAll('button').forEach(b=>b.onclick=()=>{st.alt=b.dataset.a; renderSpread();});
+[['spComp','spComp'],['spCompN','spComp'],['spChi','spChi'],['spChiN','spChi']].forEach(([id,k])=>$(id).addEventListener('input',e=>{ st[k][st.grano]=parseFloat(e.target.value)||0; renderSpread(); }));
+
+/* ================= 6. CALCULADORA ================= */
+const Calc=(function(){
+  const CONTRATOS = {
+    soja_ros:{n:'Soja Rosario',tn:100,m:17}, soja_mini:{n:'Soja Mini',tn:10,m:17}, soja_chicago:{n:'Soja Chicago',tn:5,m:18},
+    maiz_ros:{n:'Maíz Rosario',tn:100,m:8}, maiz_mini:{n:'Maíz Mini',tn:10,m:8}, maiz_chicago:{n:'Maíz Chicago',tn:5,m:9},
+    trigo_ros:{n:'Trigo Rosario',tn:100,m:16}, trigo_mini:{n:'Trigo Mini',tn:10,m:16}
+  };
+  const ACTIVOS = [
+    {n:'Efectivo',a:100,mon:'USD',monto:0},{n:'FCI Money Market',a:100,mon:'USD',monto:0},{n:'FCI Renta Fija',a:95,mon:'USD',monto:0},
+    {n:'FCI Renta Mixta',a:85,mon:'USD',monto:0},{n:'FCI Renta Variable',a:75,mon:'USD',monto:0},{n:'Títulos Públicos',a:70,mon:'USD',monto:0},
+    {n:'CEDEARs',a:65,mon:'USD',monto:0},{n:'Acciones',a:60,mon:'USD',monto:0},{n:'ONs Tier 1 (YPF, Pampa, Arcor, PAE)',a:60,mon:'USD',monto:0},
+    {n:'ONs Tier 2 (otras)',a:40,mon:'USD',monto:0},{n:'Cheques / ECHEQs',a:0,mon:'ARS',monto:0}
+  ];
+  let uid=1, pos=[{id:uid++,c:'soja_ros',s:'Vendido',q:10,m:17},{id:uid++,c:'maiz_ros',s:'Vendido',q:10,m:8}];
+  const ars=v=>'$ '+nf0.format(Math.round(v||0)), u=v=>'U$S '+nf0.format(Math.round(v||0));
+  function renderPos(){
+    const tb=$('tPos').querySelector('tbody'); tb.innerHTML='';
+    pos.forEach(p=>{ const tr=document.createElement('tr'); tr.dataset.id=p.id;
+      tr.innerHTML=`<td><select class="c">${Object.entries(CONTRATOS).map(([k,c])=>`<option value="${k}" ${k===p.c?'selected':''}>${c.n} (${c.tn} tn)</option>`).join('')}</select></td>
+        <td style="text-align:left"><select class="s"><option ${p.s==='Vendido'?'selected':''}>Vendido</option><option ${p.s==='Comprado'?'selected':''}>Comprado</option></select></td>
+        <td><input class="q corto" type="number" min="0" step="1" value="${p.q}"></td><td class="tn"></td>
+        <td><input class="m corto" type="number" min="0" step="0.5" value="${p.m}"></td><td class="fuerte sub"></td>
+        <td><button class="quitar" type="button">×</button></td>`;
+      tr.querySelector('.c').onchange=e=>{p.c=e.target.value;p.m=CONTRATOS[p.c].m;tr.querySelector('.m').value=p.m;calc();};
+      tr.querySelector('.s').onchange=e=>{p.s=e.target.value;};
+      tr.querySelector('.q').oninput=e=>{p.q=val(e.target.value);calc();};
+      tr.querySelector('.m').oninput=e=>{p.m=val(e.target.value);calc();};
+      tr.querySelector('.quitar').onclick=()=>{pos=pos.filter(x=>x.id!==p.id);renderPos();calc();};
+      tb.appendChild(tr); });
+  }
+  function renderAct(){
+    const tb=$('tAct').querySelector('tbody'); tb.innerHTML='';
+    ACTIVOS.forEach((a,i)=>{ const tr=document.createElement('tr'); tr.dataset.i=i;
+      tr.innerHTML=`<td class="fuerte">${a.n}</td><td>${a.a>0?`<span class="barra"><span style="width:${a.a}%"></span></span>${a.a}%`:'<span class="no">No afora</span>'}</td>
+        <td style="text-align:left"><select class="mon"><option value="USD" ${a.mon==='USD'?'selected':''}>U$S</option><option value="ARS" ${a.mon==='ARS'?'selected':''}>Pesos</option></select></td>
+        <td><input class="monto" type="number" min="0" step="100" value="" placeholder="0"></td><td class="val"></td><td class="fuerte comp"></td>`;
+      tr.querySelector('.mon').onchange=e=>{a.mon=e.target.value;calc();};
+      tr.querySelector('.monto').oninput=e=>{a.monto=val(e.target.value);calc();};
+      tb.appendChild(tr); });
+  }
+  function calc(){
+    const tc=val($('tc').value); let tn=0,req=0;
+    pos.forEach(p=>{ const c=CONTRATOS[p.c], t=p.q*c.tn, s=t*p.m; tn+=t; req+=s;
+      const tr=document.querySelector(`#tPos tr[data-id="${p.id}"]`); tr.querySelector('.tn').textContent=nf0.format(t)+' tn'; tr.querySelector('.sub').textContent=nf0.format(Math.round(s)); });
+    $('totTn').textContent=nf0.format(tn)+' tn'; $('totReq').textContent=u(req);
+    let vt=0,gar=0;
+    ACTIVOS.forEach((a,i)=>{ const x=a.mon==='ARS'?(tc>0?a.monto/tc:0):a.monto, c=x*a.a/100; vt+=x; gar+=c;
+      const tr=document.querySelector(`#tAct tr[data-i="${i}"]`); tr.querySelector('.val').textContent=x?nf0.format(Math.round(x)):'—'; tr.querySelector('.comp').textContent=x?nf0.format(Math.round(c)):'—'; });
+    $('totVal').textContent=u(vt); $('totComp').textContent=u(gar);
+    $('kReq').textContent=u(req); $('kReqA').textContent=ars(req*tc); $('kGar').textContent=u(gar); $('kGarA').textContent=ars(gar*tc);
+    const est=$('estado');
+    if(req<=0){ $('kCob').textContent='—'; $('rel').style.width='0'; est.className='estado vacio'; $('eT').textContent='Sin posiciones'; $('eD').textContent='Agregá contratos para calcular el margen.'; return; }
+    const cob=gar/req*100; $('kCob').textContent=nf1.format(cob)+'%'; $('rel').style.width=Math.min(cob,150)/150*100+'%';
+    const dif=gar-req;
+    if(dif>=0){ const ref=100*(pos.find(p=>p.c==='soja_ros')?.m??17); est.className='estado ok'; $('eT').textContent='✓ Margen cubierto';
+      $('eD').textContent=`Excedente ${u(dif)} (${ars(dif*tc)}). Alcanza para ${nf0.format(Math.floor(dif/ref))} contratos más de Soja Rosario.`; }
+    else { est.className='estado falta'; $('eT').textContent=`Faltan ${u(-dif)}`; $('eD').textContent=`${ars(-dif*tc)} de garantía computable para cubrir el margen.`; }
+  }
+  $('addPos').onclick=()=>{pos.push({id:uid++,c:'soja_ros',s:'Vendido',q:1,m:17});renderPos();calc();};
+  $('tc').oninput=calc;
+  renderPos(); renderAct(); calc();
+})();
+
+/* ================= Navegación ================= */
+function renderTodo(){
+  renderFuturos(); ['cc','put','bps'].forEach(renderOpcion); renderSpread();
+}
+document.querySelectorAll('#tabs .tab').forEach(b=>b.onclick=()=>{
+  st.tab=b.dataset.tab;
+  document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.pagina').forEach(p=>p.classList.toggle('on',p.id==='p-'+st.tab));
+  $('globales').style.visibility = st.tab==='calc' ? 'hidden' : 'visible';
+  renderTodo(); window.scrollTo({top:0});
+});
+document.querySelectorAll('#segGrano button').forEach(b=>b.onclick=()=>{
+  st.grano=b.dataset.g; document.querySelectorAll('#segGrano button').forEach(x=>x.classList.toggle('on',x===b)); renderTodo();
+});
+document.querySelector('[data-vista="futuros"]').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  st.vista.futuros=b.dataset.v; b.parentElement.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); renderFuturos();
+});
+$('gContratos').oninput=e=>{ st.contratos=Math.max(1,Math.round(val(e.target.value))||1); renderTodo(); };
+$('gTn').onchange=e=>{ st.tnc=+e.target.value; renderTodo(); };
+$('fechaDatos').textContent=DATA.fecha;
+['cc','put','bps'].forEach(plantillaOpcion);
+renderTodo();
+</script>
+</body>
+</html>
