@@ -634,20 +634,32 @@ canvas { max-height: 100%; }
   </div>
 </div>
 <div class="tabs">
+  <!-- Orden: primero los mercados, después las herramientas de análisis.
+       Sin emoji a propósito: iban dentro del texto y corrían la etiqueta una
+       cantidad distinta en cada pestaña (🇺🇸 ocupa casi el doble que ⚙), así
+       que ninguna arrancaba a la misma altura que la de al lado. -->
   <div class="tab active" onclick="showTab('soj-fut')">Futuros Soja</div>
   <div class="tab" onclick="showTab('mai-fut')">Futuros Maíz</div>
   <div class="tab" onclick="showTab('tri-fut')">Futuros Trigo</div>
-  <div class="tab cot-tab" onclick="showTab('posicion-fondos')">📊 Posición Fondos</div>
   <div class="tab" onclick="showTab('girasol-mani')">Girasol y Maní</div>
+  <div class="tab" onclick="showTab('precios');buildPreciosPanel()">Precios en vivo</div>
   <div class="tab" onclick="showTab('opciones')">Opciones</div>
-  <div class="tab estrategia-tab" onclick="showTab('estrategia')">⚙ Estrategia</div>
-  <div class="tab fin-tab" onclick="showTab('financiamiento')">💰 Matriz de decisión</div>
-  <div class="tab ip-tab" onclick="showTab('insumo-producto')">🌱 Insumo-Producto</div>
-  <div class="tab" onclick="showTab('noticias')">📰 Noticias</div>
-  <div class="tab" onclick="showTab('brief-granos')">🌾 Brief Granos</div>
-  <div class="tab usda-tab" onclick="showTab('usda')">🇺🇸 USDA</div>
-        <div class="tab" onclick="showTab('precios');buildPreciosPanel()">💵 Precios en vivo</div>
-  <div class="tab ds-tab" onclick="showTab('deuda-stock')">💳 Deuda/Stock</div>
+  <div class="tab estrategia-tab" onclick="showTab('estrategia')">Estrategia</div>
+  <div class="tab fin-tab" onclick="showTab('financiamiento')">Matriz de decisión</div>
+  <div class="tab ip-tab" onclick="showTab('insumo-producto')">Insumo-Producto</div>
+  <div class="tab" onclick="showTab('brief-granos')">Brief Granos</div>
+  <div class="tab cot-tab" onclick="showTab('posicion-fondos')">Posición Fondos</div>
+  <div class="tab usda-tab" onclick="showTab('usda')">USDA</div>
+
+  <!-- ══ PESTAÑAS DESACTIVADAS ══
+       No están borradas: el panel, los datos y las automatizaciones que los
+       alimentan siguen intactos. Solo se les sacó el lugar en la barra.
+       Para volver a activar una, borrale la clase "tab-oculta" y listo.
+       También se pueden abrir a mano desde la consola del navegador con
+       showTab('noticias') o showTab('deuda-stock'). -->
+  <div class="tab tab-oculta" onclick="showTab('noticias')">Noticias</div>
+  <div class="tab ds-tab tab-oculta" onclick="showTab('deuda-stock')">Deuda/Stock</div>
+
   </div>
 <div class="content">
   <div class="panel" id="panel-noticias">
