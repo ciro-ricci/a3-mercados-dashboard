@@ -15,6 +15,14 @@
 </script>
 <html lang="es">
 <head>
+<script>
+/* El widget de Identity, apenas carga, lee el token del hash (#invite_token,
+   #recovery_token, #confirmation_token), lo consume y deja la URL en "/#".
+   Si preguntamos por el token más tarde ya no está, y la página cree que es
+   una visita normal: por eso el invitado terminaba en la landing con el
+   token quemado. Este marcador se toma antes que nada y no se borra. */
+window.__IDENTITY_TOKEN = /(?:confirmation|invite|recovery)_token=/.test(location.hash);
+</script>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12508,16 +12516,35 @@ function drawIpChart(crop, ins){
     if(g) g.remove();
   }
   if(window.netlifyIdentity){
+    // Con token (invitación o recuperación de clave) no mostramos ni la
+    // landing ni el dashboard: solo el diálogo del widget, para que el
+    // usuario pueda crear su contraseña sin nada encima.
+    var conToken = window.__IDENTITY_TOKEN === true;
+
     netlifyIdentity.on('init', function(user){
-      if(!user && !hasAuthToken()){ showGate(); }
-      else{ window._initDeviceFlow&&window._initDeviceFlow(); }
+      if(user){ window._initDeviceFlow&&window._initDeviceFlow(); return; }
+      if(conToken){
+        // El widget abre solo el diálogo que corresponde al tipo de token.
+        // Si el usuario lo cierra sin terminar, cae a la landing.
+        netlifyIdentity.on('close', function(){
+          if(!netlifyIdentity.currentUser()) showGate();
+        });
+        return;
+      }
+      showGate();
     });
     netlifyIdentity.on('login', function(){ hideGate(); netlifyIdentity.close(); window._initDeviceFlow&&window._initDeviceFlow(); });
     netlifyIdentity.on('logout', function(){
       document.getElementById('splash-overlay')?.remove();
       showGate();
     });
-    netlifyIdentity.init();
+
+    /* NO llamar a init() a ciegas: el widget ya se inicializa solo al cargar
+       el script. Llamarlo de nuevo creaba un SEGUNDO iframe a pantalla
+       completa y vacío, encima de todo, que no se veía pero bloqueaba cada
+       click — el "no me deja tocar nada". El de verdad quedaba con altura 0.
+       currentUser() devuelve undefined solo si todavía no arrancó. */
+    if (typeof netlifyIdentity.currentUser() === 'undefined') netlifyIdentity.init();
   } else {
     // Netlify Identity no disponible (ej. entorno local) — no bloquear el acceso
     window._initDeviceFlow&&window._initDeviceFlow();
