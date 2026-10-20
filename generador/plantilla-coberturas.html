@@ -205,7 +205,7 @@
         <button class="tab" data-tab="calc"><span class="n">6</span>Márgenes y aforos</button>
       </nav>
       <div class="globales" id="globales">
-        <div class="seg" id="segGrano"><button data-g="soja" class="on">Soja</button><button data-g="maiz">Maíz</button></div>
+        <div class="seg" id="segGrano"><button data-g="soja" class="on">Soja</button><button data-g="maiz">Maíz</button><button data-g="trigo">Trigo</button></div>
         <label class="campo">Toneladas <input type="number" id="gToneladas" class="corto" style="width:90px" value="1" min="1" step="1"></label>
       </div>
     </div>
@@ -368,7 +368,7 @@
 
 <script>
 const DATA = /*DATA*/;
-const MARGEN_TN = {soja:17, maiz:8};
+const MARGEN_TN = {soja:17, maiz:8, trigo:16};
 const HOY = new Date(DATA.fechaISO+'T12:00:00');
 
 /* ================= Utilidades ================= */
@@ -417,8 +417,8 @@ function margenOpciones(legs,F,T,rango){
 /* ================= Estado ================= */
 const st = {
   grano:'soja', tab:'resumen', tn:1,
-  fut:{soja:'MAY27', maiz:'ABR27'},
-  opt:{soja:'MAY27', maiz:'ABR27'},
+  fut:{soja:'MAY27', maiz:'ABR27', trigo:'ENE27'},
+  opt:{soja:'MAY27', maiz:'ABR27', trigo:'DIC26'},
   strikes:{},           // por estrategia y grano+posición
   vista:{futuros:'neto', cc:'neto', put:'neto', bps:'res'},
   dias:[5,3,-6,8,-4]
@@ -706,9 +706,9 @@ function sinDatos(pag,clave,msg){
 }
 
 /* ================= 5. SPREAD ARGENTINA–CHICAGO ================= */
-const MARGEN_CHI = {soja:18, maiz:9};
+const MARGEN_CHI = {soja:18, maiz:9, trigo:null};
 const sg = v => (v>0?'+':v<0?'−':'')+nf1.format(Math.abs(v));
-Object.assign(st, {alt:'A', par:{soja:'MAY27', maiz:'ABR27'}, spComp:{soja:20, maiz:5}, spChi:{soja:0, maiz:0}});
+Object.assign(st, {alt:'A', par:{soja:'MAY27', maiz:'ABR27', trigo:null}, spComp:{soja:20, maiz:5, trigo:0}, spChi:{soja:0, maiz:0, trigo:0}});
 const ALT = {
   A:{ pros:['Cubre la baja del precio internacional','Captura la mejora local si bajan las retenciones','Usa la mercadería que ya tengo: un solo margen'],
       contras:['Si el spread se amplía, el precio neto empeora','Ajustes diarios si sube Chicago','Contratos chicos: 20 por cada 100 tn'],
@@ -719,7 +719,7 @@ const ALT = {
 };
 function renderSpread(){
   const g=DATA[st.grano], pares=g.pares, gr=st.grano;
-  if(!pares.length){ $('spPills').innerHTML=''; $('spArmado').innerHTML=alerta('warn','!','No hay pares Rosario–Chicago con precio para este grano.'); ['spKpis','spEsc','spSens','spLey','spPc'].forEach(id=>$(id).innerHTML=''); $('spChart').innerHTML=''; return; }
+  if(!pares.length){ $('spPills').innerHTML=''; $('spArmado').innerHTML=alerta('warn','!',(st.grano==='trigo' ? 'A3 no lista contrato de trigo Chicago, así que este grano no tiene spread Rosario–Chicago. Para soja y maíz sí aparece.' : 'No hay pares Rosario–Chicago con precio para este grano.')); ['spKpis','spEsc','spSens','spLey','spPc'].forEach(id=>$(id).innerHTML=''); $('spChart').innerHTML=''; return; }
   if(!pares.find(p=>p.ros===st.par[gr])) st.par[gr]=pares[0].ros;
   const p=pares.find(x=>x.ros===st.par[gr]), alt=st.alt;
   const R0=p.rosPrecio, C0=p.chiPrecio, sp=R0-C0, tn=N(), nChi=tn/5;
@@ -879,7 +879,7 @@ function metricasOpcion(clave){
   return {pos,F,legs,neta,mgOpt};
 }
 function renderResumen(){
-  const gr=st.grano, g=DATA[gr], n=N(), grano=gr==='soja'?'Soja':'Maíz';
+  const gr=st.grano, g=DATA[gr], n=N(), grano={soja:'Soja',maiz:'Maíz',trigo:'Trigo'}[gr]||gr;
   $('resLema').textContent=`${grano} · ${nf0.format(n)} tn · precios A3 al ${DATA.fecha}`;
   const val=(v,d)=>`<div class="rs-v">${v}</div>${d?`<div class="rs-d">${d}</div>`:''}`;
   const tagP=(neta)=>neta>0.005?`<div class="rs-v pos">${usd(neta*n)}</div><span class="rs-tag cobra">Cobrás</span><div class="rs-d">U$S ${nf2.format(neta)}/tn</div>`
