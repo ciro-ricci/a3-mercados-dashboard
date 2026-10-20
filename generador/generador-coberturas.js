@@ -41,22 +41,22 @@
     const C={c:col('Contrato'),v:col('Fecha de Vencimiento'),t:col('Tipo de Instrumento'),p:col('Ajuste/Valor teórico'),f:col('Fecha de Datos')};
 
     let fechaISO=null;
-    const out={soja:{futuros:[],opciones:{},chicago:[],pares:[]}, maiz:{futuros:[],opciones:{},chicago:[],pares:[]}};
+    const out={soja:{futuros:[],opciones:{},chicago:[],pares:[]}, maiz:{futuros:[],opciones:{},chicago:[],pares:[]}, trigo:{futuros:[],opciones:{},chicago:[],pares:[]}};
     const opts={};
     filas.forEach(f=>{
-      const c=f[C.c]||''; const g=/^SOJ\.ROS\/|^SOY\.CME\//.test(c)?'soja':/^MAI\.ROS\/|^CRN\.CME\//.test(c)?'maiz':null;
+      const c=f[C.c]||''; const g=/^SOJ\.ROS\/|^SOY\.CME\//.test(c)?'soja':/^MAI\.ROS\/|^CRN\.CME\//.test(c)?'maiz':/^TRI\.ROS\//.test(c)?'trigo':null;
       if(!g) return;
       const fd=isoFecha(f[C.f]); if(fd && (!fechaISO||fd>fechaISO)) fechaISO=fd;
       const venc=isoFecha(f[C.v]), precio=num(f[C.p]), tipo=f[C.t];
       if(!venc||precio==null||precio<=0) return;
       let m;
-      if(tipo==='Futuro' && (m=c.match(/^(?:SOJ|MAI)\.ROS\/([A-Z]{3}\d\d)$/))) out[g].futuros.push({pos:m[1],venc,precio});
+      if(tipo==='Futuro' && (m=c.match(/^(?:SOJ|MAI|TRI)\.ROS\/([A-Z]{3}\d\d)$/))) out[g].futuros.push({pos:m[1],venc,precio});
       else if(tipo==='Futuro' && (m=c.match(/^(?:SOY|CRN)\.CME\/([A-Z]{3}\d\d)$/))){
         const i=idxMes(m[1]); if(i==null) return;
         const ci=i+1;   // cada posición Chicago de A3 replica el contrato CBOT del mes siguiente
         out[g].chicago.push({pos:m[1],venc,precio,cbot:MESES[ci%12]+String(Math.floor(ci/12)).padStart(2,'0'),cbotIdx:ci});
       }
-      else if(tipo==='Opción' && (m=c.match(/^(?:SOJ|MAI)\.ROS\/([A-Z]{3}\d\d) ([\d.]+) ([PC])$/))){
+      else if(tipo==='Opción' && (m=c.match(/^(?:SOJ|MAI|TRI)\.ROS\/([A-Z]{3}\d\d) ([\d.]+) ([PC])$/))){
         const k=g+'|'+m[1]; opts[k]=opts[k]||{g,pos:m[1],venc,calls:[],puts:[]};
         opts[k][m[3]==='C'?'calls':'puts'].push([parseFloat(m[2]),precio]);
       }
@@ -66,7 +66,7 @@
     const limite=new Date(fechaISO+'T12:00:00'); limite.setDate(limite.getDate()+7);
     const vigente=v=>new Date(v+'T12:00:00')>limite;
 
-    ['soja','maiz'].forEach(g=>{
+    ['soja','maiz','trigo'].forEach(g=>{
       const d=out[g];
       d.futuros=d.futuros.filter(f=>vigente(f.venc)).sort((a,b)=>a.venc.localeCompare(b.venc));
       d.chicago=d.chicago.filter(c=>vigente(c.venc)).sort((a,b)=>a.venc.localeCompare(b.venc));
@@ -103,7 +103,7 @@
       if(!rA3.ok) throw new Error('No se pudo leer la hoja de A3 ('+rA3.status+').');
       if(!rPl.ok) throw new Error('No se encontró la plantilla ('+rPl.status+').');
       const datos=armarDatos(await rA3.text());
-      if(!datos.soja.futuros.length && !datos.maiz.futuros.length) throw new Error('La hoja de A3 no trae futuros de soja ni maíz.');
+      if(!datos.soja.futuros.length && !datos.maiz.futuros.length && !datos.trigo.futuros.length) throw new Error('La hoja de A3 no trae futuros de soja, maíz ni trigo.');
       let html=await rPl.text();
       if(!html.includes('/*DATA*/')) throw new Error('La plantilla no tiene el marcador de datos.');
       html=html.replace('/*DATA*/',()=>JSON.stringify(datos)).split('{{CLIENTE}}').join(escHTML(cliente));
@@ -122,7 +122,7 @@
       <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center">
         <div>
           <h3 style="margin:0 0 4px">📄 Generar HTML para cliente</h3>
-          <div style="color:#666;font-size:0.85rem">Futuros, lanzamiento cubierto, compra de put, bull put spread, spread Argentina–Chicago y calculadora de márgenes, con los precios de A3 de hoy.</div>
+          <div style="color:#666;font-size:0.85rem">Soja, maíz y trigo: futuros, lanzamiento cubierto, compra de put, bull put spread y calculadora de márgenes, con los precios de A3 de hoy. El spread Argentina–Chicago sale en soja y maíz, los únicos con contrato Chicago en A3.</div>
         </div>
         <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
           <div class="strat-field"><label>Cliente</label><input id="gencob-cliente" class="strat-select" type="text" placeholder="Ej.: Luga Agronegocios" style="min-width:220px" onkeydown="if(event.key==='Enter')generarHTMLCliente()"></div>
