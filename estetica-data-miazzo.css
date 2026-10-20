@@ -73,11 +73,18 @@ body .tab.estrategia-tab, body .tab.lecap-tab, body .tab.fin-tab, body .tab.ip-t
 body .tab.cot-tab, body .tab.usda-tab, body .tab.ds-tab{
   color:var(--dm-gris-2);
   font-weight:600;
-  font-size:.92rem;
-  letter-spacing:.02em;
+  /* Sin letter-spacing: en una barra de 12 items el espaciado extra se lee
+     como letras sueltas. Y el padding baja de 20 a 13 px para que la barra
+     entre completa en una pantalla normal, sin scroll horizontal. */
+  font-size:.86rem;
+  letter-spacing:0;
+  padding:11px 13px;
   border-bottom:3px solid transparent;
   background:transparent;
 }
+/* Pestanas desactivadas: siguen en el HTML y sus paneles andan, pero no
+   ocupan lugar en la barra. Para reactivar una, sacarle la clase. */
+body .tab.tab-oculta{display:none;}
 body .tab:hover,
 body .tab.estrategia-tab:hover, body .tab.fin-tab:hover, body .tab.ip-tab:hover,
 body .tab.cot-tab:hover, body .tab.usda-tab:hover, body .tab.ds-tab:hover{color:var(--dm-verde);background:var(--dm-verde-5);}
