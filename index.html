@@ -12521,7 +12521,10 @@ function drawIpChart(crop, ins){
     // usuario pueda crear su contraseña sin nada encima.
     var conToken = window.__IDENTITY_TOKEN === true;
 
-    netlifyIdentity.on('init', function(user){
+    var yaArranco = false;
+    function arranque(user){
+      if(yaArranco) return;
+      yaArranco = true;
       if(user){ window._initDeviceFlow&&window._initDeviceFlow(); return; }
       if(conToken){
         // El widget abre solo el diálogo que corresponde al tipo de token.
@@ -12532,19 +12535,23 @@ function drawIpChart(crop, ins){
         return;
       }
       showGate();
-    });
+    }
+    netlifyIdentity.on('init', arranque);
     netlifyIdentity.on('login', function(){ hideGate(); netlifyIdentity.close(); window._initDeviceFlow&&window._initDeviceFlow(); });
     netlifyIdentity.on('logout', function(){
       document.getElementById('splash-overlay')?.remove();
       showGate();
     });
 
-    /* NO llamar a init() a ciegas: el widget ya se inicializa solo al cargar
-       el script. Llamarlo de nuevo creaba un SEGUNDO iframe a pantalla
-       completa y vacío, encima de todo, que no se veía pero bloqueaba cada
-       click — el "no me deja tocar nada". El de verdad quedaba con altura 0.
-       currentUser() devuelve undefined solo si todavía no arrancó. */
-    if (typeof netlifyIdentity.currentUser() === 'undefined') netlifyIdentity.init();
+    /* NUNCA llamar a netlifyIdentity.init(): el widget ya se inicializa solo
+       al cargar el script. Llamarlo de nuevo crea un SEGUNDO iframe a pantalla
+       completa y vacío, encima de todo. No se ve, pero se come todos los
+       clicks: ese era el "no me deja tocar nada" del invitado, mientras el
+       diálogo de verdad quedaba atrás con altura 0.
+       Como el widget puede haber arrancado antes de que corra este bloque, el
+       evento 'init' quizá ya pasó: por eso hay una red de contención a los 2
+       segundos. Lo que llegue primero gana; 'yaArranco' evita el doble. */
+    setTimeout(function(){ arranque(netlifyIdentity.currentUser()); }, 2000);
   } else {
     // Netlify Identity no disponible (ej. entorno local) — no bloquear el acceso
     window._initDeviceFlow&&window._initDeviceFlow();
