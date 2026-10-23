@@ -12247,7 +12247,7 @@ function drawIpChart(crop, ins){
     options:{responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
       plugins:{legend:{display:true,position:'top',labels:{boxWidth:12,font:{size:11},padding:10}},
         tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': '+ipFmtNum(c.raw,2);}}}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:10},maxTicksLimit:12,maxRotation:0}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:13,weight:'600'},maxTicksLimit:10,maxRotation:0}},
         y:{grid:{color:'#f0f2f5'},ticks:{font:{size:10},callback:function(v){return ipFmtNum(v, v%1===0?0:2);}}}}}
   });
 }
