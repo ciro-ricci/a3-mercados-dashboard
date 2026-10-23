@@ -200,9 +200,10 @@
         <button class="tab" data-tab="futuros"><span class="n">1</span>Venta de futuros</button>
         <button class="tab" data-tab="cc"><span class="n">2</span>Lanzamiento cubierto</button>
         <button class="tab" data-tab="put"><span class="n">3</span>Compra de put</button>
-        <button class="tab" data-tab="bps"><span class="n">4</span>Bull put spread</button>
-        <button class="tab" data-tab="spread"><span class="n">5</span>Spread Argentina–Chicago</button>
-        <button class="tab" data-tab="calc"><span class="n">6</span>Márgenes y aforos</button>
+        <button class="tab" data-tab="collar"><span class="n">4</span>Collar</button>
+        <button class="tab" data-tab="bps"><span class="n">5</span>Bull put spread</button>
+        <button class="tab" data-tab="spread"><span class="n">6</span>Spread Argentina–Chicago</button>
+        <button class="tab" data-tab="calc"><span class="n">7</span>Márgenes y aforos</button>
       </nav>
       <div class="globales" id="globales">
         <div class="seg" id="segGrano"><button data-g="soja" class="on">Soja</button><button data-g="maiz">Maíz</button><button data-g="trigo">Trigo</button></div>
@@ -271,12 +272,13 @@
   <!-- ============ 2/3/4. OPCIONES (plantilla) ============ -->
   <section class="pagina" id="p-cc"></section>
   <section class="pagina" id="p-put"></section>
+  <section class="pagina" id="p-collar"></section>
   <section class="pagina" id="p-bps"></section>
 
   <!-- ============ 5. SPREAD ARGENTINA–CHICAGO ============ -->
   <section class="pagina" id="p-spread">
     <div class="tit-pag">
-      <div><div class="etq">Estrategia 5 · Futuros</div><h1>Spread Argentina–Chicago</h1><div class="lema">Si bajan las retenciones, el precio local sube contra Chicago y el descuento se achica.</div></div>
+      <div><div class="etq">Estrategia 6 · Futuros</div><h1>Spread Argentina–Chicago</h1><div class="lema">Si bajan las retenciones, el precio local sube contra Chicago y el descuento se achica.</div></div>
       <div class="seg" id="segAlt"><button data-a="A" class="on">A · Vender Chicago</button><button data-a="B">B · Vender Chicago + comprar Argentina</button></div>
     </div>
 
@@ -420,7 +422,7 @@ const st = {
   fut:{soja:'MAY27', maiz:'ABR27', trigo:'ENE27'},
   opt:{soja:'MAY27', maiz:'ABR27', trigo:'DIC26'},
   strikes:{},           // por estrategia y grano+posición
-  vista:{futuros:'neto', cc:'neto', put:'neto', bps:'res'},
+  vista:{futuros:'neto', cc:'neto', put:'neto', collar:'neto', bps:'res'},
   dias:[5,3,-6,8,-4]
 };
 const N = () => st.tn;
@@ -553,7 +555,17 @@ const ESTR = {
        pros:['Precio piso asegurado','Conserva todas las subas','No requiere margen ni ajustes diarios'],
        contras:['Costo de la prima','Si el precio sube, la prima se pierde'],
        cuando:'hay temor a bajas pero también expectativa de suba.' },
-  bps:{ n:'Bull put spread', etq:'Estrategia 4 · Opciones', lema:'Vendo un put y compro otro más abajo: cobro prima con riesgo acotado.',
+  collar:{ n:'Collar', etq:'Estrategia 4 · Opciones',
+       lema:'Compro un put para ponerle piso y vendo un call para pagarlo: precio acotado entre un mínimo y un máximo.',
+       pros:['Piso asegurado como en la compra de put, pero mucho más barato',
+             'La prima del call financia total o parcialmente la del put',
+             'Elegís vos dónde ponés el piso y cuánta suba resignás',
+             'Pensado para quien tiene la mercadería: la banda se arma sobre lo que ya produce'],
+       contras:['Techo de precio: arriba del call vendido la suba se cede',
+                'El call vendido exige margen y ajustes diarios',
+                'Si el mercado se dispara, el costo de oportunidad es visible'],
+       cuando:'se quiere dormir tranquilo con un piso, sin pagar la prima completa del put, y se acepta resignar la parte alta de una suba.' },
+  bps:{ n:'Bull put spread', etq:'Estrategia 5 · Opciones', lema:'Vendo un put y compro otro más abajo: cobro prima con riesgo acotado.',
        pros:['Cobro prima neta hoy','Pérdida máxima acotada','Menor margen que un put vendido solo'],
        contras:['Pierde si el precio cae debajo del put vendido','No protege la mercadería ante bajas fuertes','Ganancia limitada a la prima cobrada'],
        cuando:'se espera que el precio se mantenga o suba.' }
@@ -564,6 +576,12 @@ function strikesDef(clave, o){
   const cerca=(arr,obj)=>arr.reduce((a,b)=>Math.abs(b-obj)<Math.abs(a-obj)?b:a, arr[0]);
   if(clave==='cc') return {K: calls.length ? cerca(calls.filter(k=>k>=F).length?calls.filter(k=>k>=F):calls, F*1.05) : null};
   if(clave==='put') return {K: puts.length ? cerca(puts, F*0.95) : null};
+  if(clave==='collar'){
+    // Piso cerca del 95% del futuro y techo cerca del 105%: una banda pareja
+    // alrededor del precio de hoy, que es de donde conviene partir para mirarla.
+    return {Kp: puts.length ? cerca(puts, F*0.95) : null,
+            Kc: calls.length ? cerca(calls.filter(k=>k>=F).length?calls.filter(k=>k>=F):calls, F*1.05) : null};
+  }
   if(clave==='bps'){ if(puts.length<2) return {K2:null,K1:null};
     const K2=cerca(puts, F*0.97); const bajos=puts.filter(k=>k<K2); return {K2, K1: bajos.length?cerca(bajos,K2-F*0.06):null}; }
 }
@@ -617,6 +635,7 @@ function renderOpcion(clave){
   const box=pag.querySelector(`[data-strikes="${clave}"]`);
   if(clave==='cc') box.innerHTML=`<label class="campo">Call vendido <select data-k="K">${opcs(o.calls,K.K)}</select></label>`;
   if(clave==='put') box.innerHTML=`<label class="campo">Put comprado <select data-k="K">${opcs(o.puts,K.K)}</select></label>`;
+  if(clave==='collar') box.innerHTML=`<label class="campo">Put comprado (piso) <select data-k="Kp">${opcs(o.puts,K.Kp)}</select></label><label class="campo">Call vendido (techo) <select data-k="Kc">${opcs(o.calls,K.Kc)}</select></label>`;
   if(clave==='bps') box.innerHTML=`<label class="campo">Put vendido <select data-k="K2">${opcs(o.puts,K.K2)}</select></label><label class="campo">Put comprado <select data-k="K1">${opcs(o.puts,K.K1)}</select></label>`;
   box.querySelectorAll('select').forEach(s=>s.onchange=e=>{ st.strikes[sk][e.target.dataset.k]=parseFloat(e.target.value); renderOpcion(clave); });
 
@@ -627,6 +646,11 @@ function renderOpcion(clave){
   let legs=[];
   if(clave==='cc'){ if(K.K==null) return sinDatos(pag,clave,'No hay calls para esta posición.'); legs=[{t:'C',K:K.K,q:-1,p:prima('C',K.K)}]; }
   if(clave==='put'){ if(K.K==null) return sinDatos(pag,clave,'No hay puts para esta posición.'); legs=[{t:'P',K:K.K,q:1,p:prima('P',K.K)}]; }
+  if(clave==='collar'){
+    if(K.Kp==null||K.Kc==null) return sinDatos(pag,clave,'Esta posición no tiene put y call a la vez para armar el collar. Elegí otra posición.');
+    if(K.Kc<=K.Kp) aviso.innerHTML=alerta('mal','!','El call vendido debe tener un strike mayor al put comprado: si no, no hay banda, hay un precio fijo.');
+    legs=[{t:'P',K:K.Kp,q:1,p:prima('P',K.Kp)},{t:'C',K:K.Kc,q:-1,p:prima('C',K.Kc)}];
+  }
   if(clave==='bps'){
     if(K.K2==null||K.K1==null) return sinDatos(pag,clave,'Esta posición no tiene dos puts para armar el spread. Elegí otra posición.');
     if(K.K1>=K.K2) aviso.innerHTML=alerta('mal','!','El put comprado debe tener un strike menor al put vendido.');
@@ -661,6 +685,26 @@ function renderOpcion(clave){
     alertas = alerta('bien','✓',`Piso asegurado en U$S ${nf2.format(Kp-p)}/tn, con todas las subas a favor.`)
             + alerta('info','$',`Costo: U$S ${nf2.format(p)}/tn (${nf1.format(p/F*100)}% del precio del futuro).`);
     refs.push({x:Kp,l:'Strike '+nf0.format(Kp),c:'#024627'});
+  }
+  if(clave==='collar'){
+    // neta = prima del call cobrada - prima del put pagada. Positiva = cobro neto.
+    const Kp=legs[0].K, Kc=legs[1].K, pPut=legs[0].p, pCall=legs[1].p;
+    const piso=Kp+neta, techo=Kc+neta, costo=-neta;
+    kp = kpi(costo>0?'Costo neto':'Cobro neto', usd(Math.abs(costo)*n),
+             `Put ${nf2.format(pPut)} − call ${nf2.format(pCall)} = ${nf2.format(Math.abs(costo))}/tn`,
+             costo>0?'rojo':'ok')
+       + kpi('Precio piso', ptn(piso), `Strike ${nf0.format(Kp)} ${neta>=0?'+':'−'} ${nf2.format(Math.abs(neta))}`, 'ok')
+       + kpi('Precio techo', ptn(techo), `Strike ${nf0.format(Kc)} ${neta>=0?'+':'−'} ${nf2.format(Math.abs(neta))}`, 'arena')
+       + kpi('Amplitud de la banda', ptn(techo-piso), `${nf1.format((techo-piso)/F*100)}% del futuro`)
+       + kpi('Margen estimado', usd(mgOpt*n), 'Por el call vendido', 'rojo');
+    const ahorro = pPut>0 ? pCall/pPut*100 : 0;
+    alertas = alerta('bien','✓',`Piso asegurado en U$S ${nf2.format(piso)}/tn pase lo que pase.`)
+            + alerta('warn','⌃',`Techo en U$S ${nf2.format(techo)}/tn: arriba de ${nf0.format(Kc)} la suba se cede al comprador del call.`)
+            + alerta('info','$', costo<=0
+                ? `El call cobra más que lo que cuesta el put: la cobertura queda sin costo y deja ${usd(-costo*n)} a favor.`
+                : `El call financia el ${nf0.format(Math.min(ahorro,100))}% de la prima del put: el piso sale ${nf2.format(costo)}/tn en vez de ${nf2.format(pPut)}/tn.`)
+            + alerta('info','i','El call vendido exige margen y se ajusta todos los días, a diferencia de la compra de put sola.');
+    refs.push({x:Kp,l:'Piso '+nf0.format(Kp),c:'#024627'},{x:Kc,l:'Techo '+nf0.format(Kc),c:'#B42318'});
   }
   if(clave==='bps'){
     const ancho=legs[0].K-legs[1].K; be=legs[0].K-neta;
@@ -872,6 +916,8 @@ function metricasOpcion(clave){
   let legs;
   if(clave==='cc'){ if(K.K==null) return null; legs=[{t:'C',K:K.K,q:-1,p:prima('C',K.K)}]; }
   if(clave==='put'){ if(K.K==null) return null; legs=[{t:'P',K:K.K,q:1,p:prima('P',K.K)}]; }
+  if(clave==='collar'){ if(K.Kp==null||K.Kc==null||K.Kc<=K.Kp) return null;
+    legs=[{t:'P',K:K.Kp,q:1,p:prima('P',K.Kp)},{t:'C',K:K.Kc,q:-1,p:prima('C',K.Kc)}]; }
   if(clave==='bps'){ if(K.K2==null||K.K1==null||K.K1>=K.K2) return null; legs=[{t:'P',K:K.K2,q:-1,p:prima('P',K.K2)},{t:'P',K:K.K1,q:1,p:prima('P',K.K1)}]; }
   legs.forEach(l=>l.iv=iv(l.t,F,l.K,T,l.p));
   const neta=legs.reduce((a,l)=>a-l.q*l.p,0);
@@ -913,24 +959,31 @@ function renderResumen(){
       val('Ilimitada','Conserva las subas'), val(usd(p*n),'La prima pagada'), val(ptn(Kp-p),`Piso U$S ${nf2.format(Kp-p)}/tn`), val('No requiere','Solo paga la prima'));
   } else h+=sinDatosF('put',3,'Compra de put');
 
-  // 4. Bull put spread
+  // 4. Collar
+  const co=metricasOpcion('collar');
+  if(co){ const Kp=co.legs[0].K, Kc=co.legs[1].K, piso=Kp+co.neta, techo=Kc+co.neta;
+    h+=fila('collar',4,'Collar',`${posNombre(co.pos)} · compra put ${nf0.format(Kp)} / vende call ${nf0.format(Kc)}`, tagP(co.neta),
+      val(ptn(techo),`Techo U$S ${nf2.format(techo)}/tn`), val('Sin piso real',`Piso U$S ${nf2.format(piso)}/tn`), val(ptn(piso),`Banda de ${nf1.format(techo-piso)} U$S/tn`), val(usd(co.mgOpt*n),'Estimado · call vendido'));
+  } else h+=sinDatosF('collar',4,'Collar');
+
+  // 5. Bull put spread
   const bp=metricasOpcion('bps');
   if(bp){ const K2=bp.legs[0].K, K1=bp.legs[1].K;
-    h+=fila('bps',4,'Bull put spread',`${posNombre(bp.pos)} · vende ${nf0.format(K2)} / compra ${nf0.format(K1)}`, tagP(bp.neta),
+    h+=fila('bps',5,'Bull put spread',`${posNombre(bp.pos)} · vende ${nf0.format(K2)} / compra ${nf0.format(K1)}`, tagP(bp.neta),
       val(usd(bp.neta*n),`Si queda ≥ ${nf0.format(K2)}`), val(usd((K2-K1-bp.neta)*n),`Si cae ≤ ${nf0.format(K1)}`), val(ptn(K2-bp.neta),'Put vendido − prima'), val(usd(bp.mgOpt*n),'Estimado · spread'));
-  } else h+=sinDatosF('bps',4,'Bull put spread');
+  } else h+=sinDatosF('bps',5,'Bull put spread');
 
-  // 5. Spread Argentina–Chicago
+  // 6. Spread Argentina–Chicago
   const pares=g.pares;
   if(pares.length){
     if(!pares.find(x=>x.ros===st.par[gr])) st.par[gr]=pares[0].ros;
     const pa=pares.find(x=>x.ros===st.par[gr]), sp=pa.rosPrecio-pa.chiPrecio;
     const sub=`${posNombre(pa.ros)} vs Chicago ${posNombre(pa.chi)} · spread ${nf1.format(sp)}`;
-    h+=fila('spread','5A','Vender Chicago',sub, tagP(0),
+    h+=fila('spread','6A','Vender Chicago',sub, tagP(0),
       val(`${usd(n)} por U$S 1`,'Si el spread se achica'), val(`${usd(n)} por U$S 1`,'Si el spread se amplía'), val(nf1.format(sp)+' U$S/tn','Spread actual'), val(usd(MARGEN_CHI[gr]*n),`Chicago U$S ${nf1.format(MARGEN_CHI[gr])}/tn`));
-    h+=fila('spread','5B','Vender Chicago + comprar Argentina',sub, tagP(0),
+    h+=fila('spread','6B','Vender Chicago + comprar Argentina',sub, tagP(0),
       val(`${usd(n)} por U$S 1`,'Si el spread se achica'), val(`${usd(n)} por U$S 1`,'Si el spread se amplía'), val(nf1.format(sp)+' U$S/tn','Spread actual'), val(usd((MARGEN_TN[gr]+MARGEN_CHI[gr])*n),`Rosario ${nf1.format(MARGEN_TN[gr])} + Chicago ${nf1.format(MARGEN_CHI[gr])} U$S/tn`));
-  } else h+=sinDatosF('spread',5,'Spread Argentina–Chicago');
+  } else h+=sinDatosF('spread',6,'Spread Argentina–Chicago');
 
   $('resTabla').innerHTML=h+'</tbody>';
   $('resTabla').querySelectorAll('tbody tr').forEach(tr=>tr.onclick=()=>{
@@ -941,7 +994,7 @@ function renderResumen(){
 }
 
 function renderTodo(){
-  renderResumen(); renderFuturos(); ['cc','put','bps'].forEach(renderOpcion); renderSpread();
+  renderResumen(); renderFuturos(); ['cc','put','collar','bps'].forEach(renderOpcion); renderSpread();
 }
 document.querySelectorAll('#tabs .tab').forEach(b=>b.onclick=()=>{
   st.tab=b.dataset.tab;
@@ -958,7 +1011,7 @@ document.querySelector('[data-vista="futuros"]').querySelectorAll('button').forE
 });
 $('gToneladas').oninput=e=>{ st.tn=Math.max(1,Math.round(val(e.target.value))||1); renderTodo(); };
 $('fechaDatos').textContent=DATA.fecha;
-['cc','put','bps'].forEach(plantillaOpcion);
+['cc','put','collar','bps'].forEach(plantillaOpcion);
 renderTodo();
 </script>
 </body>
