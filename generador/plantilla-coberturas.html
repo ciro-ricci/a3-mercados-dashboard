@@ -339,7 +339,22 @@
           <div style="margin-top:14px"><button class="btn" id="addPos" type="button">+ Agregar contrato</button></div>
         </div>
         <div class="card">
-          <div class="card-cab"><div class="tit"><span class="badge">2</span><h2>Activos en garantía</h2></div></div>
+          <div class="card-cab">
+            <div class="tit"><span class="badge">2</span><h2>Posiciones en opciones</h2></div>
+            <div class="chips"><span class="chip">Contrato: <b>100 tn</b></span><span class="chip">Comprada: <b>sin margen</b></span></div>
+          </div>
+          <div class="tabla-wrap">
+            <table id="tOpc">
+              <thead><tr><th>Grano</th><th>Vencimiento</th><th style="text-align:left">Tipo</th><th style="text-align:left">Posición</th><th>Strike</th><th>Contratos</th><th>Prima U$S</th><th>Margen U$S/tn</th><th>Margen U$S</th><th></th></tr></thead>
+              <tbody></tbody>
+              <tfoot><tr><td colspan="6">Total</td><td id="totPrima"></td><td></td><td id="totReqO"></td><td></td></tr></tfoot>
+            </table>
+          </div>
+          <div style="margin-top:14px"><button class="btn" id="addOpc" type="button">+ Agregar opción</button></div>
+          <div style="margin-top:10px;font-size:13.5px;color:var(--gris-2);line-height:1.5">Las opciones <b>compradas no exigen margen</b>: se paga la prima y listo. Las <b>vendidas sí</b>, y el margen se estima con el mismo criterio que las páginas de estrategias: se simula el peor resultado ante movimientos del futuro y se toma el más desfavorable. Es una estimación, no el número exacto que pide el mercado.</div>
+        </div>
+        <div class="card">
+          <div class="card-cab"><div class="tit"><span class="badge">3</span><h2>Activos en garantía</h2></div></div>
           <div class="tabla-wrap">
             <table id="tAct">
               <thead><tr><th>Activo</th><th>Aforo</th><th style="text-align:left">Moneda</th><th>Monto</th><th>Valor U$S</th><th>Computa U$S</th></tr></thead>
@@ -851,7 +866,12 @@ const Calc=(function(){
     {n:'CEDEARs',a:65,mon:'USD',monto:0},{n:'Acciones',a:60,mon:'USD',monto:0},{n:'ONs Tier 1 (YPF, Pampa, Arcor, PAE)',a:60,mon:'USD',monto:0},
     {n:'ONs Tier 2 (otras)',a:40,mon:'USD',monto:0},{n:'Cheques / ECHEQs',a:0,mon:'ARS',monto:0}
   ];
-  let uid=1, pos=[{id:uid++,c:'soja_ros',s:'Vendido',q:10,m:17},{id:uid++,c:'maiz_ros',s:'Vendido',q:10,m:8}];
+  // Arranca con un contrato vendido de cada grano en Rosario: es la foto
+  // tipica de un productor cubriendo las tres cosechas.
+  let uid=1, pos=[{id:uid++,c:'soja_ros',s:'Vendido',q:1,m:17},
+                  {id:uid++,c:'maiz_ros',s:'Vendido',q:1,m:8},
+                  {id:uid++,c:'trigo_ros',s:'Vendido',q:1,m:16}];
+  let uidO=1, opc=[];   // posiciones en opciones
   const ars=v=>'$ '+nf0.format(Math.round(v||0)), u=v=>'U$S '+nf1.format(v||0);
   function renderPos(){
     const tb=$('tPos').querySelector('tbody'); tb.innerHTML='';
@@ -868,6 +888,69 @@ const Calc=(function(){
       tr.querySelector('.quitar').onclick=()=>{pos=pos.filter(x=>x.id!==p.id);renderPos();calc();};
       tb.appendChild(tr); });
   }
+  // ── Opciones ──────────────────────────────────────────────────────────
+  // Los strikes y las primas salen de la misma foto de A3 que alimenta el
+  // resto del informe, asi que el margen estimado coincide con el que muestran
+  // las paginas de cada estrategia.
+  const GRANOS_OPC = [['soja','Soja'],['maiz','Maíz'],['trigo','Trigo']];
+  const TN_OPC = 100;   // las opciones de A3 son sobre el contrato Rosario
+
+  function vencimientos(g){ return Object.keys((DATA[g]||{}).opciones||{}); }
+  function cadena(g,v,t){
+    const o=(DATA[g]||{}).opciones||{}; const d=o[v]; if(!d) return [];
+    return t==='C'? d.calls : d.puts;
+  }
+  function normalizarOpc(p){
+    const vs=vencimientos(p.g);
+    if(!vs.length){ p.v=null; p.k=null; return; }
+    if(!vs.includes(p.v)) p.v=vs[0];
+    const lista=cadena(p.g,p.v,p.t);
+    if(!lista.length){ p.k=null; return; }
+    if(!lista.some(x=>x[0]===p.k)) p.k=lista[Math.floor(lista.length/2)][0];
+  }
+  // Devuelve {prima, margen} por tonelada para una fila
+  function datosOpc(p){
+    normalizarOpc(p);
+    const d=((DATA[p.g]||{}).opciones||{})[p.v];
+    if(!d||p.k==null) return {prima:null, margen:0, F:null};
+    const par=cadena(p.g,p.v,p.t).find(x=>x[0]===p.k);
+    if(!par) return {prima:null, margen:0, F:d.fut};
+    const prima=par[1], F=d.fut;
+    const T=Math.max((new Date(d.venc+'T12:00:00')-HOY)/(365*864e5), 1/365);
+    if(p.s==='Comprado') return {prima, margen:0, F};
+    const leg={t:p.t,K:p.k,q:-1,p:prima,iv:iv(p.t,F,p.k,T,prima)};
+    return {prima, margen:margenOpciones([leg],F,T,MARGEN_TN[p.g]||17), F};
+  }
+
+  function renderOpc(){
+    const tb=$('tOpc').querySelector('tbody'); tb.innerHTML='';
+    if(!opc.length){
+      tb.innerHTML='<tr><td colspan="10" style="color:#9CA3AF;font-style:italic;padding:14px">Sin opciones cargadas. Agregá una para ver cuánto margen suma.</td></tr>';
+      return;
+    }
+    opc.forEach(p=>{
+      normalizarOpc(p);
+      const vs=vencimientos(p.g), lista=cadena(p.g,p.v,p.t);
+      const tr=document.createElement('tr'); tr.dataset.id=p.id;
+      tr.innerHTML=`<td><select class="g">${GRANOS_OPC.map(([k,n])=>`<option value="${k}" ${k===p.g?'selected':''}>${n}</option>`).join('')}</select></td>
+        <td><select class="v">${vs.map(x=>`<option value="${x}" ${x===p.v?'selected':''}>${posNombre(x)}</option>`).join('')}</select></td>
+        <td style="text-align:left"><select class="t"><option value="C" ${p.t==='C'?'selected':''}>Call</option><option value="P" ${p.t==='P'?'selected':''}>Put</option></select></td>
+        <td style="text-align:left"><select class="s"><option ${p.s==='Vendido'?'selected':''}>Vendido</option><option ${p.s==='Comprado'?'selected':''}>Comprado</option></select></td>
+        <td><select class="k">${lista.map(([k,pr])=>`<option value="${k}" ${k===p.k?'selected':''}>${nf0.format(k)} · ${nf2.format(pr)}</option>`).join('')}</select></td>
+        <td><input class="q corto" type="number" min="0" step="1" value="${p.q}"></td>
+        <td class="prima"></td><td class="mtn"></td><td class="fuerte sub"></td>
+        <td><button class="quitar" type="button">×</button></td>`;
+      tr.querySelector('.g').onchange=e=>{p.g=e.target.value; normalizarOpc(p); renderOpc(); calc();};
+      tr.querySelector('.v').onchange=e=>{p.v=e.target.value; normalizarOpc(p); renderOpc(); calc();};
+      tr.querySelector('.t').onchange=e=>{p.t=e.target.value; normalizarOpc(p); renderOpc(); calc();};
+      tr.querySelector('.s').onchange=e=>{p.s=e.target.value; renderOpc(); calc();};
+      tr.querySelector('.k').onchange=e=>{p.k=parseFloat(e.target.value); calc();};
+      tr.querySelector('.q').oninput=e=>{p.q=val(e.target.value); calc();};
+      tr.querySelector('.quitar').onclick=()=>{opc=opc.filter(x=>x.id!==p.id); renderOpc(); calc();};
+      tb.appendChild(tr);
+    });
+  }
+
   function renderAct(){
     const tb=$('tAct').querySelector('tbody'); tb.innerHTML='';
     ACTIVOS.forEach((a,i)=>{ const tr=document.createElement('tr'); tr.dataset.i=i;
@@ -883,6 +966,28 @@ const Calc=(function(){
     pos.forEach(p=>{ const c=CONTRATOS[p.c], t=p.q*c.tn, s=t*p.m; tn+=t; req+=s;
       const tr=document.querySelector(`#tPos tr[data-id="${p.id}"]`); tr.querySelector('.tn').textContent=nf0.format(t)+' tn'; tr.querySelector('.sub').textContent=nf1.format(s); });
     $('totTn').textContent=nf0.format(tn)+' tn'; $('totReq').textContent=u(req);
+
+    // Opciones: la prima es caja (se paga o se cobra), el margen solo lo
+    // exigen las vendidas. Las dos cosas se muestran por separado para no
+    // mezclar lo que sale del bolsillo con lo que queda inmovilizado.
+    let primaTot=0, reqO=0;
+    opc.forEach(p=>{
+      const d=datosOpc(p), t=p.q*TN_OPC;
+      const primaFila = d.prima==null ? 0 : d.prima*t*(p.s==='Vendido'?1:-1);
+      const margenFila = d.margen*t;
+      primaTot+=primaFila; reqO+=margenFila;
+      const tr=document.querySelector(`#tOpc tr[data-id="${p.id}"]`);
+      if(!tr) return;
+      tr.querySelector('.prima').innerHTML = d.prima==null ? '—'
+        : `<span class="${primaFila>=0?'pos':'neg'}">${nf1.format(primaFila)}</span>`;
+      tr.querySelector('.mtn').textContent = p.s==='Comprado' ? '—' : nf2.format(d.margen);
+      tr.querySelector('.sub').textContent = p.s==='Comprado' ? '—' : nf1.format(margenFila);
+    });
+    $('totPrima').innerHTML = opc.length ? `<span class="${primaTot>=0?'pos':'neg'}">${nf1.format(primaTot)}</span>` : '—';
+    $('totReqO').textContent = opc.length ? u(reqO) : '—';
+    // totReq muestra solo los futuros; el margen de opciones va en su propia
+    // fila. A partir de aca "req" es el total que hay que cubrir con garantias.
+    req += reqO;
     let vt=0,gar=0;
     ACTIVOS.forEach((a,i)=>{ const x=a.mon==='ARS'?(tc>0?a.monto/tc:0):a.monto, c=x*a.a/100; vt+=x; gar+=c;
       const tr=document.querySelector(`#tAct tr[data-i="${i}"]`); tr.querySelector('.val').textContent=x?nf1.format(x):'—'; tr.querySelector('.comp').textContent=x?nf1.format(c):'—'; });
@@ -897,8 +1002,14 @@ const Calc=(function(){
     else { est.className='estado falta'; $('eT').textContent=`Faltan ${u(-dif)}`; $('eD').textContent=`${ars(-dif*tc)} de garantía computable para cubrir el margen.`; }
   }
   $('addPos').onclick=()=>{pos.push({id:uid++,c:'soja_ros',s:'Vendido',q:1,m:17});renderPos();calc();};
+  $('addOpc').onclick=()=>{
+    // Arranca en un call vendido de soja, que es el caso tipico: el productor
+    // vende calls para financiar coberturas y ahi aparece el margen.
+    const nueva={id:uidO++, g:'soja', v:null, t:'C', s:'Vendido', k:null, q:1};
+    normalizarOpc(nueva); opc.push(nueva); renderOpc(); calc();
+  };
   $('tc').oninput=calc;
-  renderPos(); renderAct(); calc();
+  renderPos(); renderOpc(); renderAct(); calc();
 })();
 
 /* ================= Navegación ================= */
