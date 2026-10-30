@@ -735,9 +735,9 @@ window.LANDING_LINKS = {
    BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
    oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
    valores (oficial, CCL, soja/maíz/trigo, etc.) siguen viniendo de la sheet.
-   Última actualización: 2026-10-29
+   Última actualización: 2026-10-30
    ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
-const BCRA_TC_OVERRIDE = 1538.4739;
+const BCRA_TC_OVERRIDE = 1539.593;
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 // Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
 const PIZARRA_SOJ_2025={
@@ -11792,9 +11792,13 @@ window._initDeviceFlow=function(){
 /* ═══════════════════════════════════════════════════════════════════════
    NEWS_DATA — Claude actualiza este bloque cada vez que corre el scraping.
    Las noticias con más de 7 días son eliminadas automáticamente del array.
-   Última actualización: 2026-10-29
+   Última actualización: 2026-10-30
    ═══════════════════════════════════════════════════════════════════════ */
 const NEWS_DATA = [
+  {fecha:'2026-10-30',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 30 octubre 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-30-octubre-2026/'},
+  {fecha:'2026-10-30',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 30 octubre 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-30-octubre-2026/'},
+  {fecha:'2026-10-30',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 30 octubre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-30-octubre-2026/'},
+  {fecha:'2026-10-30',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'EUDR ¿Qué está haciendo Paraguay para cumplir con la trazabilidad de la comercialización de soja exigida por la Unión Europea?',resumen:'En Paraguay, para cumplir con las exigencias del reglamento 1115 de la UE-27 (EUDR), productores, agroexportadores y comercializadores de la cadena de la soja desarrollaron una plataforma de trazabilidad propia denominada “Sistema de Identificación de la Soja para Exportación a la Unión Europea” (SISE-UE). El SISE fue instrumentado por la Federación de Cooperativas de Producción […]',link:'https://bichosdecampo.com/eudr-que-esta-haciendo-paraguay-para-cumplir-con-la-trazabilidad-de-la-comercializacion-de-soja-exigida-por-la-union-europea/'},
   {fecha:'2026-10-29',fuente:'Infocampo',cultivo:'Trigo',titulo:'Diego Cifarelli, reelecto en FAIM: “La exportación debe ser un objetivo para toda la industria molinera”',resumen:'Reelecto por octavo período consecutivo como titular de la Federación Argentina de la Industria Molinera, Cifarelli planteó entre los desafíos de gestión impulsar la industrialización del trigo, combatir la evasión y el contrabando, y mejorar la competitividad de toda la cadena.',link:'https://www.infocampo.com.ar/diego-cifarelli-reelecto-en-faim-la-exportacion-debe-ser-un-objetivo-para-toda-la-industria-molinera/'},
   {fecha:'2026-10-29',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 29 octubre 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-29-octubre-2026/'},
   {fecha:'2026-10-29',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 29 octubre 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-29-octubre-2026/'},
@@ -11832,10 +11836,7 @@ const NEWS_DATA = [
   {fecha:'2026-10-21',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 21 octubre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-21-octubre-2026/'},
   {fecha:'2026-10-20',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 20 octubre 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-20-octubre-2026/'},
   {fecha:'2026-10-20',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 20 octubre 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-20-octubre-2026/'},
-  {fecha:'2026-10-20',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 20 octubre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-20-octubre-2026/'},
-  {fecha:'2026-10-19',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 19 octubre 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-19-octubre-2026/'},
-  {fecha:'2026-10-19',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 19 octubre 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-19-octubre-2026/'},
-  {fecha:'2026-10-19',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 19 octubre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-19-octubre-2026/'}
+  {fecha:'2026-10-20',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 20 octubre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-20-octubre-2026/'}
 ];
 /* ═══════════════════════════════════════════════════════════════════════ */
 
