@@ -13,7 +13,9 @@ Uso:
   python3 publicar.py leer     <repo> <ruta> <destino>
   python3 publicar.py publicar <repo> <ruta> <origen> "<mensaje de commit>"
 
-<repo> es "ciro-ricci/a3-mercados-dashboard" o "datamiazzo-2026/data-miazzo-web".
+<repo> es "datamiazzo-2026/a3-mercados-dashboard" o "datamiazzo-2026/data-miazzo-web".
+Los repos que eran de ciro-ricci se transfirieron a datamiazzo-2026 el 12/11/2026;
+si una tarea vieja todavia pasa "ciro-ricci/...", se traduce sola (ver MOVIDOS).
 La credencial correcta se elige sola segun el duenio del repo.
 """
 import base64, glob, json, os, sys, urllib.request, urllib.error
@@ -25,6 +27,23 @@ CREDENCIAL = {
     "ciro-ricci":      "gh_token.txt",
     "datamiazzo-2026": "gh_token_datamiazzo.txt",
 }
+
+
+# Repos transferidos de ciro-ricci a datamiazzo-2026 (12/11/2026). Las tareas
+# viejas que todavia los nombran con el duenio anterior se redirigen aca, asi
+# usan la credencial de datamiazzo-2026 (la de ciro-ricci ya no tiene acceso).
+MOVIDOS = {
+    "ciro-ricci/a3-mercados-dashboard": "datamiazzo-2026/a3-mercados-dashboard",
+    "ciro-ricci/estrategiasfinancieras": "datamiazzo-2026/estrategiasfinancieras",
+    "ciro-ricci/tablero-comercial-agro": "datamiazzo-2026/tablero-comercial-agro",
+}
+
+
+def repo_actual(repo):
+    nuevo = MOVIDOS.get(repo.lower(), repo)
+    if nuevo != repo:
+        print(f"aviso: {repo} se mudo a {nuevo}; uso el nombre nuevo", file=sys.stderr)
+    return nuevo
 
 
 def carpeta_credenciales():
@@ -107,9 +126,9 @@ if __name__ == "__main__":
         sys.exit(__doc__)
     accion = sys.argv[1]
     if accion == "leer":
-        leer(sys.argv[2], sys.argv[3], sys.argv[4])
+        leer(repo_actual(sys.argv[2]), sys.argv[3], sys.argv[4])
     elif accion == "publicar":
-        publicar(sys.argv[2], sys.argv[3], sys.argv[4],
+        publicar(repo_actual(sys.argv[2]), sys.argv[3], sys.argv[4],
                  sys.argv[5] if len(sys.argv) > 5 else "Actualizacion automatica")
     else:
         sys.exit(__doc__)
