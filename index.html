@@ -172,7 +172,7 @@ canvas { max-height: 100%; }
 .splash-note{margin-top:22px;font-size:0.68rem;color:rgba(0,0,0,0.35);}
 
 /* ── Landing pública (previo al login) ── */
-#landing-gate{position:fixed;inset:0;z-index:10000;background:#ffffff;overflow-y:auto;font-family:'Segoe UI',Arial,sans-serif;}
+#landing-gate{position:fixed;inset:0;z-index:10000;background:#F7F1EA;overflow-y:auto;}
 #netlify-identity-widget{z-index:999999 !important;}
 .lg-wrap{max-width:760px;margin:0 auto;padding:36px 20px 60px;}
 .lg-logo{display:flex;justify-content:center;margin-bottom:6px;}
@@ -603,28 +603,12 @@ canvas { max-height: 100%; }
   padding:3px 9px; margin-left:8px; }
 
 </style>
-<!-- Landing pública (Gemini design) — Tailwind scope-limited a #landing-gate -->
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script>
-  tailwind.config = {
-    important: '#landing-gate',
-    corePlugins: { preflight: false },
-    theme: {
-      extend: {
-        colors: {
-          agro: { green: '#22c55e', dark: '#1e293b', light: '#f8fafc', text: '#334155' }
-        }
-      }
-    }
-  }
-</script>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-</style>
+<!-- Landing pública: estética común DATA Miazzo (data-miazzo.css) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<link rel="stylesheet" href="/data-miazzo.css">
 <link rel="stylesheet" href="/estetica-data-miazzo.css">
 </head>
 <body>
@@ -12300,247 +12284,151 @@ function drawIpChart(crop, ins){
     var L=(window.LANDING_LINKS||{});
     var gate=document.createElement('div');
     gate.id='landing-gate';
-    gate.innerHTML=`<div class="lg-gemini bg-agro-light text-agro-text antialiased" style="font-family:'Inter',sans-serif;">
+    gate.innerHTML=`<div class="dm lg">
+      <style>
+        #landing-gate .lg{--dm-acento:var(--dm-grano);min-height:100%}
+        #landing-gate .lg .dm-top .logo{height:16px;color:var(--dm-carbon)}
+        #landing-gate .lg .dm-portada-linea h1{max-width:13ch}
+        #landing-gate .lg .doc{display:flex;flex-direction:column;gap:12px}
+        #landing-gate .lg .doc .ic{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:var(--dm-papel-calido);color:var(--dm-verde);font-size:22px}
+        #landing-gate .lg .doc p{flex:1}
+        #landing-gate .lg .grupo{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center}
+        #landing-gate .lg .grupo .ic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--dm-ok-bg);color:var(--dm-verde);font-size:32px}
+        #landing-gate .lg .grupo h2{font-size:30px;margin:0 0 4px}
+        @media (max-width:760px){#landing-gate .lg .grupo{grid-template-columns:1fr;text-align:center;justify-items:center}}
+        #landing-gate .lg .dash{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:40px;align-items:center}
+        @media (max-width:900px){#landing-gate .lg .dash{grid-template-columns:1fr}}
+        #landing-gate .lg .dash ul{list-style:none;margin:20px 0 26px;padding:0;display:grid;gap:12px}
+        #landing-gate .lg .dash li{display:flex;gap:12px;color:#D9DEDB;font-size:16.5px}
+        #landing-gate .lg .dash li::before{content:"";flex:0 0 10px;height:10px;border-radius:50%;margin-top:8px;background:#9FD4B0}
+        #landing-gate .lg .mock{background:var(--dm-papel-calido);border-radius:var(--dm-r);overflow:hidden;box-shadow:0 24px 50px -24px rgba(0,0,0,.6);color:var(--dm-carbon)}
+        #landing-gate .lg .mock .bar{background:#fff;border-bottom:1px solid var(--dm-borde);padding:10px 14px;display:flex;gap:6px;overflow:hidden;white-space:nowrap}
+        #landing-gate .lg .mock .bar span{font:600 13px var(--dm-f-display);color:var(--dm-salvia-texto);padding:4px 8px}
+        #landing-gate .lg .mock .bar span.on{color:var(--dm-verde);border-bottom:2px solid var(--dm-verde)}
+        #landing-gate .lg .mock .in{padding:16px;display:grid;gap:12px}
+        #landing-gate .lg .mock .dm-kpi .v{font-size:24px}
+        #landing-gate .lg .plan ul{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+        #landing-gate .lg .plan li{display:flex;gap:10px;font-size:15.5px}
+        #landing-gate .lg .plan li::before{content:"";flex:0 0 8px;height:8px;border-radius:50%;margin-top:8px;background:var(--dm-verde)}
+        #landing-gate .lg .centro{text-align:center;margin-top:30px}
+      </style>
 
-      <!-- NAVEGACIÓN (HEADER) -->
-      <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-between h-20 items-center">
-            <div class="flex-shrink-0 flex items-center gap-2">
-              <span class="text-2xl font-bold text-agro-dark tracking-tighter">ESTRATEGIAS AL <span class="text-agro-green">GRANO</span></span>
-              <img src="logo-data-miazzo.png" alt="Data Miazzo" class="hidden md:block border-l border-gray-300 pl-2 ml-2" style="height:18px;width:auto;">
-            </div>
-            <div>
-              <button onclick="netlifyIdentity.open()" class="inline-flex items-center gap-2 bg-agro-dark hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-colors shadow-md border-0 cursor-pointer">
-                <i class="fa-solid fa-lock text-sm"></i> Ingresar al Dashboard
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <!-- HERO SECTION -->
-      <section class="pt-32 pb-16 md:pt-40 md:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center">
-        <div class="w-full max-w-4xl text-center">
-          <div class="inline-block bg-green-100 text-agro-green font-semibold px-4 py-1.5 rounded-full text-sm mb-6 border border-green-200 shadow-sm">
-            <i class="fa-solid fa-chart-line mr-2"></i> Inteligencia de Mercados y Finanzas
-          </div>
-          <h1 class="text-4xl md:text-6xl font-bold text-agro-dark leading-tight mb-6">
-            Tomá mejores decisiones comerciales para tu agroempresa.
-          </h1>
-          <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-            Análisis de coyuntura, estrategias de comercialización de granos y finanzas aplicadas al sector agropecuario, directo al grano.
-          </p>
-          <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#ultimo-informe" class="bg-agro-green hover:bg-green-600 text-white px-8 py-3.5 rounded-lg font-bold text-lg shadow-lg shadow-green-200 transition-all hover:-translate-y-1">
-              Ver Último Informe
-            </a>
-            <a href="${L.whatsappGrupo||'#'}" target="_blank" rel="noopener" class="bg-white hover:bg-gray-50 border-2 border-gray-200 text-agro-dark px-8 py-3.5 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all hover:-translate-y-1">
-              <i class="fa-brands fa-whatsapp text-green-500 text-xl"></i> Unirme al Grupo
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECCIÓN 1: ÚLTIMO INFORME -->
-      <section id="ultimo-informe" class="py-16 bg-white border-y border-gray-100">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 class="text-3xl font-bold text-agro-dark mb-4">Accedé al último informe</h2>
-          <p class="text-gray-600 mb-10">Descargá el análisis de esta semana o escuchá el resumen en audio mientras viajás.</p>
-          <div class="grid sm:grid-cols-2 gap-6">
-            <div class="bg-gray-50 rounded-xl p-8 border border-gray-200 hover:border-agro-green transition-colors group">
-              <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-file-pdf text-2xl"></i>
-              </div>
-              <h3 class="text-xl font-bold text-agro-dark mb-2">Informe en PDF</h3>
-              <p class="text-sm text-gray-500 mb-6">Gráficos, tendencias de soja, maíz, trigo y matriz de decisión financiera.</p>
-              <a href="${L.informe||'#'}" target="_blank" rel="noopener" class="block w-full bg-agro-dark text-white py-2.5 rounded-lg font-semibold hover:bg-slate-700 transition-colors">
-                Descargar PDF
-              </a>
-            </div>
-            <div class="bg-gray-50 rounded-xl p-8 border border-gray-200 hover:border-agro-green transition-colors group">
-              <div class="w-16 h-16 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-headphones text-2xl"></i>
-              </div>
-              <h3 class="text-xl font-bold text-agro-dark mb-2">Resumen en Audio</h3>
-              <p class="text-sm text-gray-500 mb-6">Escuchá el análisis directo de David Miazzo. Ideal para la camioneta.</p>
-              <a href="${L.audio||'#'}" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 w-full bg-white border-2 border-agro-dark text-agro-dark py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
-                <i class="fa-solid fa-play"></i> Reproducir Audio
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECCIÓN 2: COMUNIDAD WHATSAPP -->
-      <section id="comunidad" class="py-20 bg-agro-green">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-          <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-            <i class="fa-brands fa-whatsapp text-4xl text-agro-green"></i>
-          </div>
-          <h2 class="text-3xl font-bold text-white mb-6">Recibí el informe gratis en tu celular</h2>
-          <p class="text-green-100 text-lg mb-8 max-w-2xl mx-auto">Sumate a nuestra lista de difusión en WhatsApp. Te enviamos el informe apenas sale, sin spam, directo al grano.</p>
-          <a href="${L.whatsappGrupo||'#'}" target="_blank" rel="noopener" class="inline-block bg-white text-agro-green font-bold text-lg px-10 py-4 rounded-full shadow-lg hover:bg-gray-50 hover:scale-105 transition-all">
-            Unirme al grupo ahora
+      <header class="dm-top">
+        <div class="dm-top-in">
+          <a href="#" class="dm-lockup" aria-label="Estrategias al Grano, por DATA Miazzo">
+            <div><span class="k">ESTRATEGIAS</span><span class="w">AL GRANO</span></div><span class="sep"></span><svg class="logo" role="img" aria-label="DATA Miazzo" xmlns="http://www.w3.org/2000/svg" viewBox="444.09 430.33 469.81 71.48"><path fill-rule="evenodd" fill="currentColor" d="M 818.207031 430.445312 L 820.246094 430.445312 C 820.441406 430.445312 820.605469 430.496094 820.726562 430.589844 C 820.890625 430.71875 820.972656 430.902344 820.972656 431.136719 L 820.972656 446.332031 C 820.972656 446.566406 820.890625 446.746094 820.726562 446.875 C 820.605469 446.972656 820.441406 447.019531 820.246094 447.019531 L 819.152344 447.019531 C 818.949219 447.019531 818.78125 446.976562 818.65625 446.882812 L 818.628906 446.863281 C 818.46875 446.738281 818.386719 446.558594 818.386719 446.332031 L 818.386719 433.695312 L 812.148438 443.191406 C 812.042969 443.320312 811.917969 443.417969 811.777344 443.484375 C 811.636719 443.550781 811.488281 443.582031 811.332031 443.582031 L 810.082031 443.582031 C 809.910156 443.582031 809.753906 443.550781 809.617188 443.480469 C 809.472656 443.40625 809.351562 443.292969 809.265625 443.144531 L 802.953125 433.660156 L 802.953125 446.332031 C 802.953125 446.566406 802.867188 446.75 802.703125 446.875 L 802.679688 446.894531 C 802.558594 446.976562 802.40625 447.019531 802.222656 447.019531 L 801.128906 447.019531 C 800.933594 447.019531 800.773438 446.972656 800.648438 446.875 C 800.484375 446.75 800.402344 446.566406 800.402344 446.332031 L 800.402344 431.136719 C 800.402344 430.898438 800.484375 430.71875 800.648438 430.589844 C 800.769531 430.496094 800.933594 430.445312 801.128906 430.445312 L 801.421875 430.4375 C 802.113281 430.414062 803.503906 430.367188 803.789062 430.753906 L 810.6875 441.21875 L 817.578125 430.761719 C 817.644531 430.648438 817.742188 430.5625 817.863281 430.507812 C 817.960938 430.46875 818.078125 430.445312 818.207031 430.445312 Z M 844.867188 430.652344 L 852.300781 446.59375 C 852.335938 446.667969 852.3125 446.757812 852.246094 446.796875 C 852.226562 446.808594 852.207031 446.816406 852.183594 446.8125 L 849.617188 446.816406 C 849.5625 446.816406 849.515625 446.777344 849.492188 446.722656 L 844.191406 434.925781 L 838.132812 446.738281 C 838.109375 446.789062 838.0625 446.816406 838.015625 446.816406 L 835.433594 446.816406 C 835.359375 446.816406 835.300781 446.746094 835.300781 446.664062 C 835.300781 446.632812 835.308594 446.601562 835.324219 446.578125 L 843.613281 430.636719 C 843.640625 430.589844 843.683594 430.5625 843.730469 430.5625 L 844.746094 430.5625 C 844.800781 430.5625 844.847656 430.597656 844.867188 430.652344 Z M 827.910156 446.277344 L 827.910156 431.101562 C 827.910156 430.835938 828.003906 430.632812 828.1875 430.492188 L 828.21875 430.46875 C 828.359375 430.375 828.53125 430.328125 828.746094 430.328125 L 830.164062 430.328125 C 830.410156 430.328125 830.605469 430.382812 830.75 430.480469 C 830.953125 430.621094 831.050781 430.828125 831.050781 431.101562 L 831.050781 446.277344 C 831.050781 446.539062 830.960938 446.742188 830.773438 446.882812 L 830.742188 446.90625 C 830.605469 447 830.429688 447.046875 830.214844 447.046875 L 828.746094 447.046875 C 828.515625 447.046875 828.328125 446.992188 828.183594 446.882812 L 828.160156 446.863281 C 827.992188 446.722656 827.910156 446.527344 827.910156 446.277344 Z M 854.726562 446.308594 L 854.726562 445.871094 C 854.726562 445.679688 854.773438 445.511719 854.855469 445.355469 C 854.921875 445.222656 855.019531 445.101562 855.136719 444.984375 L 867.386719 432.527344 L 855.953125 432.527344 C 855.71875 432.527344 855.527344 432.480469 855.382812 432.386719 C 855.171875 432.257812 855.066406 432.054688 855.066406 431.789062 L 855.066406 431.070312 C 855.066406 430.800781 855.171875 430.601562 855.378906 430.46875 L 855.40625 430.453125 C 855.546875 430.371094 855.730469 430.328125 855.953125 430.328125 L 870.621094 430.328125 C 870.871094 430.328125 871.070312 430.375 871.21875 430.460938 L 871.242188 430.476562 C 871.453125 430.609375 871.554688 430.808594 871.554688 431.070312 L 871.554688 431.753906 C 871.554688 431.910156 871.519531 432.0625 871.453125 432.210938 C 871.394531 432.339844 871.304688 432.464844 871.195312 432.578125 L 859.136719 444.851562 L 870.960938 444.851562 C 871.210938 444.851562 871.414062 444.894531 871.5625 444.980469 C 871.785156 445.113281 871.898438 445.316406 871.898438 445.589844 L 871.898438 446.308594 C 871.898438 446.578125 871.785156 446.785156 871.5625 446.914062 C 871.414062 447 871.210938 447.046875 870.960938 447.046875 L 855.660156 447.046875 C 855.414062 447.046875 855.210938 447.003906 855.0625 446.914062 C 854.839844 446.785156 854.726562 446.582031 854.726562 446.308594 Z M 874.523438 446.308594 L 874.523438 445.871094 C 874.523438 445.679688 874.566406 445.511719 874.652344 445.355469 C 874.71875 445.222656 874.816406 445.101562 874.933594 444.984375 L 887.183594 432.527344 L 875.75 432.527344 C 875.515625 432.527344 875.324219 432.480469 875.179688 432.386719 C 874.96875 432.257812 874.863281 432.054688 874.863281 431.789062 L 874.863281 431.070312 C 874.863281 430.800781 874.96875 430.601562 875.175781 430.46875 L 875.203125 430.453125 C 875.34375 430.371094 875.527344 430.328125 875.75 430.328125 L 890.417969 430.328125 C 890.667969 430.328125 890.867188 430.375 891.015625 430.464844 C 891.238281 430.59375 891.351562 430.796875 891.351562 431.070312 L 891.351562 431.753906 C 891.351562 431.910156 891.316406 432.0625 891.25 432.210938 C 891.191406 432.339844 891.101562 432.464844 890.992188 432.578125 L 878.933594 444.851562 L 890.757812 444.851562 C 891.007812 444.851562 891.207031 444.894531 891.355469 444.980469 C 891.582031 445.113281 891.695312 445.316406 891.695312 445.589844 L 891.695312 446.308594 C 891.695312 446.578125 891.582031 446.785156 891.359375 446.914062 C 891.210938 447 891.007812 447.046875 890.757812 447.046875 L 875.457031 447.046875 C 875.207031 447.046875 875.007812 447.003906 874.859375 446.914062 C 874.636719 446.785156 874.523438 446.582031 874.523438 446.308594 Z M 906.65625 447.046875 L 902.453125 447.046875 C 901.375 447.046875 900.402344 446.945312 899.542969 446.738281 C 898.667969 446.535156 897.910156 446.222656 897.269531 445.808594 C 896.609375 445.382812 896.109375 444.867188 895.773438 444.269531 C 895.429688 443.664062 895.257812 442.976562 895.257812 442.214844 L 895.257812 435.160156 C 895.257812 434.398438 895.429688 433.710938 895.773438 433.105469 C 896.109375 432.507812 896.609375 431.996094 897.269531 431.570312 C 897.910156 431.15625 898.667969 430.84375 899.539062 430.636719 C 900.402344 430.433594 901.371094 430.328125 902.453125 430.328125 L 906.65625 430.328125 C 907.734375 430.328125 908.710938 430.433594 909.574219 430.636719 C 910.445312 430.839844 911.210938 431.152344 911.859375 431.570312 C 912.53125 431.996094 913.035156 432.507812 913.375 433.101562 L 913.386719 433.125 C 913.726562 433.730469 913.898438 434.40625 913.898438 435.160156 L 913.898438 442.214844 C 913.898438 442.976562 913.722656 443.664062 913.375 444.273438 C 913.035156 444.867188 912.53125 445.378906 911.859375 445.808594 C 911.210938 446.222656 910.445312 446.535156 909.570312 446.738281 C 908.707031 446.945312 907.734375 447.046875 906.65625 447.046875 Z M 902.648438 444.851562 L 906.460938 444.851562 C 907.1875 444.851562 907.828125 444.785156 908.375 444.660156 C 908.914062 444.535156 909.367188 444.351562 909.730469 444.109375 C 910.078125 443.878906 910.335938 443.605469 910.503906 443.285156 C 910.671875 442.96875 910.753906 442.605469 910.753906 442.1875 L 910.753906 435.191406 C 910.753906 434.363281 910.414062 433.71875 909.730469 433.265625 C 909.367188 433.023438 908.914062 432.839844 908.375 432.714844 C 907.828125 432.589844 907.1875 432.527344 906.460938 432.527344 L 902.648438 432.527344 C 901.921875 432.527344 901.28125 432.589844 900.738281 432.714844 C 900.207031 432.839844 899.761719 433.023438 899.40625 433.265625 C 899.066406 433.492188 898.8125 433.769531 898.648438 434.089844 C 898.484375 434.40625 898.402344 434.773438 898.402344 435.191406 L 898.402344 442.1875 C 898.402344 442.605469 898.484375 442.972656 898.648438 443.285156 C 898.8125 443.605469 899.066406 443.882812 899.40625 444.113281 C 899.761719 444.351562 900.207031 444.535156 900.738281 444.660156 C 901.28125 444.785156 901.917969 444.851562 902.648438 444.851562 "/><path fill-rule="nonzero" fill="currentColor" d="M 457.816406 495.148438 L 490.78125 495.148438 C 496.464844 495.148438 500.820312 494.195312 503.847656 492.300781 C 506.871094 490.402344 508.386719 489.960938 508.386719 486.386719 L 508.386719 446.742188 C 508.386719 439.394531 495.402344 437.980469 490.78125 437.980469 L 455.496094 437.980469 C 455.066406 437.980469 454.703125 438.019531 454.421875 438.105469 L 451.648438 438.105469 L 451.648438 474.972656 C 451.648438 475.570312 451.183594 476.09375 450.65625 476.09375 L 445.078125 476.09375 C 444.550781 476.09375 444.085938 475.589844 444.085938 474.972656 L 444.085938 432.011719 C 444.085938 431.425781 444.492188 430.941406 445 430.894531 C 445.300781 430.738281 445.710938 430.65625 446.230469 430.65625 L 491.710938 430.65625 C 499.738281 430.65625 506.070312 432.074219 510.703125 434.902344 C 515.335938 437.730469 517.652344 441.601562 517.652344 446.515625 L 517.652344 486.613281 C 517.652344 491.523438 515.332031 494.742188 510.703125 497.570312 C 506.070312 500.394531 499.734375 501.8125 491.710938 501.8125 L 452.378906 501.8125 C 451.148438 501.8125 450.527344 501.367188 450.527344 500.472656 L 450.527344 496.175781 C 450.527344 495.652344 450.90625 495.226562 451.367188 495.226562 L 457.417969 495.226562 C 458.789062 495.226562 455.046875 495.148438 457.816406 495.148438 Z M 544.148438 501.484375 L 538.40625 501.484375 C 537.046875 501.484375 536.613281 501.039062 537.105469 500.144531 L 573.980469 431.996094 C 574.351562 431.105469 575.21875 430.332031 576.574219 430.332031 L 585.285156 430.332031 C 586.519531 430.332031 587.386719 431.105469 587.878906 431.996094 L 624.753906 500.144531 C 625.125 501.039062 624.691406 501.484375 623.457031 501.484375 L 617.527344 501.484375 C 616.292969 501.484375 615.488281 501.039062 615.117188 500.144531 L 606.601562 486.578125 L 581.207031 437.457031 L 580.46875 437.457031 L 545.617188 501.132812 C 545.210938 501.367188 544.714844 501.484375 544.148438 501.484375 Z M 672.003906 501.8125 L 666.632812 501.8125 C 665.277344 501.8125 664.59375 501.367188 664.59375 500.472656 L 664.59375 438.65625 C 664.59375 437.988281 663.972656 437.652344 662.738281 437.652344 L 635.871094 437.652344 C 634.390625 437.652344 633.648438 437.242188 633.648438 436.421875 L 633.648438 431.886719 C 633.648438 431.066406 634.390625 430.65625 635.871094 430.65625 L 702.578125 430.65625 C 704.0625 430.65625 704.800781 431.070312 704.800781 431.886719 L 704.800781 436.421875 C 704.800781 437.242188 704.058594 437.652344 702.578125 437.652344 L 675.710938 437.652344 C 674.476562 437.652344 673.859375 437.992188 673.859375 438.65625 L 673.859375 500.472656 C 673.859375 501.363281 673.234375 501.8125 672.003906 501.8125 Z M 720.738281 501.8125 L 714.992188 501.8125 C 713.636719 501.8125 713.203125 501.367188 713.695312 500.472656 L 750.570312 431.671875 C 750.941406 430.777344 751.804688 430.332031 753.164062 430.332031 L 761.875 430.332031 C 763.109375 430.332031 763.972656 430.777344 764.46875 431.671875 L 801.34375 500.144531 C 801.714844 501.039062 801.277344 501.484375 800.046875 501.484375 L 794.117188 501.484375 C 792.882812 501.484375 792.078125 501.039062 791.707031 500.144531 L 786.703125 492.195312 L 757.796875 437.457031 L 757.054688 437.457031 L 722.675781 501.101562 C 722.195312 501.578125 721.542969 501.8125 720.738281 501.8125 "/></svg>
           </a>
+          <nav class="dm-nav" aria-label="Secciones">
+            <a href="#ultimo-informe">Último informe</a><a href="#comunidad">Recibirlo gratis</a><a href="#lg-dashboard">Dashboard</a><a href="#asesoramiento">Asesoramiento</a>
+          </nav>
+          <button type="button" onclick="netlifyIdentity.open()" class="dm-btn dm-btn-borde dm-btn-sm"><i class="fa-solid fa-lock" aria-hidden="true"></i> Dashboard clientes</button>
+        </div>
+      </header>
+
+      <section class="dm-portada-linea">
+        <div class="dm-wrap">
+          <span class="dm-eyebrow">Informe y audio · Estrategias al Grano</span>
+          <h1>¿Vendo, guardo o <em>me cubro?</em></h1>
+          <p>Soja, maíz y trigo: cuándo vender, qué pase tomar y cómo cubrirte, con una recomendación concreta en cada informe.</p>
+          <div class="dm-ctas">
+            <a href="${L.informe||'#'}" target="_blank" rel="noopener" class="dm-btn dm-btn-acento">Ver último informe</a>
+            <a href="${L.whatsappGrupo||'#'}" target="_blank" rel="noopener" class="dm-btn dm-btn-borde"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i> Recibirlo por WhatsApp</a>
+          </div>
         </div>
       </section>
 
-      <!-- SECCIÓN 3: EL DASHBOARD -->
-      <section class="py-20 bg-agro-dark relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-1/2 h-full bg-slate-800 skew-x-12 translate-x-32 opacity-20"></div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center gap-12">
-          <div class="md:w-5/12 text-white">
-            <div class="inline-flex items-center gap-2 bg-slate-800 text-green-400 px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-6 border border-slate-700">
-              <i class="fa-solid fa-star"></i> Exclusivo Clientes
-            </div>
-            <h2 class="text-3xl md:text-4xl font-bold mb-6">El nuevo Dashboard Interactivo</h2>
-            <ul class="space-y-4 mb-8 text-slate-300">
-              <li class="flex items-start gap-3">
-                <i class="fa-solid fa-check text-agro-green mt-1"></i>
-                <span>Curvas de precios en tiempo real (Soja, Maíz, Trigo).</span>
-              </li>
-              <li class="flex items-start gap-3">
-                <i class="fa-solid fa-check text-agro-green mt-1"></i>
-                <span>Matriz de decisión y comparativas de futuros.</span>
-              </li>
-              <li class="flex items-start gap-3">
-                <i class="fa-solid fa-check text-agro-green mt-1"></i>
-                <span>Opciones financieras y estacionamiento histórico.</span>
-              </li>
+      <section class="dm-franja" aria-label="Qué trae cada informe">
+        <div class="dm-wrap">
+          <div><b>Cultivos</b><span>Soja, maíz y trigo</span></div>
+          <div><b>La decisión</b><span>Vender, guardar o cubrirse</span></div>
+          <div><b>Formato</b><span>PDF y audio</span></div>
+          <div><b>Cómo llega</b><span>Gratis por WhatsApp</span></div>
+        </div>
+      </section>
+
+      <section id="ultimo-informe" class="dm-band dm-band-arena">
+        <div class="dm-wrap">
+          <div class="dm-band-head">
+            <h2>Leelo o escuchalo</h2>
+            <p class="dm-lede">El informe en PDF con la decisión para cada grano, y el audio de David Miazzo para escuchar en la camioneta.</p>
+          </div>
+          <div class="dm-grid dm-g2">
+            <article class="dm-card doc">
+              <div class="ic"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i></div>
+              <h3>Informe en PDF</h3>
+              <p>Qué hacer esta semana con la soja, el maíz y el trigo: precios, pases, carry, clima, insumos y qué hacer con los pesos y los dólares.</p>
+              <a href="${L.informe||'#'}" target="_blank" rel="noopener" class="dm-btn dm-btn-verde">Abrir el PDF</a>
+            </article>
+            <article class="dm-card doc">
+              <div class="ic"><i class="fa-solid fa-headphones" aria-hidden="true"></i></div>
+              <h3>Audio</h3>
+              <p>El análisis contado por David Miazzo, en Spotify.</p>
+              <a href="${L.audio||'#'}" target="_blank" rel="noopener" class="dm-btn dm-btn-borde"><i class="fa-brands fa-spotify" aria-hidden="true"></i> Escuchar en Spotify</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="comunidad" class="dm-band dm-band-blanca">
+        <div class="dm-wrap">
+          <div class="dm-card grupo">
+            <div class="ic"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></div>
+            <div><h2>Recibilo gratis en tu celular</h2><p class="dm-lede">Sumate al grupo de WhatsApp: te mandamos el informe apenas sale.</p></div>
+            <a href="${L.whatsappGrupo||'#'}" target="_blank" rel="noopener" class="dm-btn dm-btn-verde">Sumarme al grupo</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="lg-dashboard" class="dm-band dm-band-tinta">
+        <div class="dm-wrap dash">
+          <div>
+            <span class="dm-eyebrow">Exclusivo para clientes</span>
+            <h2>Dashboard de mercados</h2>
+            <p class="dm-lede">Los datos del informe al día, para decidir cada venta.</p>
+            <ul>
+              <li>Curvas de futuros de soja, maíz y trigo.</li>
+              <li>Estrategias de venta y matriz de decisión.</li>
+              <li>Futuros de dólar, LECAP y estacionalidad histórica.</li>
             </ul>
-            <div class="flex items-center gap-4">
-              <p class="text-sm text-slate-400 italic">Si ya sos cliente:</p>
-              <button onclick="netlifyIdentity.open()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white px-5 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 cursor-pointer">
-                <i class="fa-regular fa-envelope"></i> Ingreso con Mail
-              </button>
-            </div>
+            <button type="button" onclick="netlifyIdentity.open()" class="dm-btn dm-btn-arena"><i class="fa-solid fa-lock" aria-hidden="true"></i> Ingresar al dashboard</button>
           </div>
-          <div class="md:w-7/12">
-            <div class="bg-slate-900 rounded-xl shadow-2xl border border-slate-700 overflow-hidden transform md:rotate-2 md:hover:rotate-0 transition-transform duration-500">
-              <div class="bg-slate-800 px-4 py-3 border-b border-slate-700 flex items-center gap-2">
-                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                <span class="text-slate-400 text-xs ml-4 font-mono">estrategiasalgrano.com/dashboard</span>
+          <div class="mock" aria-hidden="true">
+            <div class="bar"><span>Futuros soja</span><span>Futuros maíz</span><span>Futuros trigo</span><span class="on">Estrategia</span><span>Futuros dólar</span><span>LECAP</span></div>
+            <div class="in">
+              <div class="dm-kpi">
+                <span class="k">Curva de futuros de soja · ilustrativa</span>
+                <svg viewBox="0 0 400 120" width="100%" height="120">
+                  <line x1="0" y1="100" x2="400" y2="100" stroke="#D8CCBF"/><line x1="0" y1="60" x2="400" y2="60" stroke="#ECE4DA"/><line x1="0" y1="20" x2="400" y2="20" stroke="#ECE4DA"/>
+                  <polyline points="10,70 90,72 170,52 250,84 330,76 390,70" fill="none" stroke="#024627" stroke-width="3"/>
+                  <circle cx="10" cy="70" r="5" fill="#024627"/>
+                  <polyline points="10,62 90,66 170,60 250,72 330,70 390,66" fill="none" stroke="#7C8A8A" stroke-width="2" stroke-dasharray="5 4"/>
+                </svg>
               </div>
-              <div class="bg-slate-50 p-4">
-                <div class="flex gap-1.5 flex-wrap mb-3 text-xs">
-                  <span class="text-slate-500 px-2.5 py-1.5">Futuros Soja</span>
-                  <span class="text-slate-500 px-2.5 py-1.5">Futuros Maíz</span>
-                  <span class="text-slate-500 px-2.5 py-1.5">Futuros Trigo</span>
-                  <span class="bg-agro-green text-white px-2.5 py-1.5 rounded-md font-semibold">Estrategia</span>
-                  <span class="text-slate-500 px-2.5 py-1.5">Futuros Dólar</span>
-                  <span class="text-slate-500 px-2.5 py-1.5">LECAPs</span>
-                  <span class="text-slate-500 px-2.5 py-1.5">Matriz de decisión</span>
-                </div>
-                <div class="flex gap-2 mb-3">
-                  <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 flex-1">
-                    <p class="text-[10px] text-agro-green font-semibold mb-0.5">PRECIO SPOT</p>
-                    <p class="text-sm font-semibold text-agro-dark">$465.000 <span class="text-[10px] text-slate-400 font-normal">ARS/TN</span></p>
-                  </div>
-                  <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 flex-1">
-                    <p class="text-[10px] text-slate-400 mb-0.5">USD/TN</p>
-                    <p class="text-sm font-semibold text-agro-dark">USD 324.61</p>
-                  </div>
-                  <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 flex-1">
-                    <p class="text-[10px] text-slate-400 mb-0.5">FOB</p>
-                    <p class="text-sm font-semibold text-agro-dark">419,00</p>
-                  </div>
-                  <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 flex-1">
-                    <p class="text-[10px] text-slate-400 mb-0.5">FAS TEÓRICO</p>
-                    <p class="text-sm font-semibold text-agro-dark">326,50</p>
-                  </div>
-                </div>
-                <div class="flex gap-2">
-                  <div class="bg-white border border-gray-200 rounded-lg p-3 flex-1">
-                    <div class="flex justify-between items-center mb-2">
-                      <span class="text-[11px] font-semibold text-slate-600">CURVA DE PRECIOS</span>
-                      <span class="text-[9px] text-agro-green border border-green-200 rounded px-1.5 py-0.5">Comparar con Chicago</span>
-                    </div>
-                    <svg viewBox="0 0 220 70" class="w-full h-16">
-                      <polyline points="5,45 40,25 75,32 110,18 145,28 180,12 215,20" fill="none" stroke="#16a34a" stroke-width="2"></polyline>
-                      <polygon points="5,45 40,25 75,32 110,18 145,28 180,12 215,20 215,70 5,70" fill="#16a34a" opacity="0.12"></polygon>
-                    </svg>
-                  </div>
-                  <div class="bg-white border border-gray-200 rounded-lg p-3 w-32">
-                    <p class="text-[11px] font-semibold text-slate-600 mb-2">CONTRATOS</p>
-                    <div class="flex justify-between text-[10px] mb-1.5">
-                      <span class="text-slate-600">SOJ.JUL26</span><span class="text-red-600">-1,0%</span>
-                    </div>
-                    <div class="flex justify-between text-[10px]">
-                      <span class="text-slate-600">SOJ.SEP26</span><span class="text-red-600">-0,5%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div class="dm-tags"><span class="dm-chip ok">Vender</span><span class="dm-chip warn">Esperar</span><span class="dm-chip warn">De a poco</span></div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- SECCIÓN 4: ASESORAMIENTO -->
-      <section id="asesoramiento" class="py-20 bg-gray-50 border-t border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="text-center max-w-3xl mx-auto mb-16">
-            <h2 class="text-3xl font-bold text-agro-dark mb-4">Planes de Asesoramiento</h2>
-            <p class="text-gray-600">Llevamos la estrategia a los números reales de tu empresa. Trabajamos mediante reuniones mensuales y seguimiento al día.</p>
+      <section id="asesoramiento" class="dm-band dm-band-arena">
+        <div class="dm-wrap">
+          <div class="dm-band-head">
+            <h2>Comité Comercial y Financiero</h2>
+            <p class="dm-lede">Llevamos la estrategia a los números de tu empresa, con reuniones mensuales y seguimiento al día. Tres planes:</p>
           </div>
-          <div class="grid md:grid-cols-3 gap-8 mb-12">
-            <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-xl shadow-gray-200/50 relative overflow-hidden">
-              <div class="h-2 w-full bg-agro-green absolute top-0 left-0"></div>
-              <h3 class="text-xl font-bold text-agro-dark mb-4 mt-2">Empresas Agro</h3>
-              <p class="text-sm text-gray-500 mb-6 font-medium">Acopios, Industrias, Maquinaria.</p>
-              <ul class="space-y-3 mb-8 text-sm text-gray-600">
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Planificación estratégica</li>
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Manejo de tesorería</li>
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Alternativas de financiamiento</li>
-              </ul>
-            </div>
-            <div class="bg-agro-dark rounded-2xl p-8 border border-slate-700 shadow-2xl relative transform md:-translate-y-4">
-              <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-agro-green text-white text-xs font-bold uppercase tracking-wider py-1 px-4 rounded-full">
-                Más Elegido
-              </div>
-              <h3 class="text-xl font-bold text-white mb-4 mt-2">Productores</h3>
-              <p class="text-sm text-slate-300 mb-6 font-medium">Productores agropecuarios directos.</p>
-              <ul class="space-y-3 mb-8 text-sm text-slate-300">
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Definición de estrategia comercial</li>
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Análisis de márgenes</li>
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Planificación de compra de insumos</li>
-              </ul>
-            </div>
-            <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-xl shadow-gray-200/50 relative overflow-hidden">
-              <div class="h-2 w-full bg-blue-500 absolute top-0 left-0"></div>
-              <h3 class="text-xl font-bold text-agro-dark mb-4 mt-2">Dueños de Campo</h3>
-              <p class="text-sm text-gray-500 mb-6 font-medium">Propietarios que alquilan su tierra.</p>
-              <ul class="space-y-3 mb-8 text-sm text-gray-600">
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Estrategias de cobro</li>
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Inversión de liquidez</li>
-                <li><i class="fa-solid fa-chevron-right text-agro-green mr-2 text-xs"></i> Mejora de eficiencia financiera</li>
-              </ul>
-            </div>
+          <div class="dm-grid dm-g3">
+          <article class="dm-card dm-card-acento plan"><h3>Productores</h3><p>Productores agropecuarios.</p><ul><li>Estrategia comercial</li><li>Análisis de márgenes</li><li>Compra de insumos</li></ul></article>
+          <article class="dm-card dm-card-acento plan"><h3>Empresas del agro</h3><p>Acopios, industrias y maquinaria.</p><ul><li>Planificación estratégica</li><li>Manejo de tesorería</li><li>Alternativas de financiamiento</li></ul></article>
+          <article class="dm-card dm-card-acento plan"><h3>Propietarios que alquilan</h3><p>Dueños de la tierra que la alquilan.</p><ul><li>Estrategias de cobro</li><li>Inversión de la liquidez</li><li>Eficiencia financiera</li></ul></article>
           </div>
-          <div class="text-center">
-            <a href="${L.whatsapp||'#'}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-agro-dark text-white px-8 py-3.5 rounded-lg font-bold hover:bg-slate-700 transition-colors">
-              Consultar por planes vía WhatsApp <i class="fa-brands fa-whatsapp text-xl text-green-400"></i>
-            </a>
-          </div>
+          <div class="centro"><a href="${L.whatsapp||'#'}" target="_blank" rel="noopener" class="dm-btn dm-btn-verde"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i> Consultar por WhatsApp</a></div>
         </div>
       </section>
 
-      <!-- SPONSOR & FOOTER -->
-      <footer class="bg-white border-t border-gray-200 pt-16 pb-8">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-          <div class="border-t border-gray-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-agro-dark tracking-tighter">DATA MIAZZO</span>
-              <span class="text-xs text-gray-400">© 2026. Todos los derechos reservados.</span>
-            </div>
-            <div class="flex gap-4">
-              <a href="mailto:datamiazzo@gmail.com" class="text-gray-400 hover:text-agro-dark"><i class="fa-regular fa-envelope"></i> datamiazzo@gmail.com</a>
-              <a href="https://www.datamiazzo.com" class="text-gray-400 hover:text-agro-dark"><i class="fa-solid fa-globe"></i> datamiazzo.com</a>
-            </div>
-          </div>
+      <footer class="dm-pie">
+        <div class="dm-pie-in">
+          <div style="display:flex;align-items:center;gap:16px"><svg class="logo" style="height:20px;color:#FCFDFD" role="img" aria-label="DATA Miazzo" xmlns="http://www.w3.org/2000/svg" viewBox="444.09 430.33 469.81 71.48"><path fill-rule="evenodd" fill="currentColor" d="M 818.207031 430.445312 L 820.246094 430.445312 C 820.441406 430.445312 820.605469 430.496094 820.726562 430.589844 C 820.890625 430.71875 820.972656 430.902344 820.972656 431.136719 L 820.972656 446.332031 C 820.972656 446.566406 820.890625 446.746094 820.726562 446.875 C 820.605469 446.972656 820.441406 447.019531 820.246094 447.019531 L 819.152344 447.019531 C 818.949219 447.019531 818.78125 446.976562 818.65625 446.882812 L 818.628906 446.863281 C 818.46875 446.738281 818.386719 446.558594 818.386719 446.332031 L 818.386719 433.695312 L 812.148438 443.191406 C 812.042969 443.320312 811.917969 443.417969 811.777344 443.484375 C 811.636719 443.550781 811.488281 443.582031 811.332031 443.582031 L 810.082031 443.582031 C 809.910156 443.582031 809.753906 443.550781 809.617188 443.480469 C 809.472656 443.40625 809.351562 443.292969 809.265625 443.144531 L 802.953125 433.660156 L 802.953125 446.332031 C 802.953125 446.566406 802.867188 446.75 802.703125 446.875 L 802.679688 446.894531 C 802.558594 446.976562 802.40625 447.019531 802.222656 447.019531 L 801.128906 447.019531 C 800.933594 447.019531 800.773438 446.972656 800.648438 446.875 C 800.484375 446.75 800.402344 446.566406 800.402344 446.332031 L 800.402344 431.136719 C 800.402344 430.898438 800.484375 430.71875 800.648438 430.589844 C 800.769531 430.496094 800.933594 430.445312 801.128906 430.445312 L 801.421875 430.4375 C 802.113281 430.414062 803.503906 430.367188 803.789062 430.753906 L 810.6875 441.21875 L 817.578125 430.761719 C 817.644531 430.648438 817.742188 430.5625 817.863281 430.507812 C 817.960938 430.46875 818.078125 430.445312 818.207031 430.445312 Z M 844.867188 430.652344 L 852.300781 446.59375 C 852.335938 446.667969 852.3125 446.757812 852.246094 446.796875 C 852.226562 446.808594 852.207031 446.816406 852.183594 446.8125 L 849.617188 446.816406 C 849.5625 446.816406 849.515625 446.777344 849.492188 446.722656 L 844.191406 434.925781 L 838.132812 446.738281 C 838.109375 446.789062 838.0625 446.816406 838.015625 446.816406 L 835.433594 446.816406 C 835.359375 446.816406 835.300781 446.746094 835.300781 446.664062 C 835.300781 446.632812 835.308594 446.601562 835.324219 446.578125 L 843.613281 430.636719 C 843.640625 430.589844 843.683594 430.5625 843.730469 430.5625 L 844.746094 430.5625 C 844.800781 430.5625 844.847656 430.597656 844.867188 430.652344 Z M 827.910156 446.277344 L 827.910156 431.101562 C 827.910156 430.835938 828.003906 430.632812 828.1875 430.492188 L 828.21875 430.46875 C 828.359375 430.375 828.53125 430.328125 828.746094 430.328125 L 830.164062 430.328125 C 830.410156 430.328125 830.605469 430.382812 830.75 430.480469 C 830.953125 430.621094 831.050781 430.828125 831.050781 431.101562 L 831.050781 446.277344 C 831.050781 446.539062 830.960938 446.742188 830.773438 446.882812 L 830.742188 446.90625 C 830.605469 447 830.429688 447.046875 830.214844 447.046875 L 828.746094 447.046875 C 828.515625 447.046875 828.328125 446.992188 828.183594 446.882812 L 828.160156 446.863281 C 827.992188 446.722656 827.910156 446.527344 827.910156 446.277344 Z M 854.726562 446.308594 L 854.726562 445.871094 C 854.726562 445.679688 854.773438 445.511719 854.855469 445.355469 C 854.921875 445.222656 855.019531 445.101562 855.136719 444.984375 L 867.386719 432.527344 L 855.953125 432.527344 C 855.71875 432.527344 855.527344 432.480469 855.382812 432.386719 C 855.171875 432.257812 855.066406 432.054688 855.066406 431.789062 L 855.066406 431.070312 C 855.066406 430.800781 855.171875 430.601562 855.378906 430.46875 L 855.40625 430.453125 C 855.546875 430.371094 855.730469 430.328125 855.953125 430.328125 L 870.621094 430.328125 C 870.871094 430.328125 871.070312 430.375 871.21875 430.460938 L 871.242188 430.476562 C 871.453125 430.609375 871.554688 430.808594 871.554688 431.070312 L 871.554688 431.753906 C 871.554688 431.910156 871.519531 432.0625 871.453125 432.210938 C 871.394531 432.339844 871.304688 432.464844 871.195312 432.578125 L 859.136719 444.851562 L 870.960938 444.851562 C 871.210938 444.851562 871.414062 444.894531 871.5625 444.980469 C 871.785156 445.113281 871.898438 445.316406 871.898438 445.589844 L 871.898438 446.308594 C 871.898438 446.578125 871.785156 446.785156 871.5625 446.914062 C 871.414062 447 871.210938 447.046875 870.960938 447.046875 L 855.660156 447.046875 C 855.414062 447.046875 855.210938 447.003906 855.0625 446.914062 C 854.839844 446.785156 854.726562 446.582031 854.726562 446.308594 Z M 874.523438 446.308594 L 874.523438 445.871094 C 874.523438 445.679688 874.566406 445.511719 874.652344 445.355469 C 874.71875 445.222656 874.816406 445.101562 874.933594 444.984375 L 887.183594 432.527344 L 875.75 432.527344 C 875.515625 432.527344 875.324219 432.480469 875.179688 432.386719 C 874.96875 432.257812 874.863281 432.054688 874.863281 431.789062 L 874.863281 431.070312 C 874.863281 430.800781 874.96875 430.601562 875.175781 430.46875 L 875.203125 430.453125 C 875.34375 430.371094 875.527344 430.328125 875.75 430.328125 L 890.417969 430.328125 C 890.667969 430.328125 890.867188 430.375 891.015625 430.464844 C 891.238281 430.59375 891.351562 430.796875 891.351562 431.070312 L 891.351562 431.753906 C 891.351562 431.910156 891.316406 432.0625 891.25 432.210938 C 891.191406 432.339844 891.101562 432.464844 890.992188 432.578125 L 878.933594 444.851562 L 890.757812 444.851562 C 891.007812 444.851562 891.207031 444.894531 891.355469 444.980469 C 891.582031 445.113281 891.695312 445.316406 891.695312 445.589844 L 891.695312 446.308594 C 891.695312 446.578125 891.582031 446.785156 891.359375 446.914062 C 891.210938 447 891.007812 447.046875 890.757812 447.046875 L 875.457031 447.046875 C 875.207031 447.046875 875.007812 447.003906 874.859375 446.914062 C 874.636719 446.785156 874.523438 446.582031 874.523438 446.308594 Z M 906.65625 447.046875 L 902.453125 447.046875 C 901.375 447.046875 900.402344 446.945312 899.542969 446.738281 C 898.667969 446.535156 897.910156 446.222656 897.269531 445.808594 C 896.609375 445.382812 896.109375 444.867188 895.773438 444.269531 C 895.429688 443.664062 895.257812 442.976562 895.257812 442.214844 L 895.257812 435.160156 C 895.257812 434.398438 895.429688 433.710938 895.773438 433.105469 C 896.109375 432.507812 896.609375 431.996094 897.269531 431.570312 C 897.910156 431.15625 898.667969 430.84375 899.539062 430.636719 C 900.402344 430.433594 901.371094 430.328125 902.453125 430.328125 L 906.65625 430.328125 C 907.734375 430.328125 908.710938 430.433594 909.574219 430.636719 C 910.445312 430.839844 911.210938 431.152344 911.859375 431.570312 C 912.53125 431.996094 913.035156 432.507812 913.375 433.101562 L 913.386719 433.125 C 913.726562 433.730469 913.898438 434.40625 913.898438 435.160156 L 913.898438 442.214844 C 913.898438 442.976562 913.722656 443.664062 913.375 444.273438 C 913.035156 444.867188 912.53125 445.378906 911.859375 445.808594 C 911.210938 446.222656 910.445312 446.535156 909.570312 446.738281 C 908.707031 446.945312 907.734375 447.046875 906.65625 447.046875 Z M 902.648438 444.851562 L 906.460938 444.851562 C 907.1875 444.851562 907.828125 444.785156 908.375 444.660156 C 908.914062 444.535156 909.367188 444.351562 909.730469 444.109375 C 910.078125 443.878906 910.335938 443.605469 910.503906 443.285156 C 910.671875 442.96875 910.753906 442.605469 910.753906 442.1875 L 910.753906 435.191406 C 910.753906 434.363281 910.414062 433.71875 909.730469 433.265625 C 909.367188 433.023438 908.914062 432.839844 908.375 432.714844 C 907.828125 432.589844 907.1875 432.527344 906.460938 432.527344 L 902.648438 432.527344 C 901.921875 432.527344 901.28125 432.589844 900.738281 432.714844 C 900.207031 432.839844 899.761719 433.023438 899.40625 433.265625 C 899.066406 433.492188 898.8125 433.769531 898.648438 434.089844 C 898.484375 434.40625 898.402344 434.773438 898.402344 435.191406 L 898.402344 442.1875 C 898.402344 442.605469 898.484375 442.972656 898.648438 443.285156 C 898.8125 443.605469 899.066406 443.882812 899.40625 444.113281 C 899.761719 444.351562 900.207031 444.535156 900.738281 444.660156 C 901.28125 444.785156 901.917969 444.851562 902.648438 444.851562 "/><path fill-rule="nonzero" fill="currentColor" d="M 457.816406 495.148438 L 490.78125 495.148438 C 496.464844 495.148438 500.820312 494.195312 503.847656 492.300781 C 506.871094 490.402344 508.386719 489.960938 508.386719 486.386719 L 508.386719 446.742188 C 508.386719 439.394531 495.402344 437.980469 490.78125 437.980469 L 455.496094 437.980469 C 455.066406 437.980469 454.703125 438.019531 454.421875 438.105469 L 451.648438 438.105469 L 451.648438 474.972656 C 451.648438 475.570312 451.183594 476.09375 450.65625 476.09375 L 445.078125 476.09375 C 444.550781 476.09375 444.085938 475.589844 444.085938 474.972656 L 444.085938 432.011719 C 444.085938 431.425781 444.492188 430.941406 445 430.894531 C 445.300781 430.738281 445.710938 430.65625 446.230469 430.65625 L 491.710938 430.65625 C 499.738281 430.65625 506.070312 432.074219 510.703125 434.902344 C 515.335938 437.730469 517.652344 441.601562 517.652344 446.515625 L 517.652344 486.613281 C 517.652344 491.523438 515.332031 494.742188 510.703125 497.570312 C 506.070312 500.394531 499.734375 501.8125 491.710938 501.8125 L 452.378906 501.8125 C 451.148438 501.8125 450.527344 501.367188 450.527344 500.472656 L 450.527344 496.175781 C 450.527344 495.652344 450.90625 495.226562 451.367188 495.226562 L 457.417969 495.226562 C 458.789062 495.226562 455.046875 495.148438 457.816406 495.148438 Z M 544.148438 501.484375 L 538.40625 501.484375 C 537.046875 501.484375 536.613281 501.039062 537.105469 500.144531 L 573.980469 431.996094 C 574.351562 431.105469 575.21875 430.332031 576.574219 430.332031 L 585.285156 430.332031 C 586.519531 430.332031 587.386719 431.105469 587.878906 431.996094 L 624.753906 500.144531 C 625.125 501.039062 624.691406 501.484375 623.457031 501.484375 L 617.527344 501.484375 C 616.292969 501.484375 615.488281 501.039062 615.117188 500.144531 L 606.601562 486.578125 L 581.207031 437.457031 L 580.46875 437.457031 L 545.617188 501.132812 C 545.210938 501.367188 544.714844 501.484375 544.148438 501.484375 Z M 672.003906 501.8125 L 666.632812 501.8125 C 665.277344 501.8125 664.59375 501.367188 664.59375 500.472656 L 664.59375 438.65625 C 664.59375 437.988281 663.972656 437.652344 662.738281 437.652344 L 635.871094 437.652344 C 634.390625 437.652344 633.648438 437.242188 633.648438 436.421875 L 633.648438 431.886719 C 633.648438 431.066406 634.390625 430.65625 635.871094 430.65625 L 702.578125 430.65625 C 704.0625 430.65625 704.800781 431.070312 704.800781 431.886719 L 704.800781 436.421875 C 704.800781 437.242188 704.058594 437.652344 702.578125 437.652344 L 675.710938 437.652344 C 674.476562 437.652344 673.859375 437.992188 673.859375 438.65625 L 673.859375 500.472656 C 673.859375 501.363281 673.234375 501.8125 672.003906 501.8125 Z M 720.738281 501.8125 L 714.992188 501.8125 C 713.636719 501.8125 713.203125 501.367188 713.695312 500.472656 L 750.570312 431.671875 C 750.941406 430.777344 751.804688 430.332031 753.164062 430.332031 L 761.875 430.332031 C 763.109375 430.332031 763.972656 430.777344 764.46875 431.671875 L 801.34375 500.144531 C 801.714844 501.039062 801.277344 501.484375 800.046875 501.484375 L 794.117188 501.484375 C 792.882812 501.484375 792.078125 501.039062 791.707031 500.144531 L 786.703125 492.195312 L 757.796875 437.457031 L 757.054688 437.457031 L 722.675781 501.101562 C 722.195312 501.578125 721.542969 501.8125 720.738281 501.8125 "/></svg><span class="frase">Datos para decidir.</span></div>
+          <div><a href="https://datamiazzo.com.ar" target="_blank" rel="noopener">datamiazzo.com.ar</a> · <a href="mailto:datamiazzo@gmail.com">datamiazzo@gmail.com</a> · © 2026 DATA Miazzo</div>
         </div>
       </footer>
 
