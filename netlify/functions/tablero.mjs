@@ -111,7 +111,12 @@ export const handler = async (event, context) => {
       return json(200, { usuario: email, admin, empresas: [], planillas: [], mensaje: 'Tu usuario todavía no tiene un tablero asignado. Escribinos y lo habilitamos.' });
     }
 
-    const { planillas } = await gas({ accion: 'planillas', ids: clientes.map((c) => c.sheetId).join(',') });
+    // Una llamada por planilla, en paralelo: el script tarda ~2-3 s por planilla
+    // sin caché y la función tiene 10 s de límite.
+    const lecturas = await Promise.allSettled(clientes.map((c) => gas({ accion: 'planillas', ids: c.sheetId })));
+    const planillas = lecturas.flatMap((r) => (r.status === 'fulfilled' ? r.value.planillas : []));
+    const fallidas = clientes.filter((c, i) => lecturas[i].status !== 'fulfilled').map((c) => c.nombre);
+    if (!planillas.length && fallidas.length) throw new Error(lecturas.find((r) => r.status === 'rejected').reason.message);
     const lotes = [];
     const comercial = [];
     const operaciones = [];
@@ -133,6 +138,7 @@ export const handler = async (event, context) => {
       usuario: email,
       admin,
       empresas: meta.map((m) => m.empresa),
+      fallidas,
       planillas: meta,
       tablas: { lotes: unir(lotes), comercial: unir(comercial), operaciones: unir(operaciones) },
     });
