@@ -51,17 +51,50 @@ export default async (req, context) => {
     const r = await context.next();
     const h = new Headers(r.headers);
     h.set('cache-control', 'private, no-store');
+    if (esTablero(p) && (h.get('content-type') || '').includes('text/html')) {
+      h.delete('content-length');
+      const html = (await r.text()).replace(/<head[^>]*>/i, (m) => m + puenteIdentity(ses.e));
+      return new Response(html, { status: r.status, statusText: r.statusText, headers: h });
+    }
     return new Response(r.body, { status: r.status, statusText: r.statusText, headers: h });
   }
 
   const volver = p + url.search;
-  if (SITIO !== 'grano') return irAlAcceso(volver);
+  if (SITIO !== 'grano' || esTablero(p)) return irAlAcceso(volver);
 
   // Al Grano: el dashboard vive en la raíz. Quien ya entró alguna vez va directo
   // (si su acceso central sigue vigente, ni lo nota); el resto ve la landing.
   if (leerCookie(req, CLI)) return irAlAcceso('/');
   return landingGrano(context);
 };
+
+// ---------- Tableros de clientes (estrategiasalgrano.com/tablero) ----------
+// Se programaron con Netlify Identity. En vez de reescribirlos, se les entrega
+// un "puente" con la misma forma que el widget de Identity, que devuelve la
+// persona de la sesión única. Sus funciones (tablero, tablero-fin) leen la
+// cookie dm_ses para saber quién es (netlify/acceso-node.mjs).
+function esTablero(p) {
+  return p === '/tablero' || p.startsWith('/tablero/');
+}
+
+function puenteIdentity(email) {
+  const e = JSON.stringify(String(email)).replace(/</g, '\\u003c');
+  return `<script>
+(function(){
+  var u={email:${e},user_metadata:{},app_metadata:{roles:[]},jwt:function(){return Promise.resolve('acceso-dm');}};
+  window.netlifyIdentity={
+    currentUser:function(){return u;},
+    on:function(ev,cb){if(ev==='init'){setTimeout(function(){cb(u);},0);}},
+    off:function(){},
+    open:function(){location.href='/acceso/ingresar?volver='+encodeURIComponent(location.pathname+location.search);},
+    close:function(){},
+    init:function(){},
+    refresh:function(){return Promise.resolve('acceso-dm');},
+    logout:function(){location.href='/acceso/salir';return new Promise(function(){});}
+  };
+})();
+</script>`;
+}
 
 // ---------- Landing pública de Al Grano ----------
 // Se arma con la plantilla que ya vive dentro de index.html (gate.innerHTML)
@@ -128,4 +161,4 @@ function armarLanding(g) {
 <body style="margin:0;background:#F7F1EA">${land}</body></html>`;
 }
 
-export const config = { path: ["/", "/index.html", "/acceso/*"] };
+export const config = { path: ["/", "/index.html", "/acceso/*", "/tablero", "/tablero/*"] };

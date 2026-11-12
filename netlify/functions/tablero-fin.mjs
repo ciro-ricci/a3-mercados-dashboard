@@ -10,6 +10,8 @@
 // GET  ?empresa=<nombre>[&pagina=1] -> { empresa, editable, modificado, colecciones[, html] }
 // POST { accion: "set"|"del", empresa, col, id, data }  (solo administradores)
 
+import { usuarioAcceso } from '../acceso-node.mjs';
+
 const COLS = ['campanas', 'operaciones', 'pases', 'deudas', 'cortes', 'config', 'cronograma', 'lineas', 'presupuesto'];
 
 const json = (status, body) => ({
@@ -49,7 +51,8 @@ async function gasPost(body) {
 }
 
 export const handler = async (event, context) => {
-  const user = context.clientContext && context.clientContext.user;
+  // Acceso único DATA Miazzo (cookie dm_ses); Identity queda como respaldo.
+  const user = usuarioAcceso(event) || (context.clientContext && context.clientContext.user);
   if (!user || !user.email) return json(401, { error: 'Iniciá sesión en estrategiasalgrano.com para ver el tablero.' });
   if (!process.env.TABLERO_GAS_URL) return json(500, { error: 'Falta configurar TABLERO_GAS_URL.' });
   const email = String(user.email).trim().toLowerCase();

@@ -8,6 +8,8 @@
 // (TABLERO_GAS_URL) que exige una clave (TABLERO_GAS_KEY). Ningun dato de
 // clientes vive en este repositorio.
 
+import { usuarioAcceso } from '../acceso-node.mjs';
+
 const json = (status, body) => ({
   statusCode: status,
   headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'private, no-store' },
@@ -89,7 +91,8 @@ function unir(tablas) {
 }
 
 export const handler = async (event, context) => {
-  const user = context.clientContext && context.clientContext.user;
+  // Acceso único DATA Miazzo (cookie dm_ses); Identity queda como respaldo.
+  const user = usuarioAcceso(event) || (context.clientContext && context.clientContext.user);
   if (!user || !user.email) return json(401, { error: 'Iniciá sesión en estrategiasalgrano.com para ver el tablero.' });
   if (!process.env.TABLERO_GAS_URL) return json(500, { error: 'Falta configurar TABLERO_GAS_URL.' });
 
