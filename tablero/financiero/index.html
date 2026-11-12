@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Tablero financiero · DATA Miazzo</title>
+<link rel="icon" href="/tablero/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<!--
+  Tablero financiero de clientes · DATA Miazzo
+  Esta página es solo la puerta de entrada: valida el login (Netlify Identity, el
+  mismo de Estrategias al Grano) y pide a la función tablero-fin la página y los
+  datos de la empresa. La página de cada empresa y sus datos viven en una carpeta
+  privada del Drive de DATA, nunca en este repositorio.
+-->
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:#FCFDFD;color:#333;font:400 15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+.dm-sitios{background:#F7F1EA;border-bottom:1px solid #D8CCBF}
+.dm-sitios-in{max-width:1280px;margin:0 auto;padding:0 20px;display:flex;gap:0 22px;overflow-x:auto;white-space:nowrap}
+.dm-sitios a{font:600 12px/1 "Rajdhani",sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#5F6B6B;text-decoration:none;padding:10px 0 8px;border-bottom:2px solid transparent}
+.dm-sitios a[aria-current="page"]{color:#333;border-bottom-color:#8C6A52}
+@media (max-width:640px){.dm-sitios-pre{display:none}.dm-sitios-in{gap:0 16px;padding:0 16px}}
+.acceso{max-width:560px;margin:56px auto;padding:28px 30px;background:#fff;border:1px solid #D8CCBF;border-radius:0 0 0 24px}
+.acceso h1{font:700 24px/1.15 "Rajdhani",sans-serif;color:#024627;margin:0 0 10px}
+.acceso p{margin:0 0 16px}
+.acceso button,.acceso a.b{font:600 15px "Rajdhani",sans-serif;letter-spacing:.06em;text-transform:uppercase;background:#C3A38C;color:#1F1F1F;border:0;border-radius:6px;padding:9px 16px;cursor:pointer;text-decoration:none;display:inline-block}
+</style>
+</head>
+<body>
+<nav class="dm-sitios" aria-label="Sitios de DATA Miazzo"><div class="dm-sitios-in"><a href="https://datamiazzo.com.ar">DATA Miazzo</a><a href="https://estrategiasalgrano.com"><span class="dm-sitios-pre">Estrategias </span>al Grano</a><a href="https://estrategiasfinancieras.com.ar"><span class="dm-sitios-pre">Estrategias </span>Financieras</a><a href="https://estrategiasganaderas.com.ar"><span class="dm-sitios-pre">Estrategias </span>Ganaderas</a><a href="https://estrategiasalgrano.com/tablero/" aria-current="page">Tableros</a></div></nav>
+<main class="acceso" id="acceso"><h1>Cargando el tablero financiero…</h1><p>Un momento.</p></main>
+<script>
+(function(){
+  "use strict";
+  var API = "/.netlify/functions/tablero-fin";
+  var empresa = (new URLSearchParams(location.search).get("empresa") || "").trim();
+  var caja = document.getElementById("acceso");
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function mostrar(titulo, cuerpo, boton){
+    caja.innerHTML = "<h1>" + esc(titulo) + "</h1><p>" + esc(cuerpo) + "</p>" + (boton || "");
+    var b = document.getElementById("btnLogin");
+    if (b) b.onclick = function(){ cargarIdentity().then(function(ni){ ni.on("login", function(){ ni.close(); location.reload(); }); ni.open("login"); }); };
+  }
+  var _ni = null;
+  function cargarIdentity(){
+    if (_ni) return _ni;
+    _ni = new Promise(function(res, rej){
+      function listo(){ var ni = window.netlifyIdentity, ok = false; function fin(){ if (!ok){ ok = true; res(ni); } } ni.on("init", fin); setTimeout(fin, 1500); }
+      if (window.netlifyIdentity) return listo();
+      var s = document.createElement("script");
+      s.src = "https://identity.netlify.com/v1/netlify-identity-widget.js";
+      s.onload = listo;
+      s.onerror = function(){ rej(new Error("No se pudo cargar el inicio de sesión.")); };
+      document.head.appendChild(s);
+    });
+    return _ni;
+  }
+  var LOGIN = '<button type="button" id="btnLogin">Ingresar</button>';
+  var VOLVER = '<a class="b" href="/tablero/">Volver a los tableros</a>';
+  if (!empresa) { mostrar("Falta indicar la empresa.", "Entrá al tablero financiero desde el tablero de tu empresa.", VOLVER); return; }
+  cargarIdentity().then(function(ni){
+    var u = ni.currentUser();
+    if (!u) { mostrar("Ingresá con tu usuario de Estrategias al Grano.", "El tablero financiero usa el mismo acceso que el sitio de informes.", LOGIN); return; }
+    return u.jwt().then(function(tk){
+      return fetch(API + "?pagina=1&empresa=" + encodeURIComponent(empresa), { headers: { Authorization: "Bearer " + tk }, cache: "no-store" });
+    }).then(function(res){
+      return res.json().catch(function(){ return {}; }).then(function(body){
+        if (res.status === 401) { mostrar("Ingresá con tu usuario de Estrategias al Grano.", body.error || "", LOGIN); return; }
+        if (!res.ok || !body.html) { mostrar(res.status === 403 ? "No tenés acceso a este tablero." : "No se pudo abrir el tablero.", body.error || ("Error " + res.status), VOLVER); return; }
+        var html = body.html; delete body.html;
+        var datos = "<script>window.__FIN__=" + JSON.stringify(body).replace(/</g, "\\u003c") + ";<\/script>";
+        html = html.replace(/<head[^>]*>/i, function(m){ return m + datos; });
+        document.open(); document.write(html); document.close();
+      });
+    });
+  }).catch(function(e){ mostrar("No se pudo abrir el tablero.", e && e.message ? e.message : String(e), '<button type="button" onclick="location.reload()">Reintentar</button>'); });
+})();
+</script>
+</body>
+</html>
