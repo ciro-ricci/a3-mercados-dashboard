@@ -700,9 +700,9 @@ window.LANDING_LINKS = {
    BCRA_TC_OVERRIDE — tarea programada diaria pisa este valor con el dato
    oficial del BCRA (Comunicación A 3500, dólar mayorista). El resto de los
    valores (oficial, CCL, soja/maíz/trigo, etc.) siguen viniendo de la sheet.
-   Última actualización: 2026-11-12
+   Última actualización: 2026-11-13
    ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
-const BCRA_TC_OVERRIDE = 1547.9128;
+const BCRA_TC_OVERRIDE = 1544.432;
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
 // Pizarra histórica Soja 2025 (USD/tn) — clave "DD/MM" con ceros
 const PIZARRA_SOJ_2025={
@@ -11796,9 +11796,14 @@ window.dmCambiarVista=function(){
 /* ═══════════════════════════════════════════════════════════════════════
    NEWS_DATA — Claude actualiza este bloque cada vez que corre el scraping.
    Las noticias con más de 7 días son eliminadas automáticamente del array.
-   Última actualización: 2026-11-12
+   Última actualización: 2026-11-13
    ═══════════════════════════════════════════════════════════════════════ */
 const NEWS_DATA = [
+  {fecha:'2026-11-13',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 13 noviembre 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-13-noviembre-2026/'},
+  {fecha:'2026-11-13',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 13 noviembre 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-13-noviembre-2026/'},
+  {fecha:'2026-11-13',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 13 noviembre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-13-noviembre-2026/'},
+  {fecha:'2026-11-13',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'Nuevo desafío para el biodiésel (y el aceite de soja) en EE.UU.: Gobernadores de estados petroleros no quieren cumplir con el corte obligatorio de biocombustibles',resumen:'Los precios del aceite de soja en EE.UU. vienen siendo “atacados” por cuestiones regulatorias de orden nacional y ahora deben hacer frente, además, a un problema surgido a escala regional. Luego de las idas y vueltas de las medidas tomadas por la Agencia de Protección Ambiental (EPA) en lo que respecta a la asignación de […]',link:'https://bichosdecampo.com/nuevo-desafio-para-el-biodiesel-y-el-aceite-de-soja-en-ee-uu-gobernadores-de-estados-petroleros-no-quieren-cumplir-con-el-corte-obligatorio-de-biocombustibles/'},
+  {fecha:'2026-11-13',fuente:'Bichos de Campo',cultivo:'Trigo',titulo:'El trigo suma otro medio millón de toneladas y confirma que no hay fórmulas mágicas: Cuando aflojan los costos, el productor responde e invierte más',resumen:'Lento, y sin chistar, la campaña triguera 2026/27 se fue ubicando cómodamente como la segunda más importante entre los registros históricos. Y es que de una proyección inicial de 18 millones de toneladas ya se posicionó en 24,3 millones, y va camino a una medalla de plata en área sembrada, rinde y producción. “Habrá supercampaña […]',link:'https://bichosdecampo.com/el-trigo-suma-otro-medio-millon-de-toneladas-y-confirma-que-no-hay-formulas-magicas-cuando-aflojan-los-costos-el-productor-responde-e-invierte-mas/'},
   {fecha:'2026-11-12',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 12 noviembre 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-12-noviembre-2026/'},
   {fecha:'2026-11-12',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 12 noviembre 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-12-noviembre-2026/'},
   {fecha:'2026-11-12',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 12 noviembre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-12-noviembre-2026/'},
@@ -11834,10 +11839,7 @@ const NEWS_DATA = [
   {fecha:'2026-11-03',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 3 noviembre 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-3-noviembre-2026/'},
   {fecha:'2026-11-03',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 3 noviembre 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-3-noviembre-2026/'},
   {fecha:'2026-11-03',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 3 noviembre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-3-noviembre-2026/'},
-  {fecha:'2026-11-03',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'¡Soja disponible a 485 u$s/tonelada! Lo mejor que le pudo haber pasado a los productores brasileños es que ganara Lula',resumen:'La victoria electoral del presidente Luiz Inácio Lula da Silva, tal como había adelantado Bichos de Campo, promovió la competitividad de los sectores exportadores y favoreció la rentabilidad de las empresas agrícolas. “La fuerte valorización del dólar frente al real durante la última semana aumentó la competitividad de la soja brasileña en el mercado internacional, […]',link:'https://bichosdecampo.com/soja-disponible-a-485-us-tonelada-lo-mejor-que-le-pudo-haber-pasado-a-los-productores-brasilenos-es-que-ganara-lula/'},
-  {fecha:'2026-11-02',fuente:'Infocampo',cultivo:'Maíz',titulo:'Precio del maíz en Rosario hoy 2 noviembre 2026',resumen:'Todo sobre la cotización de maíz, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-maiz-hoy-2-noviembre-2026/'},
-  {fecha:'2026-11-02',fuente:'Infocampo',cultivo:'Trigo',titulo:'Precio del Trigo en Rosario hoy 2 noviembre 2026',resumen:'Todo sobre la cotización del trigo, precio en tiempo real.',link:'https://www.infocampo.com.ar/precio-del-trigo-hoy-2-noviembre-2026/'},
-  {fecha:'2026-11-02',fuente:'Infocampo',cultivo:'Soja',titulo:'Precio de la Soja en Rosario hoy 2 noviembre 2026',resumen:'Todo sobre la cotización de soja, precio en tiempo real. Pizarra Rosario, cotización de cereales',link:'https://www.infocampo.com.ar/precio-de-la-soja-hoy-2-noviembre-2026/'}
+  {fecha:'2026-11-03',fuente:'Bichos de Campo',cultivo:'Soja',titulo:'¡Soja disponible a 485 u$s/tonelada! Lo mejor que le pudo haber pasado a los productores brasileños es que ganara Lula',resumen:'La victoria electoral del presidente Luiz Inácio Lula da Silva, tal como había adelantado Bichos de Campo, promovió la competitividad de los sectores exportadores y favoreció la rentabilidad de las empresas agrícolas. “La fuerte valorización del dólar frente al real durante la última semana aumentó la competitividad de la soja brasileña en el mercado internacional, […]',link:'https://bichosdecampo.com/soja-disponible-a-485-us-tonelada-lo-mejor-que-le-pudo-haber-pasado-a-los-productores-brasilenos-es-que-ganara-lula/'}
 ];
 /* ═══════════════════════════════════════════════════════════════════════ */
 
