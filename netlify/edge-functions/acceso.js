@@ -12,6 +12,7 @@ const SITIO = 'grano';
 const DASH = SITIOS[SITIO].dash;
 const SES = 'dm_ses';   // sesión de este sitio (12 h)
 const CLI = 'dm_cli';   // marca "esta persona ya entró alguna vez" (60 días)
+const CHK = 'dm_chk';   // "recién se consultó a la central" (30 s, evita el ida y vuelta doble)
 
 function irAlAcceso(volver) {
   return redirigir(`${CENTRAL}/acceso/ir?sitio=${SITIO}&volver=${encodeURIComponent(volver)}`);
@@ -45,9 +46,31 @@ export default async (req, context) => {
   }
   if (p.startsWith('/acceso/')) return context.next();
 
-  // Dashboard: con sesión válida se entrega tal cual, sin caché compartida.
   const ses = await leerPase(leerCookie(req, SES), 'ses');
-  if (ses && ses.s === SITIO) {
+  const conSesion = !!(ses && ses.s === SITIO);
+
+  // ---------- Portada del sitio (/) ----------
+  // Un cliente que ya entró va directo a su dashboard; el resto ve la landing.
+  // "?landing" muestra la landing igual (logo e "Informe y audio" del dashboard).
+  if (p === '/' || p === '/index.html') {
+    const verLanding = url.searchParams.has('landing');
+    if (!verLanding) {
+      if (conSesion && SITIO !== 'grano') return redirigir(DASH);
+      if (!conSesion && leerCookie(req, CLI)) return irAlAcceso(DASH);
+      // Llega desde otro sitio de DATA sin pasar nunca por este: se pregunta en
+      // silencio a la central si ya entró allá. Si no, vuelve a la landing.
+      // La cookie dm_chk evita preguntar dos veces seguidas.
+      if (!conSesion && vieneDeLaRed(req, url) && !leerCookie(req, CHK)) {
+        return redirigir(`${CENTRAL}/acceso/ir?sitio=${SITIO}&volver=${encodeURIComponent(DASH)}&blando=1`,
+          [cookie(CHK, '1', 30, { httpOnly: false })]);
+      }
+    }
+    if (SITIO === 'grano' && (verLanding || !conSesion)) return landingGrano(context);
+    if (SITIO !== 'grano') return context.next();
+  }
+
+  // Dashboard: con sesión válida se entrega tal cual, sin caché compartida.
+  if (conSesion) {
     const r = await context.next();
     const h = new Headers(r.headers);
     h.set('cache-control', 'private, no-store');
@@ -59,14 +82,16 @@ export default async (req, context) => {
     return new Response(r.body, { status: r.status, statusText: r.statusText, headers: h });
   }
 
-  const volver = p + url.search;
-  if (SITIO !== 'grano' || esTablero(p)) return irAlAcceso(volver);
-
-  // Al Grano: el dashboard vive en la raíz. Quien ya entró alguna vez va directo
-  // (si su acceso central sigue vigente, ni lo nota); el resto ve la landing.
-  if (leerCookie(req, CLI)) return irAlAcceso('/');
-  return landingGrano(context);
+  return irAlAcceso(p + url.search);
 };
+
+// ¿La persona viene de otro sitio de DATA? (barra de sitios, "Más de DATA Miazzo")
+const RED = ['datamiazzo.com.ar', 'estrategiasalgrano.com', 'estrategiasfinancieras.com.ar', 'estrategiasganaderas.com.ar'];
+function vieneDeLaRed(req, url) {
+  let h = '';
+  try { h = new URL(req.headers.get('referer') || '').hostname.replace(/^www\./, ''); } catch { return false; }
+  return RED.includes(h) && h !== url.hostname.replace(/^www\./, '');
+}
 
 // ---------- Tableros de clientes (estrategiasalgrano.com/tablero) ----------
 // Se programaron con Netlify Identity. En vez de reescribirlos, se les entrega
