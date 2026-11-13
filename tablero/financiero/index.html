@@ -60,6 +60,31 @@ body{margin:0;background:#FCFDFD;color:#333;font:400 15px/1.5 "IBM Plex Sans",sy
     });
     return _ni;
   }
+  // Navegación unificada con el Tablero comercial (/tablero/), que es la base.
+  // La página de cada empresa vive en Drive con su propio estilo; acá se le
+  // superpone el encabezado, las pestañas Comercial/Financiero, la fila del
+  // usuario y las subsecciones con las mismas medidas, fuentes y colores que
+  // el comercial. Como el comercial, se muestra siempre en modo claro.
+  var NAV_COMERCIAL = "<style id=\"nav-comercial\">" + [
+    "header.top{background:#fff;border-bottom:1px solid rgba(140,106,82,.2);box-shadow:none}",
+    ".top-in{max-width:1240px;padding:12px 20px 0;gap:4px 24px;align-items:flex-end;justify-content:space-between}",
+    ".brand{gap:14px;padding-bottom:12px}",
+    ".brand .logo{height:26px;color:#1F1F1F}",
+    ".brand span{font:600 .87rem/1.2 'Rajdhani',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#8C6A52;padding-left:14px;border-left:1px solid rgba(140,106,82,.2)}",
+    "nav.tabs{margin-left:auto;gap:4px;overflow-x:auto;scrollbar-width:none}",
+    "nav.tabs button,nav.tabs button[aria-selected]{font:600 .98rem/1.2 'Rajdhani',sans-serif;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;color:#5F6B6B;padding:4px 12px 10px;border:0;border-bottom:3px solid transparent;background:none}",
+    "nav.tabs button:hover{color:#333}",
+    "nav.tabs button[aria-selected=\"true\"]{color:#024627;border-bottom-color:#024627}",
+    ".usr{flex-basis:100%;margin-left:0;justify-content:flex-end;gap:12px;padding-bottom:4px;font:400 .78rem/1.4 'IBM Plex Sans',sans-serif;color:#5F6B6B}",
+    ".usr button{font:600 .78rem/1.4 'IBM Plex Sans',sans-serif;letter-spacing:0;text-transform:none;color:#024627;background:none;border:0;border-radius:0;padding:0;cursor:pointer}",
+    ".usr button:hover{text-decoration:underline}",
+    ".subnav{background:rgba(255,255,255,.95);border-bottom:1px solid rgba(140,106,82,.2);box-shadow:0 6px 16px -12px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}",
+    ".subnav-in{padding:8px 0;gap:8px 16px}",
+    ".sn-links{gap:4px}",
+    ".sn-links a{font:600 .9rem/1.4 'IBM Plex Sans',sans-serif;color:rgba(51,51,51,.8);padding:6px 14px;border-radius:999px;transition:background-color .15s,color .15s}",
+    ".sn-links a:hover{color:#333;background:#F7F1EA}",
+    ".sn-links a.on{background:#024627;color:#FCFDFD}"
+  ].join("") + "</style>";
   var LOGIN = '<button type="button" id="btnLogin">Ingresar</button>';
   var VOLVER = '<a class="b" href="/tablero/">Volver a los tableros</a>';
   if (!empresa) { mostrar("Falta indicar la empresa.", "Entrá al tablero financiero desde el tablero de tu empresa.", VOLVER); return; }
@@ -75,6 +100,9 @@ body{margin:0;background:#FCFDFD;color:#333;font:400 15px/1.5 "IBM Plex Sans",sy
         var html = body.html; delete body.html;
         var datos = "<script>window.__FIN__=" + JSON.stringify(body).replace(/</g, "\\u003c") + ";<\/script>";
         html = html.replace(/<head[^>]*>/i, function(m){ return m + datos; });
+        // Misma navegación que el Tablero comercial (la base): ver NAV_COMERCIAL.
+        html = html.replace(/<html([^>]*)>/i, function(m, a){ return /data-theme/.test(a) ? m : "<html" + a + ' data-theme="light">'; });
+        html = /<\/head>/i.test(html) ? html.replace(/<\/head>/i, function(m){ return NAV_COMERCIAL + m; }) : NAV_COMERCIAL + html;
         document.open(); document.write(html); document.close();
       });
     });
